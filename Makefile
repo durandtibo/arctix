@@ -17,12 +17,14 @@ config-poetry :
 .PHONY : install
 install :
 	poetry install --no-interaction
-	pip install --upgrade "torch>=2.0.1"  # TODO: https://github.com/pytorch/pytorch/issues/100974
 
 .PHONY : install-all
 install-all :
 	poetry install --no-interaction --all-extras
-	pip install --upgrade "torch>=2.0.1"  # TODO: https://github.com/pytorch/pytorch/issues/100974
+
+.PHONY : install-min
+install-min :
+	poetry install
 
 .PHONY : update
 update :
@@ -42,19 +44,23 @@ format :
 docformat :
 	docformatter --config ./pyproject.toml --in-place $(SOURCE)
 
+.PHONY : doctest-src
+doctest-src :
+	python -m pytest --xdoctest $(SOURCE)
+
 .PHONY : test
 test :
 	python -m pytest
 
 .PHONY : unit-test
 unit-test :
-	python -m pytest --timeout 10 $(UNIT_TESTS)
+	python -m pytest --xdoctest --timeout 10 $(UNIT_TESTS)
 
 .PHONY : unit-test-cov
 unit-test-cov :
-	python -m pytest --timeout 10 --cov-report html --cov-report xml --cov-report term --cov=$(NAME) $(UNIT_TESTS)
+	python -m pytest --xdoctest --timeout 10 --cov-report html --cov-report xml --cov-report term --cov=$(NAME) $(UNIT_TESTS)
 
 .PHONY : publish-pypi
 publish-pypi :
-	poetry config pypi-token.pypi ${COOLA_PYPI_TOKEN}
+	poetry config pypi-token.pypi ${ARCTIX_PYPI_TOKEN}
 	poetry publish --build
