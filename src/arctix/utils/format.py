@@ -9,6 +9,11 @@ from typing import Any
 def str_mapping(mapping: Mapping, sorted_keys: bool = False, num_spaces: int = 2) -> str:
     r"""Computes a string representation of a mapping.
 
+    This function was designed for flat dictionary. If you have a
+    nested dictionary, you may consider other functions. Note that
+    this function works for nested dict but the output may not be
+    nice.
+
     Args:
     ----
         mapping (``Mapping``): Specifies the mapping.
@@ -26,7 +31,7 @@ def str_mapping(mapping: Mapping, sorted_keys: bool = False, num_spaces: int = 2
     .. code-block:: pycon
 
         >>> from arctix.utils.format import str_mapping
-        >>> str_mapping({"key1": "abc", "key2": "something\nelse"})
+        >>> print(str_mapping({"key1": "abc", "key2": "something\nelse"}))
         (key1): abc
         (key2): something
           else
@@ -55,10 +60,10 @@ def str_indent(original: Any, num_spaces: int = 2) -> str:
     .. code-block:: pycon
 
         >>> from arctix.utils.format import str_indent
-        >>> f"\t{str_indent('string1\nstring2\n  string3', 4)}"
-            string1
-            string2
-              string3
+        >>> print(str_indent("string1\nstring2\n  string3", 4))
+        string1
+        string2
+          string3
     """
     formatted_str = str(original).split("\n")
     if len(formatted_str) == 1:  # single line
