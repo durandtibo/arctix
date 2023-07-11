@@ -1,9 +1,40 @@
 from __future__ import annotations
 
-__all__ = ["str_mapping", "str_indent"]
+__all__ = ["str_indent", "str_mapping", "str_sequence"]
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import Any
+
+
+def str_indent(original: Any, num_spaces: int = 2) -> str:
+    r"""Add indentations if the original string is a multi-lines string.
+
+    Args:
+        original: Specifies the original string. If the inputis not a
+            string, it will be converted to a string with the function
+            ``str``.
+        num_spaces (int, optional): Specifies the number of spaces
+            used for the indentation. Default: ``2``.
+
+    Returns:
+        str: The indented string.
+
+    Example usage:
+
+    .. code-block:: pycon
+
+        >>> from arctix.utils.format import str_indent
+        >>> print(str_indent("string1\nstring2\n  string3", 4))
+        string1
+        string2
+          string3
+    """
+    formatted_str = str(original).split("\n")
+    if len(formatted_str) == 1:  # single line
+        return formatted_str[0]
+    first = formatted_str.pop(0)
+    formatted_str = "\n".join([(num_spaces * " ") + line for line in formatted_str])
+    return first + "\n" + formatted_str
 
 
 def str_mapping(mapping: Mapping, sorted_keys: bool = False, num_spaces: int = 2) -> str:
@@ -42,32 +73,30 @@ def str_mapping(mapping: Mapping, sorted_keys: bool = False, num_spaces: int = 2
     return "\n".join(lines)
 
 
-def str_indent(original: Any, num_spaces: int = 2) -> str:
-    r"""Add indentations if the original string is a multi-lines string.
+def str_sequence(sequence: Sequence, num_spaces: int = 2) -> str:
+    r"""Computes a string representation of a sequence.
 
     Args:
-        original: Specifies the original string. If the inputis not a
-            string, it will be converted to a string with the function
-            ``str``.
+    ----
+        sequence (``Sequence``): Specifies the sequence.
         num_spaces (int, optional): Specifies the number of spaces
             used for the indentation. Default: ``2``.
 
     Returns:
-        str: The indented string.
+    -------
+        str: The string representation of the sequence.
 
     Example usage:
 
     .. code-block:: pycon
 
-        >>> from arctix.utils.format import str_indent
-        >>> print(str_indent("string1\nstring2\n  string3", 4))
-        string1
-        string2
-          string3
+        >>> from arctix.utils.format import str_sequence
+        >>> str_sequence(["abc", "something\nelse"])
+        (0): abc
+        (1): something
+          else
     """
-    formatted_str = str(original).split("\n")
-    if len(formatted_str) == 1:  # single line
-        return formatted_str[0]
-    first = formatted_str.pop(0)
-    formatted_str = "\n".join([(num_spaces * " ") + line for line in formatted_str])
-    return first + "\n" + formatted_str
+    lines = []
+    for i, item in enumerate(sequence):
+        lines.append(f"({i}): {str_indent(item, num_spaces=num_spaces)}")
+    return "\n".join(lines)
