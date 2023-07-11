@@ -21,16 +21,7 @@ class BaseFormatter(ABC, Generic[T]):
         """
 
     @abstractmethod
-    def format(
-        self,
-        summarizer: BaseSummarizer,
-        value: T,
-        depth: int,
-        max_depth: int,
-        max_items: int,
-        num_spaces: int = 2,
-        one_line: bool = False,
-    ) -> str:
+    def format(self, summarizer: BaseSummarizer, value: T, depth: int, max_depth: int) -> str:
         r"""Format a value.
 
         Args:
@@ -79,7 +70,7 @@ class BaseFormatter(ABC, Generic[T]):
             >>> from arctix.formatter import DefaultFormatter
             >>> formatter = DefaultFormatter()
             >>> formatter.state_dict()
-            {'max_characters': None}
+            {'max_characters': -1}
         """
 
 
@@ -110,14 +101,7 @@ class DefaultFormatter(BaseFormatter[Any]):
         return self._max_characters == other._max_characters
 
     def format(
-        self,
-        summarizer: BaseSummarizer,
-        value: Any,
-        depth: int = 0,
-        max_depth: int = 1,
-        max_items: int = 5,
-        num_spaces: int = 2,
-        one_line: bool = False,
+        self, summarizer: BaseSummarizer, value: Any, depth: int = 0, max_depth: int = 1
     ) -> str:
         typ = type(value)
         if self._max_characters >= 0:

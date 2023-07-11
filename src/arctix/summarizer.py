@@ -19,20 +19,10 @@ from arctix.utils.format import str_indent, str_mapping
 def summary(
     value: Any,
     max_depth: int = 1,
-    max_items: int = 1,
-    num_spaces: int = 2,
-    one_line: bool = False,
     summarizer: BaseSummarizer | None = None,
 ) -> str:
     summarizer = summarizer or Summarizer()
-    return summarizer.summary(
-        value=value,
-        depth=0,
-        max_depth=max_depth,
-        max_items=max_items,
-        num_spaces=num_spaces,
-        one_line=one_line,
-    )
+    return summarizer.summary(value=value, depth=0, max_depth=max_depth)
 
 
 class BaseSummarizer(ABC):
@@ -42,9 +32,6 @@ class BaseSummarizer(ABC):
         value: Any,
         depth: int,
         max_depth: int,
-        max_items: int,
-        num_spaces: int = 2,
-        one_line: bool = False,
         summarizer: BaseSummarizer | None = None,
     ) -> str:
         pass
@@ -106,9 +93,6 @@ class Summarizer(BaseSummarizer):
         value: Any,
         depth: int,
         max_depth: int,
-        max_items: int,
-        num_spaces: int = 2,
-        one_line: bool = False,
         summarizer: BaseSummarizer | None = None,
     ) -> str:
         return self.find_formatter(type(value)).format(
@@ -116,9 +100,6 @@ class Summarizer(BaseSummarizer):
             value=value,
             depth=depth,
             max_depth=max_depth,
-            max_items=max_items,
-            num_spaces=num_spaces,
-            one_line=one_line,
         )
 
     @classmethod
@@ -199,7 +180,7 @@ def set_summarizer_options(max_characters: int | None = None) -> None:
 
     .. code-block:: pycon
 
-        >>> from arctix import set_summarizer_options
+        >>> from arctix import set_summarizer_options, summary
         >>> print(summary("abcdefghijklmnopqrstuvwxyz"))
         <class 'str'> abcdefghijklmnopqrstuvwxyz
         >>> set_summarizer_options(max_characters=10)
@@ -216,7 +197,8 @@ def summarizer_options(**kwargs) -> None:
 
     Accepted arguments are same as ``set_summarizer_options``.
     The context manager temporary change the configuration of
-    ``Summarizer``.
+    ``Summarizer``. This context manager has no effect if
+    ``Summarizer`` is not used.
 
     Args:
     ----
@@ -227,7 +209,7 @@ def summarizer_options(**kwargs) -> None:
 
     .. code-block:: pycon
 
-        >>> from arctix import summarizer_options
+        >>> from arctix import summarizer_options, summary
         >>> print(summary("abcdefghijklmnopqrstuvwxyz"))
         <class 'str'> abcdefghijklmnopqrstuvwxyz
         >>> with summarizer_options(max_characters=10):
