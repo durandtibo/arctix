@@ -1,23 +1,30 @@
 from __future__ import annotations
 
-__all__ = ["BaseSummarizer", "Summarizer", "summary"]
+__all__ = [
+    "BaseSummarizer",
+    "Summarizer",
+    "summarizer_options",
+    "summary",
+]
 
 
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
 from typing import Any
 
-from arctix.formatter import BaseFormatter
+from arctix.formatter import BaseFormatter, DefaultFormatter
 from arctix.utils.format import str_indent, str_mapping
 
 
 def summary(
     value: Any,
-    max_depth: int,
-    max_items: int,
+    max_depth: int = 1,
+    max_items: int = 1,
     num_spaces: int = 2,
     one_line: bool = False,
     summarizer: BaseSummarizer | None = None,
 ) -> str:
+    summarizer = summarizer or Summarizer()
     return summarizer.summary(
         value=value,
         depth=0,
@@ -46,7 +53,7 @@ class BaseSummarizer(ABC):
 class Summarizer(BaseSummarizer):
     """Implements the default summarizer."""
 
-    registry: dict[type[object], BaseFormatter] = {}
+    registry: dict[type[object], BaseFormatter] = {object: DefaultFormatter()}
 
     def __repr__(self) -> str:
         return f"{self.__class__.__qualname__}(\n  {str_indent(str_mapping(self.registry))}\n)"
@@ -76,13 +83,10 @@ class Summarizer(BaseSummarizer):
 
             >>> from arctix import Summarizer, BaseFormatter, BaseSummarizer
             >>> class MyStringFormatter(BaseFormatter[str]):
-            ...     def equal(
+            ...     def format(
             ...         self,
-            ...         tester: BaseEqualityTester,
-            ...         object1: str,
-            ...         object2: Any,
-            ...         show_difference: bool = False,
-            ...     ) -> bool:
+            ...         tester: BaseSummarizer,
+            ...     ) -> str:
             ...         return "<" + value + ">"  # Custom implementation to test strings
             ...
             >>> Summarizer.add_formatter(str, MyStringFormatter())
@@ -166,3 +170,76 @@ class Summarizer(BaseSummarizer):
             if formatter is not None:
                 return formatter
         raise TypeError(f"Incorrect data type: {data_type}")
+
+    @classmethod
+    def load_state_dict(cls, state: dict) -> None:
+        for data_type, formatter in cls.registry.items():
+            formatter.load_state_dict(state[data_type])
+
+    @classmethod
+    def state_dict(cls) -> dict:
+        return {data_type: formatter.state_dict() for data_type, formatter in cls.registry.items()}
+
+    @classmethod
+    def set_max_characters(cls, max_characters: int | None) -> None:
+        for formatter in cls.registry.values():
+            if hasattr(formatter, "set_max_characters"):
+                formatter.set_max_characters(max_characters)
+
+
+def set_summarizer_options(max_characters: int | None = None) -> None:
+    r"""Set the ``Summarizer`` options.
+
+    Args:
+        max_characters (int or None, optional): Specifies the maximum
+            number of characters to show. If ``None``, all the
+            characters are shown. Default: ``None``
+
+    Example usage:
+
+    .. code-block:: pycon
+
+        >>> from arctix import set_summarizer_options
+        >>> print(summary("abcdefghijklmnopqrstuvwxyz"))
+        <class 'str'> abcdefghijklmnopqrstuvwxyz
+        >>> set_summarizer_options(max_characters=10)
+        >>> print(summary("abcdefghijklmnopqrstuvwxyz"))
+        <class 'str'> abcdefghij...
+    """
+    if max_characters is not None:
+        Summarizer.set_max_characters(max_characters)
+
+
+@contextmanager
+def summarizer_options(**kwargs) -> None:
+    r"""Context manager that temporarily changes the summarizer options.
+
+    Accepted arguments are same as ``set_summarizer_options``.
+    The context manager temporary change the configuration of
+    ``Summarizer``.
+
+    Args:
+    ----
+        **kwargs: Accepted arguments are same as
+            ``set_summarizer_options``.
+
+    Example usage:
+
+    .. code-block:: pycon
+
+        >>> from arctix import summarizer_options
+        >>> print(summary("abcdefghijklmnopqrstuvwxyz"))
+        <class 'str'> abcdefghijklmnopqrstuvwxyz
+        >>> with summarizer_options(max_characters=10):
+        ...     print(summary("abcdefghijklmnopqrstuvwxyz"))
+        ...
+        <class 'str'> abcdefghij...
+        >>> print(summary("abcdefghijklmnopqrstuvwxyz"))
+        <class 'str'> abcdefghijklmnopqrstuvwxyz
+    """
+    state = Summarizer.state_dict()
+    set_summarizer_options(**kwargs)
+    try:
+        yield
+    finally:
+        Summarizer.load_state_dict(state)
