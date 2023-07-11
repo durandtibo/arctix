@@ -45,10 +45,20 @@ def test_default_formatter_format_float() -> None:
     assert DefaultFormatter().format(Summarizer(), 1.2) == "<class 'float'> 1.2"
 
 
-def test_default_formatter_format_max_characters_none() -> None:
+@mark.parametrize("max_characters", (-1, -10))
+def test_default_formatter_format_max_characters_neg(max_characters: int) -> None:
     assert (
-        DefaultFormatter(max_characters=None).format(Summarizer(), "abcdefghijklmnopqrstuvwxyz")
+        DefaultFormatter(max_characters=max_characters).format(
+            Summarizer(), "abcdefghijklmnopqrstuvwxyz"
+        )
         == "<class 'str'> abcdefghijklmnopqrstuvwxyz"
+    )
+
+
+def test_default_formatter_format_max_characters_0() -> None:
+    assert (
+        DefaultFormatter(max_characters=0).format(Summarizer(), "abcdefghijklmnopqrstuvwxyz")
+        == "<class 'str'> ..."
     )
 
 
@@ -87,34 +97,18 @@ def test_default_formatter_load_state_dict() -> None:
 
 
 def test_default_formatter_state_dict() -> None:
-    assert DefaultFormatter().state_dict() == {"max_characters": None}
+    assert DefaultFormatter().state_dict() == {"max_characters": -1}
 
 
-@mark.parametrize("max_characters", (1, 10, 100))
+@mark.parametrize("max_characters", (-1, 0, 1, 10))
 def test_default_formatter_set_max_characters_int(max_characters: int) -> None:
     formatter = DefaultFormatter()
-    assert formatter._max_characters is None
+    assert formatter._max_characters == -1
     formatter.set_max_characters(max_characters)
     assert formatter._max_characters == max_characters
 
 
-def test_default_formatter_set_max_characters_none() -> None:
-    formatter = DefaultFormatter(max_characters=10)
-    assert formatter._max_characters == 10
-    formatter.set_max_characters(None)
-    assert formatter._max_characters is None
-
-
 def test_default_formatter_set_max_characters_incorrect_type() -> None:
     formatter = DefaultFormatter()
-    with raises(TypeError, match="Incorrect type for max_characters. Expected int or None value"):
+    with raises(TypeError, match="Incorrect type for max_characters. Expected int value"):
         formatter.set_max_characters(4.2)
-
-
-@mark.parametrize("max_characters", (0, -1))
-def test_default_formatter_set_max_characters_incorrect_value(max_characters: int) -> None:
-    formatter = DefaultFormatter()
-    with raises(
-        ValueError, match="Incorrect value for max_characters. Expected a positive integer"
-    ):
-        formatter.set_max_characters(max_characters)

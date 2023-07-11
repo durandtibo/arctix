@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 if TYPE_CHECKING:
-    from arctix.summary import BaseSummarizer
+    from arctix.summarizer import BaseSummarizer
 
 T = TypeVar("T")
 
@@ -87,12 +87,12 @@ class DefaultFormatter(BaseFormatter[Any]):
     r"""Implements the default formatter.
 
     Args:
-        max_characters (int or None, optional): Specifies the maximum
-            number of characters to show. If ``None``, all the
-            characters are shown. Default: ``None``
+        max_characters (int, optional): Specifies the maximum number
+            of characters to show. If a negative value is provided,
+            all the characters are shown. Default: ``-1``
     """
 
-    def __init__(self, max_characters: int | None = None) -> None:
+    def __init__(self, max_characters: int = -1) -> None:
         self.set_max_characters(max_characters)
 
     def __repr__(self) -> str:
@@ -120,7 +120,7 @@ class DefaultFormatter(BaseFormatter[Any]):
         one_line: bool = False,
     ) -> str:
         typ = type(value)
-        if self._max_characters is not None:
+        if self._max_characters >= 0:
             value = str(value)
             if len(value) > self._max_characters:
                 value = value[: self._max_characters] + "..."
@@ -132,15 +132,13 @@ class DefaultFormatter(BaseFormatter[Any]):
     def state_dict(self) -> dict:
         return {"max_characters": self._max_characters}
 
-    def set_max_characters(self, max_characters: int | None) -> None:
-        if not isinstance(max_characters, (int, type(None))):
+    def get_max_characters(self) -> int:
+        return self._max_characters
+
+    def set_max_characters(self, max_characters: int) -> None:
+        if not isinstance(max_characters, int):
             raise TypeError(
-                "Incorrect type for max_characters. Expected int or None value but "
-                f"received {max_characters}"
-            )
-        if isinstance(max_characters, int) and max_characters <= 0:
-            raise ValueError(
-                "Incorrect value for max_characters. Expected a positive integer but "
+                "Incorrect type for max_characters. Expected int value but "
                 f"received {max_characters}"
             )
         self._max_characters = max_characters
