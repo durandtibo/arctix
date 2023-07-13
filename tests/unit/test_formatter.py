@@ -92,9 +92,10 @@ def test_default_formatter_format_max_characters_100() -> None:
     )
 
 
-def test_default_formatter_format_max_depth_0() -> None:
+@mark.parametrize("max_depth", (0, -1, -2))
+def test_default_formatter_format_max_depth_0(max_depth: int) -> None:
     assert (
-        DefaultFormatter().format(Summarizer(), "abcdefghijklmnopqrstuvwxyz", max_depth=0)
+        DefaultFormatter().format(Summarizer(), "abcdefghijklmnopqrstuvwxyz", max_depth=max_depth)
         == "abcdefghijklmnopqrstuvwxyz"
     )
 
@@ -265,6 +266,15 @@ def test_mapping_formatter_format_nested_dict_max_depth_3() -> None:
         "      (1): <class 'int'> 2\n"
         "      (3): <class 'int'> 4"
     )
+
+
+@mark.parametrize("max_depth", (0, -1, -2))
+def test_mapping_formatter_format_nested_dict_max_depth_0(max_depth: int) -> None:
+    assert MappingFormatter().format(
+        Summarizer(),
+        {"key0": {"key0": 0, "key1": 1, "key2": 1}, "key1": {1: 2, 3: 4}},
+        max_depth=max_depth,
+    ) == ("{'key0': {'key0': 0, 'key1': 1, 'key2': 1}, 'key1': {1: 2, 3: 4}}")
 
 
 def test_mapping_formatter_format_nested_dict_max_characters() -> None:
@@ -458,6 +468,13 @@ def test_sequence_formatter_format_nested_list_max_depth_3() -> None:
         "      (0): <class 'str'> abc\n"
         "      (1): <class 'str'> def"
     )
+
+
+@mark.parametrize("max_depth", (0, -1, -2))
+def test_sequence_formatter_format_nested_list_max_depth_0(max_depth: int) -> None:
+    assert SequenceFormatter().format(
+        Summarizer(), [[0, 1, 2], ["abc", "def"]], max_depth=max_depth
+    ) == ("[[0, 1, 2], ['abc', 'def']]")
 
 
 def test_sequence_formatter_format_nested_list_max_characters() -> None:
