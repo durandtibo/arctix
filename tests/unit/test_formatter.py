@@ -356,8 +356,6 @@ def test_mapping_formatter_set_num_spaces_incorrect_value(num_spaces: int) -> No
 #     Tests for SequenceFormatter     #
 #######################################
 
-# TODO: add tuple
-
 
 def test_sequence_formatter_str() -> None:
     assert str(SequenceFormatter()).startswith("SequenceFormatter(")
@@ -474,6 +472,13 @@ def test_sequence_formatter_format_num_spaces_4() -> None:
     assert (
         SequenceFormatter(num_spaces=4).format(Summarizer(), ["one line", "two\nlines"])
         == "<class 'list'> (length=2)\n    (0): one line\n    (1): two\n        lines"
+    )
+
+
+def test_sequence_formatter_format_tuple() -> None:
+    assert (
+        SequenceFormatter().format(Summarizer(), ("abc", "def"))
+        == "<class 'tuple'> (length=2)\n  (0): abc\n  (1): def"
     )
 
 
