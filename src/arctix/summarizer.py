@@ -120,7 +120,11 @@ class BaseSummarizer(ABC):
 
 
 class Summarizer(BaseSummarizer):
-    """Implement the default summarizer."""
+    """Implement the default summarizer.
+
+    The registry is a class variable, so it is shared with all the
+    instances of this class.
+    """
 
     registry: dict[type[object], BaseFormatter] = {
         Mapping: MappingFormatter(),
@@ -133,6 +137,19 @@ class Summarizer(BaseSummarizer):
 
     def __repr__(self) -> str:
         return f"{self.__class__.__qualname__}(\n  {str_indent(str_mapping(self.registry))}\n)"
+
+    def summary(
+        self,
+        value: Any,
+        depth: int = 0,
+        max_depth: int = 1,
+    ) -> str:
+        return self.find_formatter(type(value)).format(
+            summarizer=self,
+            value=value,
+            depth=depth,
+            max_depth=max_depth,
+        )
 
     @classmethod
     def add_formatter(
@@ -173,19 +190,6 @@ class Summarizer(BaseSummarizer):
                 "formatter for this type"
             )
         cls.registry[data_type] = formatter
-
-    def summary(
-        self,
-        value: Any,
-        depth: int = 0,
-        max_depth: int = 1,
-    ) -> str:
-        return self.find_formatter(type(value)).format(
-            summarizer=self,
-            value=value,
-            depth=depth,
-            max_depth=max_depth,
-        )
 
     @classmethod
     def has_formatter(cls, data_type: type[object]) -> bool:
