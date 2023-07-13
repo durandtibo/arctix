@@ -91,7 +91,7 @@ def str_sequence(sequence: Sequence, num_spaces: int = 2) -> str:
     .. code-block:: pycon
 
         >>> from arctix.utils.format import str_sequence
-        >>> str_sequence(["abc", "something\nelse"])
+        >>> print(str_sequence(["abc", "something\nelse"]))
         (0): abc
         (1): something
           else

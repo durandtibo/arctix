@@ -68,18 +68,59 @@ def summary(value: Any, max_depth: int = 1, summarizer: BaseSummarizer | None = 
 
 
 class BaseSummarizer(ABC):
+    r"""Define the base class to implement a summarizer."""
+
     @abstractmethod
     def summary(
         self,
         value: Any,
-        depth: int,
-        max_depth: int,
+        depth: int = 0,
+        max_depth: int = 1,
     ) -> str:
-        pass
+        r"""Summarize the input value in a string.
+
+        Args:
+        ----
+            value: Specifies the value to summarize.
+            max_depth (int, optional): Specifies the maximum depth to
+                summarize if the input is nested. Default: ``1``
+            summarizer (``BaseSummarizer`` or ``None``): Specifies the
+                summarization strategy. If ``None``, the default
+                ``Summarizer`` is used. Default: ``None``
+
+        Returns:
+        -------
+            str: The summary as a string.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix import Summarizer
+            >>> print(Summarizer().summary(1))
+            <class 'int'> 1
+            >>> print(Summarizer().summary(["abc", "def"]))
+            <class 'list'> (length=2)
+              (0): abc
+              (1): def
+            >>> print(Summarizer().summary([[0, 1, 2], {"key1": "abc", "key2": "def"}]))
+            <class 'list'> (length=2)
+              (0): [0, 1, 2]
+              (1): {'key1': 'abc', 'key2': 'def'}
+            >>> print(Summarizer().summary([[0, 1, 2], {"key1": "abc", "key2": "def"}], max_depth=2))
+            <class 'list'> (length=2)
+              (0): <class 'list'> (length=3)
+                  (0): 0
+                  (1): 1
+                  (2): 2
+              (1): <class 'dict'> (length=2)
+                  (key1): abc
+                  (key2): def
+        """
 
 
 class Summarizer(BaseSummarizer):
-    """Implements the default summarizer."""
+    """Implement the default summarizer."""
 
     registry: dict[type[object], BaseFormatter] = {
         Mapping: MappingFormatter(),
@@ -97,7 +138,7 @@ class Summarizer(BaseSummarizer):
     def add_formatter(
         cls, data_type: type[object], formatter: BaseFormatter, exist_ok: bool = False
     ) -> None:
-        r"""Adds a formatter for a given data type.
+        r"""Add a formatter for a given data type.
 
         Args:
         ----
@@ -118,17 +159,12 @@ class Summarizer(BaseSummarizer):
 
         .. code-block:: pycon
 
-            >>> from arctix import Summarizer, BaseFormatter, BaseSummarizer
-            >>> class MyStringFormatter(BaseFormatter[str]):
-            ...     def format(
-            ...         self,
-            ...         tester: BaseSummarizer,
-            ...     ) -> str:
-            ...         return "<" + value + ">"  # Custom implementation to test strings
-            ...
-            >>> Summarizer.add_formatter(str, MyStringFormatter())
-            # To overwrite an existing formatter
-            >>> Summarizer.add_formatter(str, MyStringFormatter(), exist_ok=True)
+            >>> from arctix import Summarizer
+            >>> from arctix.formatter import MappingFormatter
+            >>> from collections import defaultdict
+            >>> Summarizer.add_formatter(defaultdict, MappingFormatter())
+            >>> # To overwrite an existing formatter
+            >>> Summarizer.add_formatter(defaultdict, MappingFormatter(), exist_ok=True)
         """
         if data_type in cls.registry and not exist_ok:
             raise RuntimeError(
@@ -141,8 +177,8 @@ class Summarizer(BaseSummarizer):
     def summary(
         self,
         value: Any,
-        depth: int,
-        max_depth: int,
+        depth: int = 0,
+        max_depth: int = 1,
     ) -> str:
         return self.find_formatter(type(value)).format(
             summarizer=self,
@@ -153,7 +189,7 @@ class Summarizer(BaseSummarizer):
 
     @classmethod
     def has_formatter(cls, data_type: type[object]) -> bool:
-        r"""Indicates if a formatter is registered for the given data
+        r"""Indicate if a formatter is registered for the given data
         type.
 
         Args:
@@ -179,7 +215,7 @@ class Summarizer(BaseSummarizer):
 
     @classmethod
     def find_formatter(cls, data_type: Any) -> BaseFormatter:
-        r"""Finds the formatter associated to an object.
+        r"""Find the formatter associated to an object.
 
         Args:
         ----
@@ -187,7 +223,13 @@ class Summarizer(BaseSummarizer):
 
         Returns:
         -------
-            ``BaseFormatter``: The formatter associated to the data type.
+            ``BaseFormatter``: The formatter associated to the data
+                type.
+
+        Raises:
+        ------
+            TypeError if a formatter cannot be found for this data
+                type.
 
         Example usage:
 
@@ -195,9 +237,9 @@ class Summarizer(BaseSummarizer):
 
             >>> from arctix import Summarizer
             >>> Summarizer.find_formatter(list)
-            SequenceFormatter()
+            SequenceFormatter(max_items=5, num_spaces=2)
             >>> Summarizer.find_formatter(str)
-            DefaultFormatter()
+            DefaultFormatter(max_characters=-1)
         """
         for object_type in data_type.__mro__:
             formatter = cls.registry.get(object_type, None)
@@ -207,15 +249,104 @@ class Summarizer(BaseSummarizer):
 
     @classmethod
     def load_state_dict(cls, state: dict) -> None:
+        r"""Load the state values from a dict.
+
+        Args:
+        ----
+            state_dict (dict): a dict with parameters
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix import Summarizer
+            >>> Summarizer.load_state_dict({object: {"max_characters": 10}})
+            >>> summarizer = Summarizer()
+            >>> summarizer
+            Summarizer(
+              (<class 'collections.abc.Mapping'>): MappingFormatter(max_items=5, num_spaces=2)
+              (<class 'collections.abc.Sequence'>): SequenceFormatter(max_items=5, num_spaces=2)
+              (<class 'dict'>): MappingFormatter(max_items=5, num_spaces=2)
+              (<class 'list'>): SequenceFormatter(max_items=5, num_spaces=2)
+              (<class 'object'>): DefaultFormatter(max_characters=10)
+              (<class 'tuple'>): SequenceFormatter(max_items=5, num_spaces=2)
+              (<class 'collections.defaultdict'>): MappingFormatter(max_items=5, num_spaces=2)
+            )
+            >>> Summarizer.load_state_dict({object: {"max_characters": -1}})
+            >>> summarizer
+            Summarizer(
+              (<class 'collections.abc.Mapping'>): MappingFormatter(max_items=5, num_spaces=2)
+              (<class 'collections.abc.Sequence'>): SequenceFormatter(max_items=5, num_spaces=2)
+              (<class 'dict'>): MappingFormatter(max_items=5, num_spaces=2)
+              (<class 'list'>): SequenceFormatter(max_items=5, num_spaces=2)
+              (<class 'object'>): DefaultFormatter(max_characters=-1)
+              (<class 'tuple'>): SequenceFormatter(max_items=5, num_spaces=2)
+              (<class 'collections.defaultdict'>): MappingFormatter(max_items=5, num_spaces=2)
+            )
+        """
         for data_type, formatter in cls.registry.items():
-            formatter.load_state_dict(state[data_type])
+            if (s := state.get(data_type)) is not None:
+                formatter.load_state_dict(s)
 
     @classmethod
     def state_dict(cls) -> dict:
+        r"""Return a dictionary containing state values.
+
+        Returns:
+        -------
+            dict: the state values in a dict.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix import Summarizer
+            >>> Summarizer.state_dict()  # doctest: +ELLIPSIS
+            {<class 'collections.abc.Mapping'>: {'max_items': 5},...
+        """
         return {data_type: formatter.state_dict() for data_type, formatter in cls.registry.items()}
 
     @classmethod
-    def set_max_characters(cls, max_characters: int | None) -> None:
+    def set_max_characters(cls, max_characters: int) -> None:
+        r"""Set the maximum of characters for the compatible formatter to
+        the specified value.
+
+        To be updated, the formatters need to implement the method
+        ``set_max_characters``.
+
+        Args:
+        ----
+            max_characters (int): Specifies the maximum of characters.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix import Summarizer
+            >>> Summarizer.set_max_characters(10)
+            >>> summarizer = Summarizer()
+            >>> summarizer
+            Summarizer(
+              (<class 'collections.abc.Mapping'>): MappingFormatter(max_items=5, num_spaces=2)
+              (<class 'collections.abc.Sequence'>): SequenceFormatter(max_items=5, num_spaces=2)
+              (<class 'dict'>): MappingFormatter(max_items=5, num_spaces=2)
+              (<class 'list'>): SequenceFormatter(max_items=5, num_spaces=2)
+              (<class 'object'>): DefaultFormatter(max_characters=10)
+              (<class 'tuple'>): SequenceFormatter(max_items=5, num_spaces=2)
+              (<class 'collections.defaultdict'>): MappingFormatter(max_items=5, num_spaces=2)
+            )
+            >>> Summarizer.set_max_characters(-1)
+            >>> summarizer
+            Summarizer(
+              (<class 'collections.abc.Mapping'>): MappingFormatter(max_items=5, num_spaces=2)
+              (<class 'collections.abc.Sequence'>): SequenceFormatter(max_items=5, num_spaces=2)
+              (<class 'dict'>): MappingFormatter(max_items=5, num_spaces=2)
+              (<class 'list'>): SequenceFormatter(max_items=5, num_spaces=2)
+              (<class 'object'>): DefaultFormatter(max_characters=-1)
+              (<class 'tuple'>): SequenceFormatter(max_items=5, num_spaces=2)
+              (<class 'collections.defaultdict'>): MappingFormatter(max_items=5, num_spaces=2)
+            )
+        """
         for formatter in cls.registry.values():
             if hasattr(formatter, "set_max_characters"):
                 formatter.set_max_characters(max_characters)
@@ -223,6 +354,9 @@ class Summarizer(BaseSummarizer):
 
 def set_summarizer_options(max_characters: int | None = None) -> None:
     r"""Set the ``Summarizer`` options.
+
+    Note: It is recommended to use ``summarizer_options`` rather than
+    this function.
 
     Args:
     ----
@@ -240,6 +374,9 @@ def set_summarizer_options(max_characters: int | None = None) -> None:
         >>> set_summarizer_options(max_characters=10)
         >>> print(summary("abcdefghijklmnopqrstuvwxyz"))
         <class 'str'> abcdefghij...
+        >>> set_summarizer_options(max_characters=-1)
+        >>> print(summary("abcdefghijklmnopqrstuvwxyz"))
+        <class 'str'> abcdefghijklmnopqrstuvwxyz
     """
     if max_characters is not None:
         Summarizer.set_max_characters(max_characters)
