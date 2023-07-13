@@ -25,6 +25,44 @@ class BaseFormatter(ABC, Generic[T]):
         Returns:
         -------
             ``BaseFormatter``: A copy of the formatter.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.formatter import DefaultFormatter
+            >>> formatter = DefaultFormatter()
+            >>> formatter2 = formatter.clone()
+            >>> formatter.set_max_characters(10)
+            >>> formatter
+            DefaultFormatter(max_characters=10)
+            >>> formatter2
+            DefaultFormatter(max_characters=-1)
+        """
+
+    @abstractmethod
+    def equal(self, other: Any) -> bool:
+        r"""Indicate if the other object is equal to the self object.
+
+        Args:
+        ----
+            other: Specifies the other object to compare.
+
+        Returns:
+        -------
+            bool: ``True`` if the objects are equal,
+                otherwise ``False``.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.formatter import DefaultFormatter
+            >>> formatter = DefaultFormatter()
+            >>> formatter.equal(DefaultFormatter())
+            True
+            >>> formatter.equal(DefaultFormatter(max_characters=10))
+            False
         """
 
     @abstractmethod
@@ -39,6 +77,16 @@ class BaseFormatter(ABC, Generic[T]):
         Returns:
         -------
             str: The formatted value.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix import Summarizer
+            >>> from arctix.formatter import DefaultFormatter
+            >>> formatter = DefaultFormatter()
+            >>> formatter.format(Summarizer(), 1)
+            <class 'int'> 1
         """
 
     @abstractmethod
@@ -49,8 +97,8 @@ class BaseFormatter(ABC, Generic[T]):
         ----
             state_dict (dict): a dict with parameters
 
-        Example:
-        -------
+        Example usage:
+
         .. code-block:: pycon
 
             >>> from arctix.formatter import DefaultFormatter
@@ -66,12 +114,11 @@ class BaseFormatter(ABC, Generic[T]):
     def state_dict(self) -> dict:
         r"""Return a dictionary containing state values.
 
-        Returns:
-        -------
+        Example usage:
             dict: the state values in a dict.
 
-        Example:
-        -------
+        Example usage:
+
         .. code-block:: pycon
 
             >>> from arctix.formatter import DefaultFormatter
@@ -124,9 +171,45 @@ class DefaultFormatter(BaseFormatter[Any]):
         return {"max_characters": self._max_characters}
 
     def get_max_characters(self) -> int:
+        r"""Gets the maximum number of characters to show.
+
+        Returns:
+        -------
+            int: The maximum number of characters to show.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.formatter import DefaultFormatter
+            >>> formatter = DefaultFormatter()
+            >>> formatter.get_max_characters()
+            -1
+        """
         return self._max_characters
 
     def set_max_characters(self, max_characters: int) -> None:
+        r"""Set the maximum number of characters to show.
+
+        Args:
+        ----
+            max_characters (int): Specifies the maximum number of
+                characters to show.
+
+        Raises:
+        ------
+            TypeError if ``max_characters`` is not an integer.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.formatter import DefaultFormatter
+            >>> formatter = DefaultFormatter()
+            >>> formatter.set_max_characters(10)
+            >>> formatter.get_max_characters()
+            10
+        """
         if not isinstance(max_characters, int):
             raise TypeError(
                 "Incorrect type for max_characters. Expected int value but "
@@ -194,9 +277,45 @@ class MappingFormatter(BaseFormatter[Mapping]):
         return {"max_items": self._max_items}
 
     def get_max_items(self) -> int:
+        r"""Gets the maximum number of items to show.
+
+        Returns:
+        -------
+            int: The maximum number of items to show.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.formatter import MappingFormatter
+            >>> formatter = MappingFormatter()
+            >>> formatter.get_max_items()
+            5
+        """
         return self._max_items
 
     def set_max_items(self, max_items: int) -> None:
+        r"""Set the maximum number of items to show.
+
+        Args:
+        ----
+            max_characters (int): Specifies the maximum number of
+                items to show.
+
+        Raises:
+        ------
+            TypeError if ``max_items`` is not an integer.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.formatter import MappingFormatter
+            >>> formatter = MappingFormatter()
+            >>> formatter.set_max_items(10)
+            >>> formatter.get_max_items()
+            10
+        """
         if not isinstance(max_items, int):
             raise TypeError(
                 "Incorrect type for max_items. Expected int value but " f"received {max_items}"
@@ -204,9 +323,46 @@ class MappingFormatter(BaseFormatter[Mapping]):
         self._max_items = max_items
 
     def get_num_spaces(self) -> int:
+        r"""Gets the number of spaces for indentation.
+
+        Returns:
+        -------
+            int: The number of spaces for indentation.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.formatter import MappingFormatter
+            >>> formatter = MappingFormatter()
+            >>> formatter.get_num_spaces()
+            2
+        """
         return self._num_spaces
 
     def set_num_spaces(self, num_spaces: int) -> None:
+        r"""Set the number of spaces for indentation.
+
+        Args:
+        ----
+            max_characters (int): Specifies the number of spaces for
+                indentation.
+
+        Raises:
+        ------
+            TypeError if ``num_spaces`` is not an integer.
+            TValueError if ``num_spaces`` is not a positive integer.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.formatter import MappingFormatter
+            >>> formatter = MappingFormatter()
+            >>> formatter.set_num_spaces(4)
+            >>> formatter.get_num_spaces()
+            4
+        """
         if not isinstance(num_spaces, int):
             raise TypeError(
                 f"Incorrect type for num_spaces. Expected int value but received {num_spaces}"
@@ -277,9 +433,45 @@ class SequenceFormatter(BaseFormatter[Sequence]):
         return {"max_items": self._max_items}
 
     def get_max_items(self) -> int:
+        r"""Gets the maximum number of items to show.
+
+        Returns:
+        -------
+            int: The maximum number of items to show.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.formatter import SequenceFormatter
+            >>> formatter = SequenceFormatter()
+            >>> formatter.get_max_items()
+            5
+        """
         return self._max_items
 
     def set_max_items(self, max_items: int) -> None:
+        r"""Set the maximum number of items to show.
+
+        Args:
+        ----
+            max_characters (int): Specifies the maximum number of
+                items to show.
+
+        Raises:
+        ------
+            TypeError if ``max_items`` is not an integer.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.formatter import SequenceFormatter
+            >>> formatter = SequenceFormatter()
+            >>> formatter.set_max_items(10)
+            >>> formatter.get_max_items()
+            10
+        """
         if not isinstance(max_items, int):
             raise TypeError(
                 "Incorrect type for max_items. Expected int value but " f"received {max_items}"
@@ -287,9 +479,46 @@ class SequenceFormatter(BaseFormatter[Sequence]):
         self._max_items = max_items
 
     def get_num_spaces(self) -> int:
+        r"""Gets the number of spaces for indentation.
+
+        Returns:
+        -------
+            int: The number of spaces for indentation.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.formatter import SequenceFormatter
+            >>> formatter = SequenceFormatter()
+            >>> formatter.get_num_spaces()
+            2
+        """
         return self._num_spaces
 
     def set_num_spaces(self, num_spaces: int) -> None:
+        r"""Set the number of spaces for indentation.
+
+        Args:
+        ----
+            max_characters (int): Specifies the number of spaces for
+                indentation.
+
+        Raises:
+        ------
+            TypeError if ``num_spaces`` is not an integer.
+            TValueError if ``num_spaces`` is not a positive integer.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.formatter import MappingFormatter
+            >>> formatter = MappingFormatter()
+            >>> formatter.set_num_spaces(4)
+            >>> formatter.get_num_spaces()
+            4
+        """
         if not isinstance(num_spaces, int):
             raise TypeError(
                 f"Incorrect type for num_spaces. Expected int value but received {num_spaces}"
