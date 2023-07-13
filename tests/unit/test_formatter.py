@@ -1,7 +1,7 @@
 from pytest import mark, raises
 
-from arctix import Summarizer
-from arctix.formatter import DefaultFormatter
+from arctix import Summarizer, summarizer_options
+from arctix.formatter import DefaultFormatter, SequenceFormatter
 
 ######################################
 #     Tests for DefaultFormatter     #
@@ -90,6 +90,22 @@ def test_default_formatter_format_max_characters_100() -> None:
     )
 
 
+def test_default_formatter_format_max_depth_0() -> None:
+    assert (
+        DefaultFormatter().format(Summarizer(), "abcdefghijklmnopqrstuvwxyz", max_depth=0)
+        == "abcdefghijklmnopqrstuvwxyz"
+    )
+
+
+def test_default_formatter_format_max_depth_0_max_characters_10() -> None:
+    assert (
+        DefaultFormatter(max_characters=10).format(
+            Summarizer(), "abcdefghijklmnopqrstuvwxyz", max_depth=0
+        )
+        == "abcdefghij..."
+    )
+
+
 def test_default_formatter_load_state_dict() -> None:
     formatter = DefaultFormatter()
     formatter.load_state_dict({"max_characters": 10})
@@ -100,15 +116,202 @@ def test_default_formatter_state_dict() -> None:
     assert DefaultFormatter().state_dict() == {"max_characters": -1}
 
 
+def test_default_formatter_get_max_characters() -> None:
+    assert DefaultFormatter().get_max_characters() == -1
+
+
 @mark.parametrize("max_characters", (-1, 0, 1, 10))
 def test_default_formatter_set_max_characters_int(max_characters: int) -> None:
     formatter = DefaultFormatter()
-    assert formatter._max_characters == -1
+    assert formatter.get_max_characters() == -1
     formatter.set_max_characters(max_characters)
-    assert formatter._max_characters == max_characters
+    assert formatter.get_max_characters() == max_characters
 
 
 def test_default_formatter_set_max_characters_incorrect_type() -> None:
     formatter = DefaultFormatter()
     with raises(TypeError, match="Incorrect type for max_characters. Expected int value"):
         formatter.set_max_characters(4.2)
+
+
+#######################################
+#     Tests for SequenceFormatter     #
+#######################################
+
+
+def test_sequence_formatter_str() -> None:
+    assert str(SequenceFormatter()).startswith("SequenceFormatter(")
+
+
+def test_sequence_formatter_clone_max_items_10() -> None:
+    formatter = SequenceFormatter(max_items=10)
+    formatter_cloned = formatter.clone()
+    formatter.set_max_items(20)
+    assert formatter is not formatter_cloned
+    assert formatter.equal(SequenceFormatter(max_items=20))
+    assert formatter_cloned.equal(SequenceFormatter(max_items=10))
+
+
+def test_sequence_formatter_equal_true() -> None:
+    assert SequenceFormatter().equal(SequenceFormatter())
+
+
+def test_sequence_formatter_equal_false_different_max_items() -> None:
+    assert not SequenceFormatter().equal(SequenceFormatter(max_items=10))
+
+
+def test_sequence_formatter_equal_false_different_type() -> None:
+    assert not SequenceFormatter().equal(42)
+
+
+def test_sequence_formatter_format_list_empty() -> None:
+    print(SequenceFormatter().format(Summarizer(), []))
+    assert SequenceFormatter().format(Summarizer(), []) == "<class 'list'> (length=0) []"
+
+
+def test_sequence_formatter_format_list_1() -> None:
+    assert (
+        SequenceFormatter().format(Summarizer(), ["abc"]) == "<class 'list'> (length=1)\n  (0): abc"
+    )
+
+
+def test_sequence_formatter_format_list_2() -> None:
+    assert SequenceFormatter().format(Summarizer(), ["one line", "two\nlines"]) == (
+        "<class 'list'> (length=2)\n  (0): one line\n  (1): two\n    lines"
+    )
+
+
+def test_sequence_formatter_format_length_5() -> None:
+    assert SequenceFormatter().format(Summarizer(), list(range(5))) == (
+        "<class 'list'> (length=5)\n  (0): 0\n  (1): 1\n  (2): 2\n  (3): 3\n  (4): 4"
+    )
+
+
+def test_sequence_formatter_format_length_10() -> None:
+    assert SequenceFormatter().format(Summarizer(), list(range(10))) == (
+        "<class 'list'> (length=10)\n"
+        "  (0): 0\n"
+        "  (1): 1\n"
+        "  (2): 2\n"
+        "  (3): 3\n"
+        "  (4): 4\n"
+        "  ..."
+    )
+
+
+def test_sequence_formatter_format_length_10_max_items_5_max_depth_2() -> None:
+    assert SequenceFormatter(max_items=5).format(Summarizer(), list(range(10)), max_depth=2) == (
+        "<class 'list'> (length=10)\n"
+        "  (0): <class 'int'> 0\n"
+        "  (1): <class 'int'> 1\n"
+        "  (2): <class 'int'> 2\n"
+        "  (3): <class 'int'> 3\n"
+        "  (4): <class 'int'> 4\n"
+        "  ..."
+    )
+
+
+def test_sequence_formatter_format_nested_list() -> None:
+    assert SequenceFormatter(max_items=5).format(Summarizer(), [[0, 1, 2], ["abc", "def"]]) == (
+        "<class 'list'> (length=2)\n  (0): [0, 1, 2]\n  (1): ['abc', 'def']"
+    )
+
+
+def test_sequence_formatter_format_nested_list_max_depth_2() -> None:
+    assert SequenceFormatter(max_items=5).format(
+        Summarizer(), [[0, 1, 2], ["abc", "def"]], max_depth=2
+    ) == (
+        "<class 'list'> (length=2)\n"
+        "  (0): <class 'list'> (length=3)\n"
+        "      (0): 0\n"
+        "      (1): 1\n"
+        "      (2): 2\n"
+        "  (1): <class 'list'> (length=2)\n"
+        "      (0): abc\n"
+        "      (1): def"
+    )
+
+
+def test_sequence_formatter_format_nested_list_max_depth_3() -> None:
+    assert SequenceFormatter(max_items=5).format(
+        Summarizer(), [[0, 1, 2], ["abc", "def"]], max_depth=3
+    ) == (
+        "<class 'list'> (length=2)\n"
+        "  (0): <class 'list'> (length=3)\n"
+        "      (0): <class 'int'> 0\n"
+        "      (1): <class 'int'> 1\n"
+        "      (2): <class 'int'> 2\n"
+        "  (1): <class 'list'> (length=2)\n"
+        "      (0): <class 'str'> abc\n"
+        "      (1): <class 'str'> def"
+    )
+
+
+def test_sequence_formatter_format_nested_list_max_characters() -> None:
+    formatter = SequenceFormatter()
+    with summarizer_options(max_characters=5):
+        print(Summarizer())
+        print(formatter.format(Summarizer(), [[0, 1, 2], ["abc", "def"]]))
+        assert formatter.format(Summarizer(), [[0, 1, 2], ["abc", "def"]]) == (
+            "<class 'list'> (length=2)\n  (0): [0, 1...\n  (1): ['abc..."
+        )
+
+
+def test_sequence_formatter_format_num_spaces_4() -> None:
+    assert (
+        SequenceFormatter(num_spaces=4).format(Summarizer(), ["one line", "two\nlines"])
+        == "<class 'list'> (length=2)\n    (0): one line\n    (1): two\n        lines"
+    )
+
+
+def test_sequence_formatter_load_state_dict() -> None:
+    formatter = SequenceFormatter()
+    formatter.load_state_dict({"max_items": 10})
+    assert formatter.equal(SequenceFormatter(max_items=10))
+
+
+def test_sequence_formatter_state_dict() -> None:
+    assert SequenceFormatter().state_dict() == {"max_items": 5}
+
+
+def test_sequence_formatter_get_max_items() -> None:
+    assert SequenceFormatter().get_max_items() == 5
+
+
+@mark.parametrize("max_items", (-1, 0, 1, 10))
+def test_sequence_formatter_set_max_items_int(max_items: int) -> None:
+    formatter = SequenceFormatter()
+    assert formatter.get_max_items() == 5
+    formatter.set_max_items(max_items)
+    assert formatter.get_max_items() == max_items
+
+
+def test_sequence_formatter_set_max_items_incorrect_type() -> None:
+    formatter = SequenceFormatter()
+    with raises(TypeError, match="Incorrect type for max_items. Expected int value"):
+        formatter.set_max_items(4.2)
+
+
+def test_sequence_formatter_get_num_spaces() -> None:
+    assert SequenceFormatter().get_num_spaces() == 2
+
+
+@mark.parametrize("num_spaces", (0, 1, 10))
+def test_sequence_formatter_set_num_spaces_int(num_spaces: int) -> None:
+    formatter = SequenceFormatter()
+    assert formatter.get_num_spaces() == 2
+    formatter.set_num_spaces(num_spaces)
+    assert formatter.get_num_spaces() == num_spaces
+
+
+def test_sequence_formatter_set_num_spaces_incorrect_type() -> None:
+    formatter = SequenceFormatter()
+    with raises(TypeError, match="Incorrect type for num_spaces. Expected int value"):
+        formatter.set_num_spaces(4.2)
+
+
+@mark.parametrize("num_spaces", (-1, -2))
+def test_sequence_formatter_set_num_spaces_incorrect_value(num_spaces: int) -> None:
+    formatter = SequenceFormatter()
+    with raises(ValueError, match="Incorrect value for num_spaces. Expected a positive integer"):
+        formatter.set_num_spaces(num_spaces)

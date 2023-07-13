@@ -9,10 +9,11 @@ __all__ = [
 
 
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from contextlib import contextmanager
 from typing import Any
 
-from arctix.formatter import BaseFormatter, DefaultFormatter
+from arctix.formatter import BaseFormatter, DefaultFormatter, SequenceFormatter
 from arctix.utils.format import str_indent, str_mapping
 
 
@@ -40,7 +41,12 @@ class BaseSummarizer(ABC):
 class Summarizer(BaseSummarizer):
     """Implements the default summarizer."""
 
-    registry: dict[type[object], BaseFormatter] = {object: DefaultFormatter()}
+    registry: dict[type[object], BaseFormatter] = {
+        object: DefaultFormatter(),
+        Sequence: SequenceFormatter(),
+        list: SequenceFormatter(),
+        tuple: SequenceFormatter(),
+    }
 
     def __repr__(self) -> str:
         return f"{self.__class__.__qualname__}(\n  {str_indent(str_mapping(self.registry))}\n)"
@@ -52,6 +58,7 @@ class Summarizer(BaseSummarizer):
         r"""Adds a formatter for a given data type.
 
         Args:
+        ----
             data_type: Specifies the data type for this test.
             formatter (``BaseFormatter``): Specifies the formatter
                 to use for the specified type.
@@ -61,6 +68,7 @@ class Summarizer(BaseSummarizer):
                 formatter for a type. Default: ``False``.
 
         Raises:
+        ------
             RuntimeError if a formatter is already registered for the
                 data type and ``exist_ok=False``.
 
@@ -108,9 +116,11 @@ class Summarizer(BaseSummarizer):
         type.
 
         Args:
+        ----
             data_type: Specifies the data type to check.
 
         Returns:
+        -------
             bool: ``True`` if a formatter is registered,
                 otherwise ``False``.
 
@@ -131,9 +141,11 @@ class Summarizer(BaseSummarizer):
         r"""Finds the formatter associated to an object.
 
         Args:
+        ----
             data_type: Specifies the data type to get.
 
         Returns:
+        -------
             ``BaseFormatter``: The formatter associated to the data type.
 
         Example usage:
@@ -172,6 +184,7 @@ def set_summarizer_options(max_characters: int | None = None) -> None:
     r"""Set the ``Summarizer`` options.
 
     Args:
+    ----
         max_characters (int or None, optional): Specifies the maximum
             number of characters to show. If ``None``, all the
             characters are shown. Default: ``None``
