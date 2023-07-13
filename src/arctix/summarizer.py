@@ -9,11 +9,16 @@ __all__ = [
 
 
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from contextlib import contextmanager
 from typing import Any
 
-from arctix.formatter import BaseFormatter, DefaultFormatter, SequenceFormatter
+from arctix.formatter import (
+    BaseFormatter,
+    DefaultFormatter,
+    MappingFormatter,
+    SequenceFormatter,
+)
 from arctix.utils.format import str_indent, str_mapping
 
 
@@ -42,9 +47,11 @@ class Summarizer(BaseSummarizer):
     """Implements the default summarizer."""
 
     registry: dict[type[object], BaseFormatter] = {
-        object: DefaultFormatter(),
+        Mapping: MappingFormatter(),
         Sequence: SequenceFormatter(),
+        dict: MappingFormatter(),
         list: SequenceFormatter(),
+        object: DefaultFormatter(),
         tuple: SequenceFormatter(),
     }
 
