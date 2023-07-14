@@ -178,10 +178,7 @@ class Summarizer(BaseSummarizer):
 
             >>> from arctix import Summarizer
             >>> from arctix.formatter import MappingFormatter
-            >>> from collections import defaultdict
-            >>> Summarizer.add_formatter(defaultdict, MappingFormatter())
-            >>> # To overwrite an existing formatter
-            >>> Summarizer.add_formatter(defaultdict, MappingFormatter(), exist_ok=True)
+            >>> Summarizer.add_formatter(dict, MappingFormatter(), exist_ok=True)
         """
         if data_type in cls.registry and not exist_ok:
             raise RuntimeError(
@@ -274,7 +271,6 @@ class Summarizer(BaseSummarizer):
               (<class 'list'>): SequenceFormatter(max_items=5, num_spaces=2)
               (<class 'object'>): DefaultFormatter(max_characters=10)
               (<class 'tuple'>): SequenceFormatter(max_items=5, num_spaces=2)
-              (<class 'collections.defaultdict'>): MappingFormatter(max_items=5, num_spaces=2)
             )
             >>> Summarizer.load_state_dict({object: {"max_characters": -1}})
             >>> summarizer
@@ -285,7 +281,6 @@ class Summarizer(BaseSummarizer):
               (<class 'list'>): SequenceFormatter(max_items=5, num_spaces=2)
               (<class 'object'>): DefaultFormatter(max_characters=-1)
               (<class 'tuple'>): SequenceFormatter(max_items=5, num_spaces=2)
-              (<class 'collections.defaultdict'>): MappingFormatter(max_items=5, num_spaces=2)
             )
         """
         for data_type, formatter in cls.registry.items():
@@ -337,7 +332,6 @@ class Summarizer(BaseSummarizer):
               (<class 'list'>): SequenceFormatter(max_items=5, num_spaces=2)
               (<class 'object'>): DefaultFormatter(max_characters=10)
               (<class 'tuple'>): SequenceFormatter(max_items=5, num_spaces=2)
-              (<class 'collections.defaultdict'>): MappingFormatter(max_items=5, num_spaces=2)
             )
             >>> Summarizer.set_max_characters(-1)
             >>> summarizer
@@ -348,15 +342,104 @@ class Summarizer(BaseSummarizer):
               (<class 'list'>): SequenceFormatter(max_items=5, num_spaces=2)
               (<class 'object'>): DefaultFormatter(max_characters=-1)
               (<class 'tuple'>): SequenceFormatter(max_items=5, num_spaces=2)
-              (<class 'collections.defaultdict'>): MappingFormatter(max_items=5, num_spaces=2)
             )
         """
         for formatter in cls.registry.values():
             if hasattr(formatter, "set_max_characters"):
                 formatter.set_max_characters(max_characters)
 
+    @classmethod
+    def set_max_items(cls, max_items: int) -> None:
+        r"""Set the maximum number of items for the compatible formatter
+        to the specified value.
 
-def set_summarizer_options(max_characters: int | None = None) -> None:
+        To be updated, the formatters need to implement the method
+        ``set_max_items``.
+
+        Args:
+        ----
+            max_items (int): Specifies the maximum number of items to
+                show.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix import Summarizer
+            >>> Summarizer.set_max_items(10)
+            >>> summarizer = Summarizer()
+            >>> summarizer
+            Summarizer(
+              (<class 'collections.abc.Mapping'>): MappingFormatter(max_items=10, num_spaces=2)
+              (<class 'collections.abc.Sequence'>): SequenceFormatter(max_items=10, num_spaces=2)
+              (<class 'dict'>): MappingFormatter(max_items=10, num_spaces=2)
+              (<class 'list'>): SequenceFormatter(max_items=10, num_spaces=2)
+              (<class 'object'>): DefaultFormatter(max_characters=-1)
+              (<class 'tuple'>): SequenceFormatter(max_items=10, num_spaces=2)
+            )
+            >>> Summarizer.set_max_items(5)
+            >>> summarizer
+            Summarizer(
+              (<class 'collections.abc.Mapping'>): MappingFormatter(max_items=5, num_spaces=2)
+              (<class 'collections.abc.Sequence'>): SequenceFormatter(max_items=5, num_spaces=2)
+              (<class 'dict'>): MappingFormatter(max_items=5, num_spaces=2)
+              (<class 'list'>): SequenceFormatter(max_items=5, num_spaces=2)
+              (<class 'object'>): DefaultFormatter(max_characters=-1)
+              (<class 'tuple'>): SequenceFormatter(max_items=5, num_spaces=2)
+            )
+        """
+        for formatter in cls.registry.values():
+            if hasattr(formatter, "set_max_items"):
+                formatter.set_max_items(max_items)
+
+    @classmethod
+    def set_num_spaces(cls, num_spaces: int) -> None:
+        r"""Set the maximum of items for the compatible formatter to the
+        specified value.
+
+        To be updated, the formatters need to implement the method
+        ``set_num_spaces``.
+
+        Args:
+        ----
+            num_spaces (int): Specifies the number of spaces for
+                indentation.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix import Summarizer
+            >>> Summarizer.set_num_spaces(4)
+            >>> summarizer = Summarizer()
+            >>> summarizer
+            Summarizer(
+              (<class 'collections.abc.Mapping'>): MappingFormatter(max_items=5, num_spaces=4)
+              (<class 'collections.abc.Sequence'>): SequenceFormatter(max_items=5, num_spaces=4)
+              (<class 'dict'>): MappingFormatter(max_items=5, num_spaces=4)
+              (<class 'list'>): SequenceFormatter(max_items=5, num_spaces=4)
+              (<class 'object'>): DefaultFormatter(max_characters=-1)
+              (<class 'tuple'>): SequenceFormatter(max_items=5, num_spaces=4)
+            )
+            >>> Summarizer.set_num_spaces(2)
+            >>> summarizer
+            Summarizer(
+              (<class 'collections.abc.Mapping'>): MappingFormatter(max_items=5, num_spaces=2)
+              (<class 'collections.abc.Sequence'>): SequenceFormatter(max_items=5, num_spaces=2)
+              (<class 'dict'>): MappingFormatter(max_items=5, num_spaces=2)
+              (<class 'list'>): SequenceFormatter(max_items=5, num_spaces=2)
+              (<class 'object'>): DefaultFormatter(max_characters=-1)
+              (<class 'tuple'>): SequenceFormatter(max_items=5, num_spaces=2)
+            )
+        """
+        for formatter in cls.registry.values():
+            if hasattr(formatter, "set_num_spaces"):
+                formatter.set_num_spaces(num_spaces)
+
+
+def set_summarizer_options(
+    max_characters: int | None = None, max_items: int | None = None, num_spaces: int | None = None
+) -> None:
     r"""Set the ``Summarizer`` options.
 
     Note: It is recommended to use ``summarizer_options`` rather than
@@ -365,8 +448,14 @@ def set_summarizer_options(max_characters: int | None = None) -> None:
     Args:
     ----
         max_characters (int or None, optional): Specifies the maximum
-            number of characters to show. If ``None``, all the
-            characters are shown. Default: ``None``
+            number of characters to show. If ``None``, the maximum
+            number of characters is unchanged. Default: ``None``
+        max_items (int or None, optional): Specifies the maximum
+            number of items to show. If ``None``, the maximum
+            number of items is unchanged. Default: ``None``
+        num_spaces (int or None, optional): Specifies the number of
+            spaces for indentation. If ``None``, the number of  spaces
+            for indentation is unchanged.  Default: ``None``
 
     Example usage:
 
@@ -384,6 +473,10 @@ def set_summarizer_options(max_characters: int | None = None) -> None:
     """
     if max_characters is not None:
         Summarizer.set_max_characters(max_characters)
+    if max_items is not None:
+        Summarizer.set_max_items(max_items)
+    if num_spaces is not None:
+        Summarizer.set_num_spaces(num_spaces)
 
 
 @contextmanager
