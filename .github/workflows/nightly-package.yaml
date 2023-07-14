@@ -30,7 +30,7 @@ jobs:
 
       - name: Test available packages
         run: |
-          python -c "from arctix import summary; summary(1);"
+          python -c "from arctix import summary; isinstance(summary(1), str);"
 
   stable-package-all:
     runs-on: ${{ matrix.os }}
@@ -57,7 +57,7 @@ jobs:
 
       - name: Test available packages
         run: |
-          python -c "from arctix import summary; summary(1);"
+          python -c "from arctix import summary; isinstance(summary(1), str);"
 
 
   latest-package:
@@ -85,7 +85,7 @@ jobs:
 
       - name: Test available packages
         run: |
-          python -c "from arctix import summary; summary(1);"
+          python -c "from arctix import summary; isinstance(summary(1), str);"
 
   latest-package-all:
     runs-on: ${{ matrix.os }}
@@ -112,4 +112,4 @@ jobs:
 
       - name: Test available packages
         run: |
-          python -c "from arctix import summary; summary(1);"
+          python -c "from arctix import summary; isinstance(summary(1), str);"
