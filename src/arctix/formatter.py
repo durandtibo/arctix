@@ -272,9 +272,10 @@ class MappingFormatter(BaseFormatter[Mapping]):
 
     def load_state_dict(self, state: dict) -> None:
         self._max_items = state["max_items"]
+        self._num_spaces = state["num_spaces"]
 
     def state_dict(self) -> dict:
-        return {"max_items": self._max_items}
+        return {"max_items": self._max_items, "num_spaces": self._num_spaces}
 
     def get_max_items(self) -> int:
         r"""Gets the maximum number of items to show.
@@ -428,9 +429,10 @@ class SequenceFormatter(BaseFormatter[Sequence]):
 
     def load_state_dict(self, state: dict) -> None:
         self._max_items = state["max_items"]
+        self._num_spaces = state["num_spaces"]
 
     def state_dict(self) -> dict:
-        return {"max_items": self._max_items}
+        return {"max_items": self._max_items, "num_spaces": self._num_spaces}
 
     def get_max_items(self) -> int:
         r"""Gets the maximum number of items to show.
@@ -501,7 +503,7 @@ class SequenceFormatter(BaseFormatter[Sequence]):
 
         Args:
         ----
-            max_characters (int): Specifies the number of spaces for
+            num_spaces (int): Specifies the number of spaces for
                 indentation.
 
         Raises:

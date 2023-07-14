@@ -311,12 +311,12 @@ def test_mapping_formatter_format_ordereddict_1() -> None:
 
 def test_mapping_formatter_load_state_dict() -> None:
     formatter = MappingFormatter()
-    formatter.load_state_dict({"max_items": 10})
-    assert formatter.equal(MappingFormatter(max_items=10))
+    formatter.load_state_dict({"max_items": 10, "num_spaces": 4})
+    assert formatter.equal(MappingFormatter(max_items=10, num_spaces=4))
 
 
 def test_mapping_formatter_state_dict() -> None:
-    assert MappingFormatter().state_dict() == {"max_items": 5}
+    assert MappingFormatter().state_dict() == {"max_items": 5, "num_spaces": 2}
 
 
 def test_mapping_formatter_get_max_items() -> None:
@@ -501,12 +501,12 @@ def test_sequence_formatter_format_tuple() -> None:
 
 def test_sequence_formatter_load_state_dict() -> None:
     formatter = SequenceFormatter()
-    formatter.load_state_dict({"max_items": 10})
-    assert formatter.equal(SequenceFormatter(max_items=10))
+    formatter.load_state_dict({"max_items": 10, "num_spaces": 4})
+    assert formatter.equal(SequenceFormatter(max_items=10, num_spaces=4))
 
 
 def test_sequence_formatter_state_dict() -> None:
-    assert SequenceFormatter().state_dict() == {"max_items": 5}
+    assert SequenceFormatter().state_dict() == {"max_items": 5, "num_spaces": 2}
 
 
 def test_sequence_formatter_get_max_items() -> None:
