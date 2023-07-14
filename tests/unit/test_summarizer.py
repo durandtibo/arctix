@@ -212,7 +212,7 @@ def test_summarizer_find_formatter_incorrect_type() -> None:
 
 def test_summarizer_load_state_dict() -> None:
     Summarizer.load_state_dict({object: {"max_characters": 10}})
-    assert Summarizer.registry[object].get_max_characters() == 10
+    assert Summarizer.registry[object].equal(DefaultFormatter(max_characters=10))
 
 
 def test_summarizer_state_dict() -> None:
@@ -228,13 +228,32 @@ def test_summarizer_state_dict() -> None:
 
 
 def test_summarizer_set_max_characters() -> None:
-    Summarizer.set_max_characters(max_characters=10)
-    assert Summarizer.registry[object].get_max_characters() == 10
+    Summarizer.set_max_characters(10)
+    assert Summarizer.registry[object].equal(DefaultFormatter(max_characters=10))
+
+
+def test_summarizer_set_max_items() -> None:
+    Summarizer.set_max_items(10)
+    assert Summarizer.registry[Mapping].equal(MappingFormatter(max_items=10))
+    assert Summarizer.registry[Sequence].equal(SequenceFormatter(max_items=10))
+
+
+def test_summarizer_set_num_spaces() -> None:
+    Summarizer.set_num_spaces(4)
+    assert Summarizer.registry[Mapping].equal(MappingFormatter(num_spaces=4))
+    assert Summarizer.registry[Sequence].equal(SequenceFormatter(num_spaces=4))
 
 
 ############################################
 #     Tests for set_summarizer_options     #
 ############################################
+
+
+def test_set_summarizer_options() -> None:
+    set_summarizer_options(max_characters=10, max_items=2, num_spaces=4)
+    assert Summarizer.registry[object].equal(DefaultFormatter(max_characters=10))
+    assert Summarizer.registry[Mapping].equal(MappingFormatter(max_items=2, num_spaces=4))
+    assert Summarizer.registry[Sequence].equal(SequenceFormatter(max_items=2, num_spaces=4))
 
 
 def test_set_summarizer_options_empty() -> None:
@@ -244,14 +263,41 @@ def test_set_summarizer_options_empty() -> None:
 
 
 @mark.parametrize("max_characters", (-1, 0, 1, 10))
-def test_set_summarizer_options_max_characters_int(max_characters: int) -> None:
+def test_set_summarizer_options_max_characters(max_characters: int) -> None:
     set_summarizer_options(max_characters=max_characters)
-    assert Summarizer.registry[object].get_max_characters() == max_characters
+    assert Summarizer.registry[object].equal(DefaultFormatter(max_characters=max_characters))
+
+
+@mark.parametrize("max_items", (0, 1, 2))
+def test_set_summarizer_options_max_items(max_items: int) -> None:
+    set_summarizer_options(max_items=max_items)
+    assert Summarizer.registry[Mapping].equal(MappingFormatter(max_items=max_items))
+    assert Summarizer.registry[Sequence].equal(SequenceFormatter(max_items=max_items))
+
+
+@mark.parametrize("num_spaces", (0, 1, 2))
+def test_set_summarizer_options_num_spaces(num_spaces: int) -> None:
+    set_summarizer_options(num_spaces=num_spaces)
+    assert Summarizer.registry[Mapping].equal(MappingFormatter(num_spaces=num_spaces))
+    assert Summarizer.registry[Sequence].equal(SequenceFormatter(num_spaces=num_spaces))
 
 
 ########################################
 #     Tests for summarizer_options     #
 ########################################
+
+
+def test_summarizer_options() -> None:
+    assert Summarizer.registry[object].equal(DefaultFormatter())
+    assert Summarizer.registry[Mapping].equal(MappingFormatter())
+    assert Summarizer.registry[Sequence].equal(SequenceFormatter())
+    with summarizer_options(max_characters=10, max_items=2, num_spaces=4):
+        assert Summarizer.registry[object].equal(DefaultFormatter(max_characters=10))
+        assert Summarizer.registry[Mapping].equal(MappingFormatter(max_items=2, num_spaces=4))
+        assert Summarizer.registry[Sequence].equal(SequenceFormatter(max_items=2, num_spaces=4))
+    assert Summarizer.registry[object].equal(DefaultFormatter())
+    assert Summarizer.registry[Mapping].equal(MappingFormatter())
+    assert Summarizer.registry[Sequence].equal(SequenceFormatter())
 
 
 def test_summarizer_options_empty() -> None:
@@ -260,18 +306,34 @@ def test_summarizer_options_empty() -> None:
         assert state == Summarizer.state_dict()
 
 
-def test_summarizer_options_max_characters_none() -> None:
-    state = Summarizer.state_dict()
-    with summarizer_options(max_characters=None):
-        assert state == Summarizer.state_dict()
-
-
 @mark.parametrize("max_characters", (-1, 0, 1, 10))
-def test_summarizer_options_max_characters_int(max_characters: int) -> None:
-    assert Summarizer.registry[object].get_max_characters() == -1
+def test_summarizer_options_max_characters(max_characters: int) -> None:
+    assert Summarizer.registry[object].equal(DefaultFormatter())
     with summarizer_options(max_characters=max_characters):
-        assert Summarizer.registry[object].get_max_characters() == max_characters
-    assert Summarizer.registry[object].get_max_characters() == -1
+        assert Summarizer.registry[object].equal(DefaultFormatter(max_characters=max_characters))
+    assert Summarizer.registry[object].equal(DefaultFormatter())
+
+
+@mark.parametrize("max_items", (0, 1, 10))
+def test_summarizer_options_max_items(max_items: int) -> None:
+    assert Summarizer.registry[Mapping].equal(MappingFormatter())
+    assert Summarizer.registry[Sequence].equal(SequenceFormatter())
+    with summarizer_options(max_items=max_items):
+        assert Summarizer.registry[Mapping].equal(MappingFormatter(max_items=max_items))
+        assert Summarizer.registry[Sequence].equal(SequenceFormatter(max_items=max_items))
+    assert Summarizer.registry[Mapping].equal(MappingFormatter())
+    assert Summarizer.registry[Sequence].equal(SequenceFormatter())
+
+
+@mark.parametrize("num_spaces", (0, 1, 10))
+def test_summarizer_options_num_spaces(num_spaces: int) -> None:
+    assert Summarizer.registry[Mapping].equal(MappingFormatter())
+    assert Summarizer.registry[Sequence].equal(SequenceFormatter())
+    with summarizer_options(num_spaces=num_spaces):
+        assert Summarizer.registry[Mapping].equal(MappingFormatter(num_spaces=num_spaces))
+        assert Summarizer.registry[Sequence].equal(SequenceFormatter(num_spaces=num_spaces))
+    assert Summarizer.registry[Mapping].equal(MappingFormatter())
+    assert Summarizer.registry[Sequence].equal(SequenceFormatter())
 
 
 # TODO: add set
