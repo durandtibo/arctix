@@ -10,6 +10,7 @@ def str_indent(original: Any, num_spaces: int = 2) -> str:
     r"""Add indentations if the original string is a multi-lines string.
 
     Args:
+    ----
         original: Specifies the original string. If the inputis not a
             string, it will be converted to a string with the function
             ``str``.
@@ -17,7 +18,12 @@ def str_indent(original: Any, num_spaces: int = 2) -> str:
             used for the indentation. Default: ``2``.
 
     Returns:
+    -------
         str: The indented string.
+
+    Raises:
+    ------
+        RuntimeError if num_spaces is not a positive integer.
 
     Example usage:
 
@@ -29,6 +35,10 @@ def str_indent(original: Any, num_spaces: int = 2) -> str:
         string2
           string3
     """
+    if num_spaces < 0:
+        raise RuntimeError(
+            f"Incorrect num_spaces. Expected a positive integer but received {num_spaces}"
+        )
     formatted_str = str(original).split("\n")
     if len(formatted_str) == 1:  # single line
         return formatted_str[0]
