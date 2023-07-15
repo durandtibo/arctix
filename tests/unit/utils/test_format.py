@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pytest import raises
+
 from arctix.utils.format import str_indent, str_mapping, str_sequence
 
 ################################
@@ -15,12 +17,21 @@ def test_str_indent_2_lines() -> None:
     assert str_indent("abc\n  def") == "abc\n    def"
 
 
+def test_str_indent_num_spaces_0() -> None:
+    assert str_indent("abc\ndef", num_spaces=0) == "abc\ndef"
+
+
 def test_str_indent_num_spaces_2() -> None:
-    assert str_indent("abc\ndef", num_spaces=2) == "abc\n  def"
+    assert str_indent("abc\ndef") == "abc\n  def"
 
 
 def test_str_indent_num_spaces_4() -> None:
     assert str_indent("abc\ndef", num_spaces=4) == "abc\n    def"
+
+
+def test_str_indent_num_spaces_incorrect() -> None:
+    with raises(RuntimeError):
+        str_indent("abc\ndef", num_spaces=-1)
 
 
 def test_str_indent_not_a_string() -> None:
