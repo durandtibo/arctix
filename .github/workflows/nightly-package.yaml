@@ -1,7 +1,7 @@
 name: Nightly Package Tests
 on:
   schedule:
-    - cron: '0 6 * * *' # run at 11:00:00 UTC
+    - cron: '50 9 * * *' # run at 9:50:00 UTC
   workflow_dispatch:  # manual trigger
 
 jobs:
