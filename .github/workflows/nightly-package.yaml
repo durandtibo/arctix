@@ -30,7 +30,9 @@ jobs:
 
       - name: Test available packages
         run: |
-          python -c "from arctix import summary; isinstance(summary(1), str);"
+          python -c "import arctix; from arctix import summary;" \
+            "isinstance(summary(1), str);" \
+            "assert arctix.is_torch_available(); "
 
   stable-package-all:
     runs-on: ${{ matrix.os }}
@@ -57,7 +59,10 @@ jobs:
 
       - name: Test available packages
         run: |
-          python -c "from arctix import summary; isinstance(summary(1), str);"
+          python -c "import arctix; from arctix import summary;" \
+            "isinstance(summary(1), str);" \
+            "assert arctix.is_torch_available();" \
+            "import torch; isinstance(summary(torch.ones(2, 3)), str);"
 
 
   latest-package:
@@ -85,7 +90,9 @@ jobs:
 
       - name: Test available packages
         run: |
-          python -c "from arctix import summary; isinstance(summary(1), str);"
+          python -c "import arctix; from arctix import summary;" \
+            "isinstance(summary(1), str);" \
+            "assert arctix.is_torch_available(); "
 
   latest-package-all:
     runs-on: ${{ matrix.os }}
@@ -112,4 +119,7 @@ jobs:
 
       - name: Test available packages
         run: |
-          python -c "from arctix import summary; isinstance(summary(1), str);"
+          python -c "import arctix; from arctix import summary;" \
+            "isinstance(summary(1), str);" \
+            "assert arctix.is_torch_available();" \
+            "import torch; isinstance(summary(torch.ones(2, 3)), str);"
