@@ -19,9 +19,9 @@ class NDArrayFormatter(BaseFormatter[numpy.ndarray]):
     Args:
     ----
         show_data (bool, optional): If ``True``, the returned string
-            is the default string representation. `If ``False``
-            the returned string only contains the tensor metadata.
-            Default: ``False``
+            is the default string representation (``repr``).
+            If ``False``, the returned string only contains the array
+            metadata. Default: ``False``
     """
 
     def __init__(self, show_data: bool = False) -> None:
@@ -59,12 +59,12 @@ class NDArrayFormatter(BaseFormatter[numpy.ndarray]):
         return {"show_data": self._show_data}
 
     def get_show_data(self) -> bool:
-        r"""Indicates if the tensor data or metadata are shown.
+        r"""Indicates if the array data or metadata are shown.
 
         Returns:
         -------
-            bool: ``True`` if the tensor data are shown,
-                ``False`` if the tensor metadata are shown.
+            bool: ``True`` if the array data are shown,
+                ``False`` if the array metadata are shown.
 
         Example usage:
 
@@ -78,12 +78,12 @@ class NDArrayFormatter(BaseFormatter[numpy.ndarray]):
         return self._show_data
 
     def set_show_data(self, show_data: bool) -> None:
-        r"""Set if the tensor data or metadata are shown.
+        r"""Set if the array data or metadata are shown.
 
         Args:
         ----
-            show_data (bool): ``True`` if the tensor data are shown,
-                ``False`` if the tensor metadata are shown.
+            show_data (bool): ``True`` if the array data are shown,
+                ``False`` if the array metadata are shown.
 
         Raises:
         ------

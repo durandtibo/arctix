@@ -19,9 +19,9 @@ class TensorFormatter(BaseFormatter[torch.Tensor]):
     Args:
     ----
         show_data (bool, optional): If ``True``, the returned string
-            is the default string representation. `If ``False``
-            the returned string only contains the tensor metadata.
-            Default: ``False``
+            is the default string representation (``repr``).
+            If ``False``, the returned string only contains the tensor
+            metadata. Default: ``False``
     """
 
     def __init__(self, show_data: bool = False) -> None:
