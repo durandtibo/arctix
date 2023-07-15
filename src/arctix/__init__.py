@@ -2,6 +2,7 @@ __all__ = [
     "BaseFormatter",
     "BaseSummarizer",
     "Summarizer",
+    "is_torch_available",
     "set_summarizer_options",
     "summarizer_options",
     "summary",
@@ -15,3 +16,8 @@ from arctix.summarizer import (
     summarizer_options,
     summary,
 )
+from arctix.utils.imports import is_torch_available
+
+# Register PyTorch comparators
+if is_torch_available():  # pragma: no cover
+    from arctix import _torch  # noqa: F401
