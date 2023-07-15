@@ -5,33 +5,33 @@ from unittest.mock import Mock
 
 from arctix.formatter import BaseFormatter
 from arctix.summarizer import BaseSummarizer, Summarizer
-from arctix.utils.imports import check_torch, is_torch_available
+from arctix.utils.imports import check_numpy, is_numpy_available
 
-if is_torch_available():
-    import torch
+if is_numpy_available():
+    import numpy
 else:
-    torch = Mock()  # pragma: no cover
+    numpy = Mock()  # pragma: no cover
 
 
-class TensorFormatter(BaseFormatter[torch.Tensor]):
-    r"""Implement a formatter for ``torch.Tensor``.
+class NDArrayFormatter(BaseFormatter[numpy.ndarray]):
+    r"""Implement a formatter for ``numpy.ndarray``.
 
     Args:
     ----
         show_data (bool, optional): If ``True``, the returned string
             is the default string representation (``repr``).
-            If ``False``, the returned string only contains the tensor
+            If ``False``, the returned string only contains the array
             metadata. Default: ``False``
     """
 
     def __init__(self, show_data: bool = False) -> None:
-        check_torch()
+        check_numpy()
         self._show_data = bool(show_data)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__qualname__}(show_data={self._show_data})"
 
-    def clone(self) -> TensorFormatter:
+    def clone(self) -> NDArrayFormatter:
         return self.__class__(show_data=self._show_data)
 
     def equal(self, other: Any) -> bool:
@@ -40,7 +40,7 @@ class TensorFormatter(BaseFormatter[torch.Tensor]):
         return self._show_data == other._show_data
 
     def format(
-        self, summarizer: BaseSummarizer, value: torch.Tensor, depth: int = 0, max_depth: int = 1
+        self, summarizer: BaseSummarizer, value: numpy.ndarray, depth: int = 0, max_depth: int = 1
     ) -> str:
         if self._show_data:
             return repr(value)
@@ -49,7 +49,6 @@ class TensorFormatter(BaseFormatter[torch.Tensor]):
                 f"{type(value)}",
                 f"shape={value.shape}",
                 f"dtype={value.dtype}",
-                f"device={value.device}",
             ]
         )
 
@@ -60,31 +59,31 @@ class TensorFormatter(BaseFormatter[torch.Tensor]):
         return {"show_data": self._show_data}
 
     def get_show_data(self) -> bool:
-        r"""Indicates if the tensor data or metadata are shown.
+        r"""Indicates if the array data or metadata are shown.
 
         Returns:
         -------
-            bool: ``True`` if the tensor data are shown,
-                ``False`` if the tensor metadata are shown.
+            bool: ``True`` if the array data are shown,
+                ``False`` if the array metadata are shown.
 
         Example usage:
 
         .. code-block:: pycon
 
-            >>> from arctix._torch import TensorFormatter
-            >>> formatter = TensorFormatter()
+            >>> from arctix._numpy import NDArrayFormatter
+            >>> formatter = NDArrayFormatter()
             >>> formatter.get_show_data()
             False
         """
         return self._show_data
 
     def set_show_data(self, show_data: bool) -> None:
-        r"""Set if the tensor data or metadata are shown.
+        r"""Set if the array data or metadata are shown.
 
         Args:
         ----
-            show_data (bool): ``True`` if the tensor data are shown,
-                ``False`` if the tensor metadata are shown.
+            show_data (bool): ``True`` if the array data are shown,
+                ``False`` if the array metadata are shown.
 
         Raises:
         ------
@@ -94,8 +93,8 @@ class TensorFormatter(BaseFormatter[torch.Tensor]):
 
         .. code-block:: pycon
 
-            >>> from arctix._torch import TensorFormatter
-            >>> formatter = TensorFormatter()
+            >>> from arctix._numpy import NDArrayFormatter
+            >>> formatter = NDArrayFormatter()
             >>> formatter.set_show_data(True)
             >>> formatter.get_show_data()
             True
@@ -107,6 +106,6 @@ class TensorFormatter(BaseFormatter[torch.Tensor]):
         self._show_data = show_data
 
 
-if is_torch_available():  # pragma: no cover
-    if not Summarizer.has_formatter(torch.Tensor):
-        Summarizer.add_formatter(torch.Tensor, TensorFormatter())
+if is_numpy_available():  # pragma: no cover
+    if not Summarizer.has_formatter(numpy.ndarray):
+        Summarizer.add_formatter(numpy.ndarray, NDArrayFormatter())
