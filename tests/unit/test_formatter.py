@@ -152,12 +152,13 @@ def test_mapping_formatter_str() -> None:
 
 
 def test_mapping_formatter_clone_max_items_10() -> None:
-    formatter = MappingFormatter(max_items=10)
+    formatter = MappingFormatter(max_items=10, num_spaces=4)
     formatter_cloned = formatter.clone()
     formatter.set_max_items(20)
+    formatter.set_num_spaces(6)
     assert formatter is not formatter_cloned
-    assert formatter.equal(MappingFormatter(max_items=20))
-    assert formatter_cloned.equal(MappingFormatter(max_items=10))
+    assert formatter.equal(MappingFormatter(max_items=20, num_spaces=6))
+    assert formatter_cloned.equal(MappingFormatter(max_items=10, num_spaces=4))
 
 
 def test_mapping_formatter_equal_true() -> None:
@@ -166,6 +167,10 @@ def test_mapping_formatter_equal_true() -> None:
 
 def test_mapping_formatter_equal_false_different_max_items() -> None:
     assert not MappingFormatter().equal(MappingFormatter(max_items=10))
+
+
+def test_mapping_formatter_equal_false_different_num_spaces() -> None:
+    assert not MappingFormatter().equal(MappingFormatter(num_spaces=4))
 
 
 def test_mapping_formatter_equal_false_different_type() -> None:
@@ -377,12 +382,13 @@ def test_sequence_formatter_str() -> None:
 
 
 def test_sequence_formatter_clone_max_items_10() -> None:
-    formatter = SequenceFormatter(max_items=10)
+    formatter = SequenceFormatter(max_items=10, num_spaces=4)
     formatter_cloned = formatter.clone()
     formatter.set_max_items(20)
+    formatter.set_num_spaces(6)
     assert formatter is not formatter_cloned
-    assert formatter.equal(SequenceFormatter(max_items=20))
-    assert formatter_cloned.equal(SequenceFormatter(max_items=10))
+    assert formatter.equal(SequenceFormatter(max_items=20, num_spaces=6))
+    assert formatter_cloned.equal(SequenceFormatter(max_items=10, num_spaces=4))
 
 
 def test_sequence_formatter_equal_true() -> None:
@@ -391,6 +397,10 @@ def test_sequence_formatter_equal_true() -> None:
 
 def test_sequence_formatter_equal_false_different_max_items() -> None:
     assert not SequenceFormatter().equal(SequenceFormatter(max_items=10))
+
+
+def test_sequence_formatter_equal_false_different_num_spaces() -> None:
+    assert not SequenceFormatter().equal(SequenceFormatter(num_spaces=10))
 
 
 def test_sequence_formatter_equal_false_different_type() -> None:
