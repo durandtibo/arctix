@@ -1,6 +1,12 @@
 from __future__ import annotations
 
-__all__ = ["BaseFormatter", "DefaultFormatter", "SequenceFormatter"]
+__all__ = [
+    "BaseFormatter",
+    "DefaultFormatter",
+    "MappingFormatter",
+    "SequenceFormatter",
+    "SetFormatter",
+]
 
 from abc import ABC, abstractmethod
 from collections.abc import Mapping, Sequence
@@ -241,7 +247,7 @@ class MappingFormatter(BaseFormatter[Mapping]):
         )
 
     def clone(self) -> MappingFormatter:
-        return self.__class__(max_items=self._max_items)
+        return self.__class__(max_items=self._max_items)  # TODO: fix num_spaces
 
     def equal(self, other: Any) -> bool:
         if not isinstance(other, self.__class__):
@@ -400,7 +406,7 @@ class SequenceFormatter(BaseFormatter[Sequence]):
         )
 
     def clone(self) -> SequenceFormatter:
-        return self.__class__(max_items=self._max_items)
+        return self.__class__(max_items=self._max_items)  # TODO: fix num_spaces
 
     def equal(self, other: Any) -> bool:
         if not isinstance(other, self.__class__):
@@ -515,8 +521,165 @@ class SequenceFormatter(BaseFormatter[Sequence]):
 
         .. code-block:: pycon
 
-            >>> from arctix.formatter import MappingFormatter
-            >>> formatter = MappingFormatter()
+            >>> from arctix.formatter import SequenceFormatter
+            >>> formatter = SequenceFormatter()
+            >>> formatter.set_num_spaces(4)
+            >>> formatter.get_num_spaces()
+            4
+        """
+        if not isinstance(num_spaces, int):
+            raise TypeError(
+                f"Incorrect type for num_spaces. Expected int value but received {num_spaces}"
+            )
+        if num_spaces < 0:
+            raise ValueError(
+                "Incorrect value for num_spaces. Expected a positive integer value but "
+                f"received {num_spaces}"
+            )
+        self._num_spaces = num_spaces
+
+
+class SetFormatter(BaseFormatter[set]):
+    r"""Implements a formatter for ``set``.
+
+    Args:
+    ----
+        max_items (int, optional): Specifies the maximum number
+            of items to show. If a negative value is provided,
+            all the items are shown. Default: ``5``
+        num_spaces (int, optional): Specifies the number of spaces
+            used for the indentation. Default: ``2``.
+    """
+
+    def __init__(self, max_items: int = 5, num_spaces: int = 2) -> None:
+        self.set_max_items(max_items)
+        self.set_num_spaces(num_spaces)
+        # TODO: add a compact representation mode
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__qualname__}(max_items={self._max_items:,}, "
+            f"num_spaces={self._num_spaces})"
+        )
+
+    def clone(self) -> SetFormatter:
+        return self.__class__(max_items=self._max_items, num_spaces=self._num_spaces)
+
+    def equal(self, other: Any) -> bool:
+        if not isinstance(other, self.__class__):
+            return False
+        return self._max_items == other._max_items
+
+    def format(
+        self, summarizer: BaseSummarizer, value: set, depth: int = 0, max_depth: int = 1
+    ) -> str:
+        if depth >= max_depth:
+            return summarizer.summary(str(value), depth=depth + 1, max_depth=max_depth)
+        typ = type(value)
+        length = len(value)
+        if length == 0:
+            s = f" {value}"
+        else:
+            s = str_sequence(
+                [
+                    summarizer.summary(val, depth=depth + 1, max_depth=max_depth)
+                    for val in islice(value, self._max_items)
+                ],
+                num_spaces=self._num_spaces,
+            )
+            s = f"\n{s}\n..." if length > self._max_items else f"\n{s}"
+        return str_indent(f"{typ} (length={length:,}){s}", num_spaces=self._num_spaces)
+
+    def load_state_dict(self, state: dict) -> None:
+        self._max_items = state["max_items"]
+        self._num_spaces = state["num_spaces"]
+
+    def state_dict(self) -> dict:
+        return {"max_items": self._max_items, "num_spaces": self._num_spaces}
+
+    def get_max_items(self) -> int:
+        r"""Gets the maximum number of items to show.
+
+        Returns:
+        -------
+            int: The maximum number of items to show.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.formatter import SetFormatter
+            >>> formatter = SetFormatter()
+            >>> formatter.get_max_items()
+            5
+        """
+        return self._max_items
+
+    def set_max_items(self, max_items: int) -> None:
+        r"""Set the maximum number of items to show.
+
+        Args:
+        ----
+            max_characters (int): Specifies the maximum number of
+                items to show.
+
+        Raises:
+        ------
+            TypeError if ``max_items`` is not an integer.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.formatter import SetFormatter
+            >>> formatter = SetFormatter()
+            >>> formatter.set_max_items(10)
+            >>> formatter.get_max_items()
+            10
+        """
+        if not isinstance(max_items, int):
+            raise TypeError(
+                "Incorrect type for max_items. Expected int value but " f"received {max_items}"
+            )
+        self._max_items = max_items
+
+    def get_num_spaces(self) -> int:
+        r"""Gets the number of spaces for indentation.
+
+        Returns:
+        -------
+            int: The number of spaces for indentation.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.formatter import SetFormatter
+            >>> formatter = SetFormatter()
+            >>> formatter.get_num_spaces()
+            2
+        """
+        return self._num_spaces
+
+    def set_num_spaces(self, num_spaces: int) -> None:
+        r"""Set the number of spaces for indentation.
+
+        Args:
+        ----
+            num_spaces (int): Specifies the number of spaces for
+                indentation.
+
+        Raises:
+        ------
+            TypeError if ``num_spaces`` is not an integer.
+            TValueError if ``num_spaces`` is not a positive integer.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.formatter import SetFormatter
+            >>> formatter = SetFormatter()
             >>> formatter.set_num_spaces(4)
             >>> formatter.get_num_spaces()
             4

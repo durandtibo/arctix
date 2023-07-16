@@ -16,6 +16,7 @@ from arctix.formatter import (
     DefaultFormatter,
     MappingFormatter,
     SequenceFormatter,
+    SetFormatter,
 )
 
 
@@ -55,6 +56,13 @@ def test_summary_list() -> None:
 
 def test_summary_tuple() -> None:
     assert summary(("abc", "def")) == "<class 'tuple'> (length=2)\n  (0): abc\n  (1): def"
+
+
+def test_summary_set() -> None:
+    s = summary({"abc", "def"})
+    assert (s == "<class 'set'> (length=2)\n  (0): abc\n  (1): def") or (
+        s == "<class 'set'> (length=2)\n  (0): def\n  (1): abc"
+    )
 
 
 def test_summary_max_depth_1() -> None:
@@ -116,12 +124,13 @@ def test_summarizer_str() -> None:
 
 
 def test_summarizer_registry_default() -> None:
-    assert len(Summarizer.registry) >= 6
+    assert len(Summarizer.registry) >= 7
     assert isinstance(Summarizer.registry[Mapping], MappingFormatter)
     assert isinstance(Summarizer.registry[Sequence], SequenceFormatter)
     assert isinstance(Summarizer.registry[dict], MappingFormatter)
     assert isinstance(Summarizer.registry[list], SequenceFormatter)
     assert isinstance(Summarizer.registry[object], DefaultFormatter)
+    assert isinstance(Summarizer.registry[set], SetFormatter)
     assert isinstance(Summarizer.registry[tuple], SequenceFormatter)
 
 
@@ -334,6 +343,3 @@ def test_summarizer_options_num_spaces(num_spaces: int) -> None:
         assert Summarizer.registry[Sequence].equal(SequenceFormatter(num_spaces=num_spaces))
     assert Summarizer.registry[Mapping].equal(MappingFormatter())
     assert Summarizer.registry[Sequence].equal(SequenceFormatter())
-
-
-# TODO: add set

@@ -3,7 +3,12 @@ from collections import OrderedDict, defaultdict
 from pytest import mark, raises
 
 from arctix import Summarizer, summarizer_options
-from arctix.formatter import DefaultFormatter, MappingFormatter, SequenceFormatter
+from arctix.formatter import (
+    DefaultFormatter,
+    MappingFormatter,
+    SequenceFormatter,
+    SetFormatter,
+)
 
 ######################################
 #     Tests for DefaultFormatter     #
@@ -548,5 +553,199 @@ def test_sequence_formatter_set_num_spaces_incorrect_type() -> None:
 @mark.parametrize("num_spaces", (-1, -2))
 def test_sequence_formatter_set_num_spaces_incorrect_value(num_spaces: int) -> None:
     formatter = SequenceFormatter()
+    with raises(ValueError, match="Incorrect value for num_spaces. Expected a positive integer"):
+        formatter.set_num_spaces(num_spaces)
+
+
+##################################
+#     Tests for SetFormatter     #
+##################################
+
+
+def test_set_formatter_str() -> None:
+    assert str(SetFormatter()).startswith("SetFormatter(")
+
+
+def test_set_formatter_clone_max_items_10() -> None:
+    formatter = SetFormatter(max_items=10, num_spaces=4)
+    formatter_cloned = formatter.clone()
+    formatter.set_max_items(20)
+    formatter.set_num_spaces(6)
+    assert formatter is not formatter_cloned
+    assert formatter.equal(SetFormatter(max_items=20, num_spaces=6))
+    assert formatter_cloned.equal(SetFormatter(max_items=10, num_spaces=4))
+
+
+def test_set_formatter_equal_true() -> None:
+    assert SetFormatter().equal(SetFormatter())
+
+
+def test_set_formatter_equal_false_different_max_items() -> None:
+    assert not SetFormatter().equal(SetFormatter(max_items=10))
+
+
+def test_set_formatter_equal_false_different_type() -> None:
+    assert not SetFormatter().equal(42)
+
+
+def test_set_formatter_format_empty() -> None:
+    assert SetFormatter().format(Summarizer(), set()) == "<class 'set'> (length=0) set()"
+
+
+def test_set_formatter_format_1() -> None:
+    assert SetFormatter().format(Summarizer(), {"abc"}) == "<class 'set'> (length=1)\n  (0): abc"
+
+
+def test_set_formatter_format_2() -> None:
+    s = SetFormatter().format(Summarizer(), {"one line", "two\nlines"})
+    assert (s == "<class 'set'> (length=2)\n  (0): one line\n  (1): two\n    lines") or (
+        s == "<class 'set'> (length=2)\n  (0): two\n    lines\n  (1): one line"
+    )
+
+
+def test_set_formatter_format_length_5() -> None:
+    s = SetFormatter().format(Summarizer(), set(range(5)))
+    assert s.startswith("<class 'set'> (length=5)\n  (0): ")
+    assert len(s.split("\n")) == 6
+
+
+def test_set_formatter_format_length_10() -> None:
+    s = SetFormatter().format(Summarizer(), set(range(10)))
+    assert s.startswith("<class 'set'> (length=10)\n  (0): ")
+    assert s.endswith("...")
+    assert len(s.split("\n")) == 7
+
+
+def test_set_formatter_format_length_10_max_items_5_max_depth_2() -> None:
+    s = SetFormatter(max_items=5).format(Summarizer(), set(range(10)), max_depth=2)
+    assert s.startswith("<class 'set'> (length=10)\n  (0): <class 'int'>")
+    assert s.endswith("...")
+    assert len(s.split("\n")) == 7
+
+
+def test_set_formatter_format_nested() -> None:
+    s = SetFormatter().format(Summarizer(), {(0, 1, 2), ("abc", "def")})
+    assert (s == "<class 'set'> (length=2)\n  (0): (0, 1, 2)\n  (1): ('abc', 'def')") or (
+        s == "<class 'set'> (length=2)\n  (0): ('abc', 'def')\n  (1): (0, 1, 2)"
+    )
+
+
+def test_set_formatter_format_nested_max_depth_2() -> None:
+    s = SetFormatter().format(Summarizer(), {(0, 1, 2), ("abc", "def")}, max_depth=2)
+    assert s == (
+        "<class 'set'> (length=2)\n"
+        "  (0): <class 'tuple'> (length=3)\n"
+        "      (0): 0\n"
+        "      (1): 1\n"
+        "      (2): 2\n"
+        "  (1): <class 'tuple'> (length=2)\n"
+        "      (0): abc\n"
+        "      (1): def"
+    ) or s == (
+        "<class 'set'> (length=2)\n"
+        "  (0): <class 'tuple'> (length=2)\n"
+        "      (0): abc\n"
+        "      (1): def\n"
+        "  (1): <class 'tuple'> (length=3)\n"
+        "      (0): 0\n"
+        "      (1): 1\n"
+        "      (2): 2"
+    )
+
+
+def test_set_formatter_format_nested_max_depth_3() -> None:
+    s = SetFormatter().format(Summarizer(), {(0, 1, 2), ("abc", "def")}, max_depth=3)
+    assert s == (
+        "<class 'set'> (length=2)\n"
+        "  (0): <class 'tuple'> (length=3)\n"
+        "      (0): <class 'int'> 0\n"
+        "      (1): <class 'int'> 1\n"
+        "      (2): <class 'int'> 2\n"
+        "  (1): <class 'tuple'> (length=2)\n"
+        "      (0): <class 'str'> abc\n"
+        "      (1): <class 'str'> def"
+    ) or s == (
+        "<class 'set'> (length=2)\n"
+        "  (0): <class 'tuple'> (length=2)\n"
+        "      (0): <class 'str'> abc\n"
+        "      (1): <class 'str'> def\n"
+        "  (1): <class 'tuple'> (length=3)\n"
+        "      (0): <class 'int'> 0\n"
+        "      (1): <class 'int'> 1\n"
+        "      (2): <class 'int'> 2"
+    )
+
+
+@mark.parametrize("max_depth", (0, -1, -2))
+def test_set_formatter_format_nested_max_depth_0(max_depth: int) -> None:
+    s = SetFormatter().format(Summarizer(), {(0, 1, 2), ("abc", "def")}, max_depth=max_depth)
+    assert (s == "{(0, 1, 2), ('abc', 'def')}") or (s == "{('abc', 'def'), (0, 1, 2)}")
+
+
+def test_set_formatter_format_nested_max_characters() -> None:
+    formatter = SetFormatter()
+    with summarizer_options(max_characters=5):
+        s = formatter.format(Summarizer(), {(0, 1, 2), ("abc", "def")})
+        assert (s == "<class 'set'> (length=2)\n  (0): (0, 1...\n  (1): ('abc...") or (
+            s == "<class 'set'> (length=2)\n  (0): ('abc...\n  (1): (0, 1..."
+        )
+
+
+def test_set_formatter_format_num_spaces_4() -> None:
+    s = SetFormatter(num_spaces=4).format(Summarizer(), {"one line", "two\nlines"})
+    assert (s == "<class 'set'> (length=2)\n    (0): one line\n    (1): two\n        lines") or (
+        s == "<class 'set'> (length=2)\n    (0): two\n        lines\n    (1): one line"
+    )
+
+
+def test_set_formatter_load_state_dict() -> None:
+    formatter = SetFormatter()
+    formatter.load_state_dict({"max_items": 10, "num_spaces": 4})
+    assert formatter.equal(SetFormatter(max_items=10, num_spaces=4))
+
+
+def test_set_formatter_state_dict() -> None:
+    assert SetFormatter().state_dict() == {"max_items": 5, "num_spaces": 2}
+
+
+def test_set_formatter_get_max_items() -> None:
+    assert SetFormatter().get_max_items() == 5
+
+
+@mark.parametrize("max_items", (-1, 0, 1, 10))
+def test_set_formatter_set_max_items_int(max_items: int) -> None:
+    formatter = SetFormatter()
+    assert formatter.get_max_items() == 5
+    formatter.set_max_items(max_items)
+    assert formatter.get_max_items() == max_items
+
+
+def test_set_formatter_set_max_items_incorrect_type() -> None:
+    formatter = SetFormatter()
+    with raises(TypeError, match="Incorrect type for max_items. Expected int value"):
+        formatter.set_max_items(4.2)
+
+
+def test_set_formatter_get_num_spaces() -> None:
+    assert SetFormatter().get_num_spaces() == 2
+
+
+@mark.parametrize("num_spaces", (0, 1, 10))
+def test_set_formatter_set_num_spaces_int(num_spaces: int) -> None:
+    formatter = SetFormatter()
+    assert formatter.get_num_spaces() == 2
+    formatter.set_num_spaces(num_spaces)
+    assert formatter.get_num_spaces() == num_spaces
+
+
+def test_set_formatter_set_num_spaces_incorrect_type() -> None:
+    formatter = SetFormatter()
+    with raises(TypeError, match="Incorrect type for num_spaces. Expected int value"):
+        formatter.set_num_spaces(4.2)
+
+
+@mark.parametrize("num_spaces", (-1, -2))
+def test_set_formatter_set_num_spaces_incorrect_value(num_spaces: int) -> None:
+    formatter = SetFormatter()
     with raises(ValueError, match="Incorrect value for num_spaces. Expected a positive integer"):
         formatter.set_num_spaces(num_spaces)
