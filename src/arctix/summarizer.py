@@ -18,6 +18,7 @@ from arctix.formatter import (
     DefaultFormatter,
     MappingFormatter,
     SequenceFormatter,
+    SetFormatter,
 )
 from arctix.utils.format import str_indent, str_mapping
 
@@ -132,6 +133,7 @@ class Summarizer(BaseSummarizer):
         dict: MappingFormatter(),
         list: SequenceFormatter(),
         object: DefaultFormatter(),
+        set: SetFormatter(),
         tuple: SequenceFormatter(),
     }
 
