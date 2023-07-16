@@ -41,3 +41,81 @@
     </a>
     <br/>
 </p>
+
+## Overview
+
+`arctix` is a Python library that provides simple functions to check in a single line if two
+complex/nested objects are equal or not.
+`arctix` was initially designed to work
+with [PyTorch `Tensor`s](https://pytorch.org/docs/stable/tensors.html)
+and [NumPy `ndarray`](https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html), but it
+is possible to extend it
+to [support other data structures](https://durandtibo.github.io/arctix/customization).
+
+- [Motivation](#motivation)
+- [Documentation](https://durandtibo.github.io/arctix/)
+- [Installation](#installation)
+- [Contributing](#contributing)
+- [API stability](#api-stability)
+- [License](#license)
+
+## Motivation
+
+Let's imagine you have the following dictionaries that contain both a PyTorch `Tensor` and a
+NumPy `ndarray`.
+You want to compute a string representation of it.
+By default, Python tries to show the values of all the tensor/array.
+The `arctix` library was developed to easily compute structured string representation of nested objects.
+`arctix` provides a function `summary` that can indicate if two complex/nested objects are equal or not.
+
+```python
+import numpy
+import torch
+
+from arctix import summary
+
+data = {"torch": torch.ones(2, 3), "numpy": numpy.zeros((2, 3))}
+
+print(summary(data))
+```
+
+Please check the [quickstart page](https://durandtibo.github.io/arctix/quickstart) to learn more on
+how to use `arctix`.
+
+## Installation
+
+We highly recommend installing
+a [virtual environment](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/).
+`arctix` can be installed from pip using the following command:
+
+```shell
+pip install arctix
+```
+
+To make the package as slim as possible, only the minimal packages required to use `arctix` are
+installed.
+To include all the packages, you can use the following command:
+
+```shell
+pip install arctix[all]
+```
+
+Please check the [get started page](https://durandtibo.github.io/arctix/get_started) to see how to
+install only some specific packages or other alternatives to install the library.
+
+## Contributing
+
+Please check the instructions in [CONTRIBUTING.md](.github/CONTRIBUTING.md).
+
+## API stability
+
+:warning: While `arctix` is in development stage, no API is guaranteed to be stable from one
+release to the next.
+In fact, it is very likely that the API will change multiple times before a stable 1.0.0 release.
+In practice, this means that upgrading `arctix` to a new version will possibly break any code that
+was using the old version of `arctix`.
+
+## License
+
+`arctix` is licensed under BSD 3-Clause "New" or "Revised" license available in [LICENSE](LICENSE)
+file.
