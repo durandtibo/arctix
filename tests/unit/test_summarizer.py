@@ -343,6 +343,3 @@ def test_summarizer_options_num_spaces(num_spaces: int) -> None:
         assert Summarizer.registry[Sequence].equal(SequenceFormatter(num_spaces=num_spaces))
     assert Summarizer.registry[Mapping].equal(MappingFormatter())
     assert Summarizer.registry[Sequence].equal(SequenceFormatter())
-
-
-# TODO: add set
