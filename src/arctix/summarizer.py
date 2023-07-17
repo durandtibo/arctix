@@ -265,25 +265,11 @@ class Summarizer(BaseSummarizer):
             >>> from arctix import Summarizer
             >>> Summarizer.load_state_dict({object: {"max_characters": 10}})
             >>> summarizer = Summarizer()
-            >>> summarizer
-            Summarizer(
-              (<class 'collections.abc.Mapping'>): MappingFormatter(max_items=5, num_spaces=2)
-              (<class 'collections.abc.Sequence'>): SequenceFormatter(max_items=5, num_spaces=2)
-              (<class 'dict'>): MappingFormatter(max_items=5, num_spaces=2)
-              (<class 'list'>): SequenceFormatter(max_items=5, num_spaces=2)
-              (<class 'object'>): DefaultFormatter(max_characters=10)
-              (<class 'tuple'>): SequenceFormatter(max_items=5, num_spaces=2)
-            )
+            >>> summarizer.registry[object]
+            DefaultFormatter(max_characters=10)
             >>> Summarizer.load_state_dict({object: {"max_characters": -1}})
-            >>> summarizer
-            Summarizer(
-              (<class 'collections.abc.Mapping'>): MappingFormatter(max_items=5, num_spaces=2)
-              (<class 'collections.abc.Sequence'>): SequenceFormatter(max_items=5, num_spaces=2)
-              (<class 'dict'>): MappingFormatter(max_items=5, num_spaces=2)
-              (<class 'list'>): SequenceFormatter(max_items=5, num_spaces=2)
-              (<class 'object'>): DefaultFormatter(max_characters=-1)
-              (<class 'tuple'>): SequenceFormatter(max_items=5, num_spaces=2)
-            )
+            >>> summarizer.registry[object]
+            DefaultFormatter(max_characters=-1)
         """
         for data_type, formatter in cls.registry.items():
             if (s := state.get(data_type)) is not None:
@@ -303,7 +289,7 @@ class Summarizer(BaseSummarizer):
 
             >>> from arctix import Summarizer
             >>> Summarizer.state_dict()  # doctest: +ELLIPSIS
-            {<class 'collections.abc.Mapping'>: {'max_items': 5},...
+            {<class 'collections.abc.Mapping'>: {'max_items': 5, 'num_spaces': 2},...
         """
         return {data_type: formatter.state_dict() for data_type, formatter in cls.registry.items()}
 
@@ -326,25 +312,11 @@ class Summarizer(BaseSummarizer):
             >>> from arctix import Summarizer
             >>> Summarizer.set_max_characters(10)
             >>> summarizer = Summarizer()
-            >>> summarizer
-            Summarizer(
-              (<class 'collections.abc.Mapping'>): MappingFormatter(max_items=5, num_spaces=2)
-              (<class 'collections.abc.Sequence'>): SequenceFormatter(max_items=5, num_spaces=2)
-              (<class 'dict'>): MappingFormatter(max_items=5, num_spaces=2)
-              (<class 'list'>): SequenceFormatter(max_items=5, num_spaces=2)
-              (<class 'object'>): DefaultFormatter(max_characters=10)
-              (<class 'tuple'>): SequenceFormatter(max_items=5, num_spaces=2)
-            )
+            >>> summarizer.registry[object]
+            DefaultFormatter(max_characters=10)
             >>> Summarizer.set_max_characters(-1)
-            >>> summarizer
-            Summarizer(
-              (<class 'collections.abc.Mapping'>): MappingFormatter(max_items=5, num_spaces=2)
-              (<class 'collections.abc.Sequence'>): SequenceFormatter(max_items=5, num_spaces=2)
-              (<class 'dict'>): MappingFormatter(max_items=5, num_spaces=2)
-              (<class 'list'>): SequenceFormatter(max_items=5, num_spaces=2)
-              (<class 'object'>): DefaultFormatter(max_characters=-1)
-              (<class 'tuple'>): SequenceFormatter(max_items=5, num_spaces=2)
-            )
+            >>> summarizer.registry[object]
+            DefaultFormatter(max_characters=-1)
         """
         for formatter in cls.registry.values():
             if hasattr(formatter, "set_max_characters"):
@@ -370,25 +342,11 @@ class Summarizer(BaseSummarizer):
             >>> from arctix import Summarizer
             >>> Summarizer.set_max_items(10)
             >>> summarizer = Summarizer()
-            >>> summarizer
-            Summarizer(
-              (<class 'collections.abc.Mapping'>): MappingFormatter(max_items=10, num_spaces=2)
-              (<class 'collections.abc.Sequence'>): SequenceFormatter(max_items=10, num_spaces=2)
-              (<class 'dict'>): MappingFormatter(max_items=10, num_spaces=2)
-              (<class 'list'>): SequenceFormatter(max_items=10, num_spaces=2)
-              (<class 'object'>): DefaultFormatter(max_characters=-1)
-              (<class 'tuple'>): SequenceFormatter(max_items=10, num_spaces=2)
-            )
+            >>> summarizer.registry[dict]
+            MappingFormatter(max_items=10, num_spaces=2)
             >>> Summarizer.set_max_items(5)
-            >>> summarizer
-            Summarizer(
-              (<class 'collections.abc.Mapping'>): MappingFormatter(max_items=5, num_spaces=2)
-              (<class 'collections.abc.Sequence'>): SequenceFormatter(max_items=5, num_spaces=2)
-              (<class 'dict'>): MappingFormatter(max_items=5, num_spaces=2)
-              (<class 'list'>): SequenceFormatter(max_items=5, num_spaces=2)
-              (<class 'object'>): DefaultFormatter(max_characters=-1)
-              (<class 'tuple'>): SequenceFormatter(max_items=5, num_spaces=2)
-            )
+            >>> summarizer.registry[dict]
+            MappingFormatter(max_items=5, num_spaces=2)
         """
         for formatter in cls.registry.values():
             if hasattr(formatter, "set_max_items"):
@@ -414,25 +372,11 @@ class Summarizer(BaseSummarizer):
             >>> from arctix import Summarizer
             >>> Summarizer.set_num_spaces(4)
             >>> summarizer = Summarizer()
-            >>> summarizer
-            Summarizer(
-              (<class 'collections.abc.Mapping'>): MappingFormatter(max_items=5, num_spaces=4)
-              (<class 'collections.abc.Sequence'>): SequenceFormatter(max_items=5, num_spaces=4)
-              (<class 'dict'>): MappingFormatter(max_items=5, num_spaces=4)
-              (<class 'list'>): SequenceFormatter(max_items=5, num_spaces=4)
-              (<class 'object'>): DefaultFormatter(max_characters=-1)
-              (<class 'tuple'>): SequenceFormatter(max_items=5, num_spaces=4)
-            )
+            >>> summarizer.registry[dict]
+            MappingFormatter(max_items=5, num_spaces=4)
             >>> Summarizer.set_num_spaces(2)
-            >>> summarizer
-            Summarizer(
-              (<class 'collections.abc.Mapping'>): MappingFormatter(max_items=5, num_spaces=2)
-              (<class 'collections.abc.Sequence'>): SequenceFormatter(max_items=5, num_spaces=2)
-              (<class 'dict'>): MappingFormatter(max_items=5, num_spaces=2)
-              (<class 'list'>): SequenceFormatter(max_items=5, num_spaces=2)
-              (<class 'object'>): DefaultFormatter(max_characters=-1)
-              (<class 'tuple'>): SequenceFormatter(max_items=5, num_spaces=2)
-            )
+            >>> summarizer.registry[dict]
+            MappingFormatter(max_items=5, num_spaces=2)
         """
         for formatter in cls.registry.values():
             if hasattr(formatter, "set_num_spaces"):
