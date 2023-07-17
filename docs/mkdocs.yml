@@ -20,8 +20,8 @@ nav:
   - Home: index.md
   - get_started.md
   - User Guide:
-#      - quickstart.md
-      - types.md
+      - quickstart.md
+#      - types.md
 #      - customization.md
   - GitHub: https://github.com/durandtibo/arctix
 
