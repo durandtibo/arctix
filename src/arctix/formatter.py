@@ -371,20 +371,21 @@ class MappingFormatter(BaseCollectionFormatter[Mapping]):
             return summarizer.summary(str(value), depth=depth + 1, max_depth=max_depth)
         typ = type(value)
         length = len(value)
-        if length == 0:
-            s = str(value)
-        else:
-            s = str_mapping(
+        if length > 0:
+            items = value.items()
+            if self._max_items >= 0:
+                items = islice(value.items(), self._max_items)
+            value = str_mapping(
                 {
                     key: summarizer.summary(val, depth=depth + 1, max_depth=max_depth)
-                    for key, val in islice(value.items(), self._max_items)
+                    for key, val in items
                 },
                 num_spaces=self._num_spaces,
             )
-            if length > self._max_items:
-                s = f"{s}\n..."
-            s = f"(length={length:,})\n{s}"
-        return str_indent(f"{typ} {s}", num_spaces=self._num_spaces)
+            if length > self._max_items and self._max_items >= 0:
+                value = f"{value}\n..."
+            value = f"(length={length:,})\n{value}"
+        return str_indent(f"{typ} {value}", num_spaces=self._num_spaces)
 
 
 class SequenceFormatter(BaseCollectionFormatter[Sequence]):
@@ -397,18 +398,17 @@ class SequenceFormatter(BaseCollectionFormatter[Sequence]):
             return summarizer.summary(str(value), depth=depth + 1, max_depth=max_depth)
         typ = type(value)
         length = len(value)
-        if length == 0:
-            s = f" {value}"
-        else:
-            s = str_sequence(
-                [
-                    summarizer.summary(val, depth=depth + 1, max_depth=max_depth)
-                    for val in value[: self._max_items]
-                ],
+        if length > 0:
+            if self._max_items >= 0:
+                value = value[: self._max_items]
+            value = str_sequence(
+                [summarizer.summary(val, depth=depth + 1, max_depth=max_depth) for val in value],
                 num_spaces=self._num_spaces,
             )
-            s = f"\n{s}\n..." if length > self._max_items else f"\n{s}"
-        return str_indent(f"{typ} (length={length:,}){s}", num_spaces=self._num_spaces)
+            if length > self._max_items and self._max_items > 0:
+                value = f"{value}\n..."
+            value = f"(length={length:,})\n{value}"
+        return str_indent(f"{typ} {value}", num_spaces=self._num_spaces)
 
 
 class SetFormatter(BaseCollectionFormatter[set]):
@@ -421,15 +421,14 @@ class SetFormatter(BaseCollectionFormatter[set]):
             return summarizer.summary(str(value), depth=depth + 1, max_depth=max_depth)
         typ = type(value)
         length = len(value)
-        if length == 0:
-            s = f" {value}"
-        else:
-            s = str_sequence(
-                [
-                    summarizer.summary(val, depth=depth + 1, max_depth=max_depth)
-                    for val in islice(value, self._max_items)
-                ],
+        if length > 0:
+            if self._max_items >= 0:
+                value = islice(value, self._max_items)
+            value = str_sequence(
+                [summarizer.summary(val, depth=depth + 1, max_depth=max_depth) for val in value],
                 num_spaces=self._num_spaces,
             )
-            s = f"\n{s}\n..." if length > self._max_items else f"\n{s}"
-        return str_indent(f"{typ} (length={length:,}){s}", num_spaces=self._num_spaces)
+            if length > self._max_items and self._max_items > 0:
+                value = f"{value}\n..."
+            value = f"(length={length:,})\n{value}"
+        return str_indent(f"{typ} {value}", num_spaces=self._num_spaces)

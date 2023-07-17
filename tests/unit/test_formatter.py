@@ -213,6 +213,24 @@ def test_mapping_formatter_format_length_10() -> None:
     )
 
 
+def test_mapping_formatter_format_all_items() -> None:
+    assert MappingFormatter(max_items=-1).format(
+        Summarizer(), {f"key{i}": f"value{i}" for i in range(10)}
+    ) == (
+        "<class 'dict'> (length=10)\n"
+        "  (key0): value0\n"
+        "  (key1): value1\n"
+        "  (key2): value2\n"
+        "  (key3): value3\n"
+        "  (key4): value4\n"
+        "  (key5): value5\n"
+        "  (key6): value6\n"
+        "  (key7): value7\n"
+        "  (key8): value8\n"
+        "  (key9): value9"
+    )
+
+
 def test_mapping_formatter_format_length_10_max_items_5_max_depth_2() -> None:
     assert MappingFormatter(max_items=5).format(
         Summarizer(), {f"key{i}": i for i in range(10)}, max_depth=2
@@ -408,7 +426,7 @@ def test_sequence_formatter_equal_false_different_type() -> None:
 
 
 def test_sequence_formatter_format_list_empty() -> None:
-    assert SequenceFormatter().format(Summarizer(), []) == "<class 'list'> (length=0) []"
+    assert SequenceFormatter().format(Summarizer(), []) == "<class 'list'> []"
 
 
 def test_sequence_formatter_format_list_1() -> None:
@@ -450,6 +468,22 @@ def test_sequence_formatter_format_length_10_max_items_5_max_depth_2() -> None:
         "  (3): <class 'int'> 3\n"
         "  (4): <class 'int'> 4\n"
         "  ..."
+    )
+
+
+def test_sequence_formatter_format_all_items() -> None:
+    assert SequenceFormatter(max_items=-1).format(Summarizer(), list(range(10))) == (
+        "<class 'list'> (length=10)\n"
+        "  (0): 0\n"
+        "  (1): 1\n"
+        "  (2): 2\n"
+        "  (3): 3\n"
+        "  (4): 4\n"
+        "  (5): 5\n"
+        "  (6): 6\n"
+        "  (7): 7\n"
+        "  (8): 8\n"
+        "  (9): 9"
     )
 
 
@@ -599,7 +633,7 @@ def test_set_formatter_equal_false_different_type() -> None:
 
 
 def test_set_formatter_format_empty() -> None:
-    assert SetFormatter().format(Summarizer(), set()) == "<class 'set'> (length=0) set()"
+    assert SetFormatter().format(Summarizer(), set()) == "<class 'set'> set()"
 
 
 def test_set_formatter_format_1() -> None:
@@ -624,6 +658,13 @@ def test_set_formatter_format_length_10() -> None:
     assert s.startswith("<class 'set'> (length=10)\n  (0): ")
     assert s.endswith("...")
     assert len(s.split("\n")) == 7
+
+
+def test_set_formatter_format_all_items() -> None:
+    s = SetFormatter(max_items=-1).format(Summarizer(), set(range(10)))
+    assert s.startswith("<class 'set'> (length=10)\n  (0): ")
+    assert not s.endswith("...")
+    assert len(s.split("\n")) == 11
 
 
 def test_set_formatter_format_length_10_max_items_5_max_depth_2() -> None:
