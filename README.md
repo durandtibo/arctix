@@ -44,8 +44,7 @@
 
 ## Overview
 
-`arctix` is a Python library that provides simple functions to check in a single line if two
-complex/nested objects are equal or not.
+`arctix` is a Python library to compute a string representation of complex/nested objects.
 `arctix` was initially designed to work
 with [PyTorch `Tensor`s](https://pytorch.org/docs/stable/tensors.html)
 and [NumPy `ndarray`](https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html), but it
