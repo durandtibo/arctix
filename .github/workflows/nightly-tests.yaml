@@ -32,9 +32,9 @@ jobs:
           poetry run make config-poetry
           poetry run make install
 
-      - name: Install latest gravitorch package
+      - name: Install latest arctix package
         run: |
-          pip install --pre gravitorch
+          pip install --pre arctix
 
       - name: Show installed packages
         run: |
@@ -80,9 +80,9 @@ jobs:
           poetry run make config-poetry
           poetry run make install-min
 
-      - name: Install latest gravitorch package
+      - name: Install latest arctix package
         run: |
-          pip install --pre gravitorch
+          pip install --pre arctix
 
       - name: Show installed packages
         run: |

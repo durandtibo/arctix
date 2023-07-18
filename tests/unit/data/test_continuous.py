@@ -303,16 +303,19 @@ def test_float_data_summary_summary_empty() -> None:
 ############################################
 
 
+@torch_available
 def test_float_tensor_data_summary_str() -> None:
     assert str(FloatTensorDataSummary()).startswith("FloatTensorDataSummary(")
 
 
+@torch_available
 def test_float_tensor_data_summary_add_1_tensor() -> None:
     summary = FloatTensorDataSummary()
     summary.add(torch.tensor([0, 3, 1, 4], dtype=torch.float))
     assert tuple(summary._values) == (0.0, 3.0, 1.0, 4.0)
 
 
+@torch_available
 def test_float_tensor_data_summary_add_2_tensors() -> None:
     summary = FloatTensorDataSummary()
     summary.add(torch.tensor(0, dtype=torch.float))
@@ -320,6 +323,7 @@ def test_float_tensor_data_summary_add_2_tensors() -> None:
     assert tuple(summary._values) == (0.0, 3.0, 1.0, 4.0)
 
 
+@torch_available
 @mark.parametrize(
     "tensor",
     (
@@ -338,18 +342,21 @@ def test_float_tensor_data_summary_add_tensor(tensor: torch.Tensor) -> None:
     assert tuple(summary._values) == (1.0,) * 60
 
 
+@torch_available
 def test_float_tensor_data_summary_add_max_size_3() -> None:
     summary = FloatTensorDataSummary(max_size=3)
     summary.add(torch.tensor([0, 3, 1, 4], dtype=torch.float))
     assert tuple(summary._values) == (3.0, 1.0, 4.0)
 
 
+@torch_available
 def test_float_tensor_data_summary_add_empty_tensor() -> None:
     summary = FloatTensorDataSummary()
     summary.add(torch.tensor([]))
     assert tuple(summary._values) == ()
 
 
+@torch_available
 @mark.parametrize(
     "tensor,count", ((torch.ones(5), 5), (torch.tensor([4, 2]), 2), (torch.arange(11), 11))
 )
@@ -359,11 +366,13 @@ def test_float_tensor_data_summary_count(tensor: torch.Tensor, count: int) -> No
     assert summary.count() == count
 
 
+@torch_available
 def test_float_tensor_data_summary_count_empty() -> None:
     summary = FloatTensorDataSummary()
     assert summary.count() == 0
 
 
+@torch_available
 @mark.parametrize(
     "tensor,max_value",
     ((torch.ones(5), 1.0), (torch.tensor([4, 2]), 4.0), (torch.arange(11), 10.0)),
@@ -374,12 +383,14 @@ def test_float_tensor_data_summary_max(tensor: torch.Tensor, max_value: float) -
     assert summary.max() == max_value
 
 
+@torch_available
 def test_float_tensor_data_summary_max_empty() -> None:
     summary = FloatTensorDataSummary()
     with raises(EmptyDataSummaryError, match="The summary is empty"):
         summary.max()
 
 
+@torch_available
 @mark.parametrize(
     "tensor,mean_value",
     ((torch.ones(5), 1.0), (torch.tensor([4, 2]), 3.0), (torch.arange(11), 5.0)),
@@ -390,12 +401,14 @@ def test_float_tensor_data_summary_mean(tensor: torch.Tensor, mean_value: float)
     assert summary.mean() == mean_value
 
 
+@torch_available
 def test_float_tensor_data_summary_mean_empty() -> None:
     summary = FloatTensorDataSummary()
     with raises(EmptyDataSummaryError, match="The summary is empty"):
         summary.mean()
 
 
+@torch_available
 @mark.parametrize(
     "tensor,median_value",
     ((torch.ones(5), 1.0), (torch.tensor([4, 2]), 2.0), (torch.arange(11), 5.0)),
@@ -406,12 +419,14 @@ def test_float_tensor_data_summary_median(tensor: torch.Tensor, median_value: fl
     assert summary.median() == median_value
 
 
+@torch_available
 def test_float_tensor_data_summary_median_empty() -> None:
     summary = FloatTensorDataSummary()
     with raises(EmptyDataSummaryError, match="The summary is empty"):
         summary.median()
 
 
+@torch_available
 @mark.parametrize(
     "tensor,min_value", ((torch.ones(5), 1.0), (torch.tensor([4, 2]), 2.0), (torch.arange(11), 0.0))
 )
@@ -421,12 +436,14 @@ def test_float_tensor_data_summary_min(tensor: torch.Tensor, min_value: float) -
     assert summary.min() == min_value
 
 
+@torch_available
 def test_float_tensor_data_summary_min_empty() -> None:
     summary = FloatTensorDataSummary()
     with raises(EmptyDataSummaryError, match="The summary is empty"):
         summary.min()
 
 
+@torch_available
 def test_float_tensor_data_summary_quantiles_default_quantiles() -> None:
     summary = FloatTensorDataSummary()
     summary.add(torch.arange(21))
@@ -435,6 +452,7 @@ def test_float_tensor_data_summary_quantiles_default_quantiles() -> None:
     )
 
 
+@torch_available
 @mark.parametrize("quantiles", ([0.2, 0.8], (0.2, 0.8), torch.tensor([0.2, 0.8]), [0.8, 0.2]))
 def test_float_tensor_data_summary_quantiles_custom_quantiles(
     quantiles: torch.Tensor | tuple[float, ...] | list[float]
@@ -444,12 +462,14 @@ def test_float_tensor_data_summary_quantiles_custom_quantiles(
     assert summary.quantiles().equal(torch.tensor([1.0, 4.0]))
 
 
+@torch_available
 def test_float_tensor_data_summary_quantiles_empty() -> None:
     summary = FloatTensorDataSummary()
     with raises(EmptyDataSummaryError, match="The summary is empty"):
         summary.quantiles()
 
 
+@torch_available
 @mark.parametrize("tensor,std_value", ((torch.ones(5), 0.0), (torch.tensor([-1, 1]), math.sqrt(2))))
 def test_float_tensor_data_summary_std(tensor: torch.Tensor, std_value: float) -> None:
     summary = FloatTensorDataSummary()
@@ -457,12 +477,14 @@ def test_float_tensor_data_summary_std(tensor: torch.Tensor, std_value: float) -
     assert math.isclose(summary.std(), std_value, abs_tol=1e-6)
 
 
+@torch_available
 def test_float_tensor_data_summary_std_empty() -> None:
     summary = FloatTensorDataSummary()
     with raises(EmptyDataSummaryError, match="The summary is empty"):
         summary.std()
 
 
+@torch_available
 @mark.parametrize(
     "tensor,sum_value",
     ((torch.ones(5), 5.0), (torch.tensor([4, 2]), 6.0), (torch.arange(11), 55.0)),
@@ -473,17 +495,20 @@ def test_float_tensor_data_summary_sum(tensor: torch.Tensor, sum_value: float) -
     assert summary.sum() == sum_value
 
 
+@torch_available
 def test_float_tensor_data_summary_sum_empty() -> None:
     summary = FloatTensorDataSummary()
     with raises(EmptyDataSummaryError, match="The summary is empty"):
         summary.sum()
 
 
+@torch_available
 def test_float_tensor_data_summary_values_empty() -> None:
     summary = FloatTensorDataSummary()
     assert tuple(summary._values) == ()
 
 
+@torch_available
 def test_float_tensor_data_summary_reset() -> None:
     summary = FloatTensorDataSummary()
     summary.add(torch.tensor([0, 3, 1, 4], dtype=torch.float))
@@ -491,6 +516,7 @@ def test_float_tensor_data_summary_reset() -> None:
     assert tuple(summary._values) == ()
 
 
+@torch_available
 def test_float_tensor_data_summary_summary_default_quantiles() -> None:
     summary = FloatTensorDataSummary()
     summary.add(torch.arange(21))
@@ -519,6 +545,7 @@ def test_float_tensor_data_summary_summary_default_quantiles() -> None:
     )
 
 
+@torch_available
 @mark.parametrize("quantiles", ([], (), torch.tensor([])))
 def test_float_tensor_data_summary_summary_default_no_quantile(
     quantiles: torch.Tensor | tuple[float, ...] | list[float]
@@ -539,6 +566,7 @@ def test_float_tensor_data_summary_summary_default_no_quantile(
     )
 
 
+@torch_available
 def test_float_tensor_data_summary_summary_empty() -> None:
     summary = FloatTensorDataSummary()
     with raises(EmptyDataSummaryError, match="The summary is empty"):
@@ -550,10 +578,12 @@ def test_float_tensor_data_summary_summary_empty() -> None:
 ####################################################
 
 
+@torch_available
 def test_float_tensor_sequence_data_summary_str() -> None:
     assert str(FloatTensorSequenceDataSummary()).startswith("FloatTensorSequenceDataSummary(")
 
 
+@torch_available
 def test_float_tensor_sequence_data_summary_add() -> None:
     summary = FloatTensorSequenceDataSummary()
     summary.add(torch.tensor([0, 3, 1, 4], dtype=torch.float))
@@ -561,6 +591,7 @@ def test_float_tensor_sequence_data_summary_add() -> None:
     assert summary._length.count() == 1
 
 
+@torch_available
 def test_float_tensor_sequence_data_summary_reset() -> None:
     summary = FloatTensorSequenceDataSummary()
     summary.add(torch.tensor([0, 3, 1, 4], dtype=torch.float))
@@ -569,6 +600,7 @@ def test_float_tensor_sequence_data_summary_reset() -> None:
     assert summary._length.count() == 0
 
 
+@torch_available
 def test_float_tensor_sequence_data_summary_summary() -> None:
     summary = FloatTensorSequenceDataSummary()
     summary.add(torch.tensor([0, 3, 1, 4], dtype=torch.float))
@@ -578,6 +610,7 @@ def test_float_tensor_sequence_data_summary_summary() -> None:
     assert "length" in stats
 
 
+@torch_available
 def test_float_tensor_sequence_data_summary_summary_empty() -> None:
     summary = FloatTensorSequenceDataSummary()
     with raises(EmptyDataSummaryError, match="The summary is empty"):
