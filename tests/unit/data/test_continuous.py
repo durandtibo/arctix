@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from unittest.mock import Mock
 
-from coola import objects_are_allclose
+from coola import objects_are_allclose, objects_are_equal
 from pytest import mark, raises
 
 from arctix import is_torch_available
@@ -12,7 +12,6 @@ from arctix.data.continuous import (
     FloatDataSummary,
     FloatTensorDataSummary,
     FloatTensorSequenceDataSummary,
-    prepare_quantiles,
 )
 from arctix.testing import torch_available
 
@@ -20,30 +19,6 @@ if is_torch_available():
     import torch
 else:
     torch = Mock()  # pragma: no cover
-
-#######################################
-#     Tests for prepare_quantiles     #
-#######################################
-
-
-@torch_available
-@mark.parametrize("quantiles", ([0.2, 0.8], (0.2, 0.8)))
-def test_prepare_quantiles_list_or_tuple(quantiles: list[float] | tuple[float, ...]) -> None:
-    assert prepare_quantiles(quantiles).equal(torch.tensor([0.2, 0.8], dtype=torch.float))
-
-
-@torch_available
-def test_prepare_quantiles_torch_tensor() -> None:
-    assert prepare_quantiles(torch.tensor([0.2, 0.8])).equal(
-        torch.tensor([0.2, 0.8], dtype=torch.float)
-    )
-
-
-@torch_available
-def test_prepare_quantiles_torch_tensor_sort_values() -> None:
-    assert prepare_quantiles(torch.tensor([0.8, 0.2])).equal(
-        torch.tensor([0.2, 0.8], dtype=torch.float)
-    )
 
 
 ######################################
@@ -157,8 +132,8 @@ def test_float_data_summary_quantiles_default_quantiles() -> None:
     summary = FloatDataSummary()
     for i in range(21):
         summary.add(i)
-    assert summary.quantiles().equal(
-        torch.tensor([0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0])
+    assert objects_are_equal(
+        summary.quantiles(), [0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0]
     )
 
 
@@ -170,7 +145,7 @@ def test_float_data_summary_quantiles_custom_quantiles(
     summary = FloatDataSummary(quantiles=quantiles)
     for i in range(6):
         summary.add(i)
-    assert summary.quantiles().equal(torch.tensor([1.0, 4.0]))
+    assert objects_are_equal(summary.quantiles(), [1.0, 4.0])
 
 
 @torch_available
@@ -447,8 +422,8 @@ def test_float_tensor_data_summary_min_empty() -> None:
 def test_float_tensor_data_summary_quantiles_default_quantiles() -> None:
     summary = FloatTensorDataSummary()
     summary.add(torch.arange(21))
-    assert summary.quantiles().equal(
-        torch.tensor([0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0])
+    assert objects_are_equal(
+        summary.quantiles(), [0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0]
     )
 
 
@@ -459,7 +434,7 @@ def test_float_tensor_data_summary_quantiles_custom_quantiles(
 ) -> None:
     summary = FloatTensorDataSummary(quantiles=quantiles)
     summary.add(torch.tensor([0, 1, 2, 3, 4, 5], dtype=torch.float))
-    assert summary.quantiles().equal(torch.tensor([1.0, 4.0]))
+    assert objects_are_equal(summary.quantiles(), [1.0, 4.0])
 
 
 @torch_available

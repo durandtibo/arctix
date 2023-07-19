@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "arctix"
-version = "0.0.2a6"
+version = "0.0.2a7"
 description = "A library to compute a string representation of nested objects"
 readme = "README.md"
 authors = ["Thibaut Durand <durand.tibo+gh@gmail.com>"]
