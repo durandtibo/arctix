@@ -1,6 +1,7 @@
 __all__ = [
     "BaseFormatter",
     "BaseSummarizer",
+    "Reduction",
     "Summarizer",
     "is_numpy_available",
     "is_torch_available",
@@ -10,6 +11,7 @@ __all__ = [
 ]
 
 from arctix.formatter import BaseFormatter
+from arctix.reduction import Reduction
 from arctix.summarizer import (
     BaseSummarizer,
     Summarizer,
