@@ -3,7 +3,8 @@ from unittest.mock import Mock, patch
 
 from pytest import fixture, raises
 
-from arctix.reducers import BasicReducer, ReducerRegistry
+from arctix.reducers import ReducerRegistry
+from arctix.reducers.basic import BasicReducer
 
 
 @fixture(autouse=True, scope="function")

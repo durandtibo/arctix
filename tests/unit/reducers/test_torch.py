@@ -6,7 +6,8 @@ from unittest.mock import patch
 
 from pytest import mark, raises
 
-from arctix.reducers import EmptySequenceError, ReducerRegistry, TorchReducer
+from arctix.reducers import EmptySequenceError, ReducerRegistry
+from arctix.reducers._torch import TorchReducer
 from arctix.testing import torch_available
 
 

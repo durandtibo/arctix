@@ -5,7 +5,8 @@ from collections.abc import Sequence
 
 from pytest import mark, raises
 
-from arctix.reducers import BasicReducer, EmptySequenceError, ReducerRegistry
+from arctix.reducers import EmptySequenceError, ReducerRegistry
+from arctix.reducers.basic import BasicReducer
 
 
 def test_reducer_registry_available_reducers() -> None:
