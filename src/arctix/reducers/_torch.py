@@ -5,9 +5,9 @@ __all__ = ["TorchReducer"]
 from collections.abc import Sequence
 from unittest.mock import Mock
 
-from arctix import is_torch_available
 from arctix.reducers.base import BaseBasicReducer
-from arctix.utils.imports import check_torch
+from arctix.reducers.registry import ReducerRegistry
+from arctix.utils.imports import check_torch, is_torch_available
 
 if is_torch_available():
     import torch
@@ -53,3 +53,8 @@ class TorchReducer(BaseBasicReducer):
 
     def _std(self, values: Sequence[int | float]) -> float:
         return torch.as_tensor(values, dtype=torch.float).std().item()
+
+
+if is_torch_available():  # pragma: no cover
+    if not ReducerRegistry.has_reducer("torch"):
+        ReducerRegistry.add_reducer("torch", TorchReducer())

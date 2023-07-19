@@ -6,8 +6,14 @@ from unittest.mock import patch
 
 from pytest import mark, raises
 
-from arctix.reducers import EmptySequenceError, TorchReducer
+from arctix.reducers import EmptySequenceError, ReducerRegistry, TorchReducer
 from arctix.testing import torch_available
+
+
+@torch_available
+def test_reducer_registry_available_reducers() -> None:
+    assert isinstance(ReducerRegistry.registry["torch"], TorchReducer)
+
 
 ##################################
 #     Tests for TorchReducer     #
