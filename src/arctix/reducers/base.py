@@ -12,11 +12,11 @@ class EmptySequenceError(Exception):
 
 
 class BaseReducer(ABC):
-    r"""Define the base class to implement a reducer."""
+    r"""Defines the base class to implement a reducer."""
 
     @abstractmethod
     def max(self, values: Sequence[int | float]) -> int | float:
-        r"""Compute the maximum value.
+        r"""Computes the maximum value.
 
         Args:
         ----
@@ -42,7 +42,7 @@ class BaseReducer(ABC):
 
     @abstractmethod
     def mean(self, values: Sequence[int | float]) -> float:
-        r"""Compute the mean value.
+        r"""Computes the mean value.
 
         Args:
         ----
@@ -68,7 +68,7 @@ class BaseReducer(ABC):
 
     @abstractmethod
     def median(self, values: Sequence[int | float]) -> int | float:
-        r"""Compute the median value.
+        r"""Computes the median value.
 
         Args:
         ----
@@ -94,7 +94,7 @@ class BaseReducer(ABC):
 
     @abstractmethod
     def min(self, values: Sequence[int | float]) -> int | float:
-        r"""Compute the minimum value.
+        r"""Computes the minimum value.
 
         Args:
         ----
@@ -122,7 +122,7 @@ class BaseReducer(ABC):
     def quantiles(
         self, values: Sequence[int | float], quantiles: Sequence[float]
     ) -> list[int | float]:
-        r"""Compute the quantiles.
+        r"""Computes the quantiles.
 
         Args:
         ----
@@ -145,12 +145,12 @@ class BaseReducer(ABC):
             >>> from arctix.reducers import TorchReducer
             >>> reducer = TorchReducer()
             >>> reducer.quantiles([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], (0.2, 0.5, 0.9))
-            [2, 5, 9]
+            [2.0, 5.0, 9.0]
         """
 
     @abstractmethod
     def sort(self, values: Sequence[int | float], descending: bool = False) -> list[int | float]:
-        r"""Sort the values.
+        r"""Sorts the values.
 
         Args:
         ----
@@ -176,7 +176,7 @@ class BaseReducer(ABC):
 
     @abstractmethod
     def std(self, values: Sequence[int | float]) -> float:
-        r"""Compute the standard deviation.
+        r"""Computes the standard deviation.
 
         Args:
         ----
@@ -202,6 +202,9 @@ class BaseReducer(ABC):
 
 
 class BaseBasicReducer(BaseReducer):
+    r"""Extension of ``BaseReducer`` to check if the input sequence is
+    empty before to call the reduction methods."""
+
     def max(self, values: Sequence[int | float]) -> int | float:
         if not values:
             raise EmptySequenceError("Cannot compute the maximum because the summary is empty")
@@ -209,7 +212,7 @@ class BaseBasicReducer(BaseReducer):
 
     @abstractmethod
     def _max(self, values: Sequence[int | float]) -> int | float:
-        r"""Compute the maximum value.
+        r"""Computes the maximum value.
 
         Args:
         ----
@@ -226,8 +229,8 @@ class BaseBasicReducer(BaseReducer):
         return self._mean(values)
 
     @abstractmethod
-    def _mean(self, values: Sequence[int | float]) -> int | float:
-        r"""Compute the mean value.
+    def _mean(self, values: Sequence[int | float]) -> float:
+        r"""Computes the mean value.
 
         Args:
         ----
@@ -235,7 +238,7 @@ class BaseBasicReducer(BaseReducer):
 
         Returns:
         -------
-            int or float: The mean value.
+            float: The mean value.
         """
 
     def median(self, values: Sequence[int | float]) -> int | float:
@@ -245,7 +248,7 @@ class BaseBasicReducer(BaseReducer):
 
     @abstractmethod
     def _median(self, values: Sequence[int | float]) -> int | float:
-        r"""Compute the median value.
+        r"""Computes the median value.
 
         Args:
         ----
@@ -263,7 +266,7 @@ class BaseBasicReducer(BaseReducer):
 
     @abstractmethod
     def _min(self, values: Sequence[int | float]) -> int | float:
-        r"""Compute the minimum value.
+        r"""Computes the minimum value.
 
         Args:
         ----
@@ -285,7 +288,7 @@ class BaseBasicReducer(BaseReducer):
     def _quantiles(
         self, values: Sequence[int | float], quantiles: Sequence[float]
     ) -> list[int | float]:
-        r"""Compute the quantiles.
+        r"""Computes the quantiles.
 
         Args:
         ----
@@ -307,7 +310,7 @@ class BaseBasicReducer(BaseReducer):
 
     @abstractmethod
     def _std(self, values: Sequence[int | float]) -> float:
-        r"""Compute the standard deviation.
+        r"""Computes the standard deviation.
 
         Args:
         ----

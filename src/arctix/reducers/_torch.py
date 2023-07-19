@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+__all__ = ["TorchReducer"]
+
 from collections.abc import Sequence
 from unittest.mock import Mock
 
