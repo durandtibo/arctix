@@ -18,6 +18,7 @@ from arctix.data.continuous import (
     FloatTensorDataSummary,
     FloatTensorSequenceDataSummary,
 )
+
 # from arctix.data.discrete import BaseDiscreteDataSummary
 from arctix.data.factory import setup_data_summary
 from arctix.data.noop import NoOpDataSummary
