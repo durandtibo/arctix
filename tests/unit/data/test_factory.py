@@ -1,7 +1,6 @@
 from objectory import OBJECT_TARGET
 
-from arctix.data import NoOpDataSummary
-from arctix.data.factory import setup_data_summary
+from arctix.data import NoOpDataSummary, setup_data_summary
 
 ########################################
 #     Tests for setup_data_summary     #

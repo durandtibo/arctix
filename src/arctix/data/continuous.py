@@ -8,14 +8,13 @@ __all__ = [
     "FloatDataSummary",
     "FloatTensorDataSummary",
     "FloatTensorSequenceDataSummary",
-    "prepare_quantiles",
 ]
 
 from collections import deque
 from typing import TypeVar
 from unittest.mock import Mock
 
-from arctix import is_torch_available
+from arctix import Reduction, is_torch_available
 from arctix.data.base import BaseDataSummary, EmptyDataSummaryError
 from arctix.data.sequence import BaseSequenceDataSummary
 from arctix.utils.imports import check_torch
@@ -28,25 +27,6 @@ else:
 T = TypeVar("T")
 
 DEFAULT_QUANTILES = (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)
-
-
-def prepare_quantiles(quantiles: torch.Tensor | tuple[float, ...] | list[float]) -> torch.Tensor:
-    r"""Prepares the quantiles to be comaptible with ``torch.quantile``.
-
-    Args:
-    ----
-        quantiles (``torch.Tensor``, tuple, list): Specifies a sequence
-            of quantiles to compute, which must be between 0 and 1
-            inclusive.
-
-    Returns:
-    -------
-        ``torch.Tensor`` of type float and shape ``(num_quantiles,)``:
-            The prepare quantiles.
-    """
-    if isinstance(quantiles, (list, tuple)):
-        quantiles = torch.as_tensor(quantiles)
-    return torch.sort(quantiles)[0]
 
 
 class BaseContinuousDataSummary(BaseDataSummary[T]):
@@ -71,7 +51,7 @@ class BaseContinuousDataSummary(BaseDataSummary[T]):
             store the last values because it may not be possible to
             store all the values. This parameter is used to compute
             the median and the quantiles. Default: ``10000``
-        quantiles (``torch.Tensor`` or tuple or list, optional):
+        quantiles (`tuple or list, optional):
             Specifies a sequence of quantiles to compute, which must
             be between 0 and 1 inclusive. Default:
             ``(0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)``
@@ -80,14 +60,14 @@ class BaseContinuousDataSummary(BaseDataSummary[T]):
     def __init__(
         self,
         max_size: int = 10000,
-        quantiles: torch.Tensor | tuple[float, ...] | list[float] = DEFAULT_QUANTILES,
+        quantiles: tuple[float, ...] | list[float] = DEFAULT_QUANTILES,
     ) -> None:
         check_torch()
         self._sum = 0.0
         self._count = 0.0
         self._min_value = float("inf")
         self._max_value = -float("inf")
-        self._quantiles = prepare_quantiles(quantiles)
+        self._quantiles = tuple(sorted(quantiles))
         # Store only the N last values to scale to large number of values.
         self._values = deque(maxlen=max_size)
         self.reset()
@@ -95,7 +75,7 @@ class BaseContinuousDataSummary(BaseDataSummary[T]):
     def __repr__(self) -> str:
         return (
             f"{self.__class__.__qualname__}(max_size={self._values.maxlen:,}, "
-            f"quantiles={self._quantiles.tolist()})"
+            f"quantiles={self._quantiles})"
         )
 
     def count(self) -> int:
@@ -159,7 +139,7 @@ class BaseContinuousDataSummary(BaseDataSummary[T]):
         """
         if not self._count:
             raise EmptyDataSummaryError("The summary is empty")
-        return torch.as_tensor(list(self._values), dtype=torch.float).median().item()
+        return Reduction.reducer.median(self._values)
 
     def min(self) -> float:
         r"""Gets the min value.
@@ -176,7 +156,7 @@ class BaseContinuousDataSummary(BaseDataSummary[T]):
             raise EmptyDataSummaryError("The summary is empty")
         return self._min_value
 
-    def quantiles(self) -> torch.Tensor:
+    def quantiles(self) -> list[int | float]:
         r"""Computes the quantiles.
 
         If there are more values than the maximum size, only the last
@@ -194,9 +174,7 @@ class BaseContinuousDataSummary(BaseDataSummary[T]):
         """
         if not self._count:
             raise EmptyDataSummaryError("The summary is empty")
-        return torch.quantile(
-            torch.as_tensor(tuple(self._values), dtype=torch.float), self._quantiles
-        )
+        return Reduction.reducer.quantiles(self._values, self._quantiles)
 
     def reset(self) -> None:
         r"""Resets the data summary."""
@@ -224,7 +202,7 @@ class BaseContinuousDataSummary(BaseDataSummary[T]):
         """
         if not self._count:
             raise EmptyDataSummaryError("The summary is empty")
-        return torch.as_tensor(self._values, dtype=torch.float).std(dim=0).item()
+        return Reduction.reducer.std(self._values)
 
     def sum(self) -> float:
         r"""Gets the sum value.
@@ -265,7 +243,7 @@ class BaseContinuousDataSummary(BaseDataSummary[T]):
         }
         summary.update(
             {
-                f"quantile {quantile:.3f}": value.item()
+                f"quantile {quantile:.3f}": value
                 for quantile, value in zip(self._quantiles, self.quantiles())
             }
         )
@@ -286,17 +264,6 @@ class FloatDataSummary(BaseContinuousDataSummary[float]):
         - ``max``: the max value
         - ``min``: the min value
         - ``quantiles``: the quantile values
-
-    Args:
-    ----
-        max_size (int, optional): Specifies the maximum size used to
-            store the last values because it may not be possible to
-            store all the values. This parameter is used to compute
-            the median and the quantiles. Default: ``10000``
-        quantiles (``torch.Tensor`` or tuple or list, optional):
-            Specifies a sequence of quantiles to compute, which must
-            be between 0 and 1 inclusive. Default:
-            ``(0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)``
     """
 
     def add(self, data: float) -> None:
@@ -328,17 +295,6 @@ class FloatTensorDataSummary(BaseContinuousDataSummary[torch.Tensor]):
         - ``max``: the max value
         - ``min``: the min value
         - ``quantiles``: the quantile values
-
-    Args:
-    ----
-        max_size (int, optional): Specifies the maximum size used to
-            store the last values because it may not be possible to
-            store all the values. This parameter is used to compute
-            the median and the quantiles. Default: ``10000``
-        quantiles (``torch.Tensor`` or tuple or list, optional):
-            Specifies a sequence of quantiles to compute, which must
-            be between 0 and 1 inclusive. Default:
-            ``(0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)``
     """
 
     def add(self, data: torch.Tensor) -> None:
@@ -383,7 +339,7 @@ class FloatTensorSequenceDataSummary(BaseSequenceDataSummary[torch.Tensor]):
             store the last values because it may not be possible to
             store all the values. This parameter is used to compute
             the median and the quantiles. Default: ``10000``
-        quantiles (``torch.Tensor`` or tuple or list, optional):
+        quantiles (tuple or list, optional):
             Specifies a sequence of quantiles to compute, which must
             be between 0 and 1 inclusive. Default:
             ``(0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)``
@@ -392,7 +348,7 @@ class FloatTensorSequenceDataSummary(BaseSequenceDataSummary[torch.Tensor]):
     def __init__(
         self,
         max_size: int = 10000,
-        quantiles: torch.Tensor | tuple[float, ...] | list[float] = DEFAULT_QUANTILES,
+        quantiles: tuple[float, ...] | list[float] = DEFAULT_QUANTILES,
     ) -> None:
         super().__init__(value=FloatTensorDataSummary(max_size=max_size, quantiles=quantiles))
 
