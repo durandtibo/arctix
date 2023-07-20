@@ -14,10 +14,10 @@ from collections import deque
 from typing import TypeVar
 from unittest.mock import Mock
 
-from arctix import Reduction, is_torch_available
 from arctix.data.base import BaseDataSummary, EmptyDataSummaryError
 from arctix.data.sequence import BaseSequenceDataSummary
-from arctix.utils.imports import check_torch
+from arctix.reduction import Reduction
+from arctix.utils.imports import check_torch, is_torch_available
 
 if is_torch_available():
     import torch

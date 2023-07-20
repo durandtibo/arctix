@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+__all__ = ["NDArrayFormatter"]
+
 from typing import Any
 from unittest.mock import Mock
 
-from arctix.formatter import BaseFormatter
-from arctix.summarizer import BaseSummarizer, Summarizer
+from arctix.formatters.base import BaseFormatter
+from arctix.summarizers.base import BaseSummarizer
 from arctix.utils.imports import check_numpy, is_numpy_available
 
 if is_numpy_available():
@@ -70,7 +72,7 @@ class NDArrayFormatter(BaseFormatter[numpy.ndarray]):
 
         .. code-block:: pycon
 
-            >>> from arctix._numpy import NDArrayFormatter
+            >>> from arctix.formatters import NDArrayFormatter
             >>> formatter = NDArrayFormatter()
             >>> formatter.get_show_data()
             False
@@ -93,7 +95,7 @@ class NDArrayFormatter(BaseFormatter[numpy.ndarray]):
 
         .. code-block:: pycon
 
-            >>> from arctix._numpy import NDArrayFormatter
+            >>> from arctix.formatters import NDArrayFormatter
             >>> formatter = NDArrayFormatter()
             >>> formatter.set_show_data(True)
             >>> formatter.get_show_data()
@@ -104,8 +106,3 @@ class NDArrayFormatter(BaseFormatter[numpy.ndarray]):
                 "Incorrect type for show_data. Expected bool value but received {show_data}"
             )
         self._show_data = show_data
-
-
-if is_numpy_available():  # pragma: no cover
-    if not Summarizer.has_formatter(numpy.ndarray):
-        Summarizer.add_formatter(numpy.ndarray, NDArrayFormatter())

@@ -3,7 +3,7 @@ from collections import OrderedDict, defaultdict
 from pytest import mark, raises
 
 from arctix import Summarizer, summarizer_options
-from arctix.formatter import (
+from arctix.formatters import (
     DefaultFormatter,
     MappingFormatter,
     SequenceFormatter,
