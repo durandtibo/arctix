@@ -5,9 +5,10 @@ __all__ = ["NumpyReducer"]
 from collections.abc import Sequence
 from unittest.mock import Mock
 
+from coola.utils.imports import check_numpy, is_numpy_available
+
 from arctix.reducers.base import BaseBasicReducer
 from arctix.reducers.registry import ReducerRegistry
-from arctix.utils.imports import check_numpy, is_numpy_available
 
 if is_numpy_available():
     import numpy as np

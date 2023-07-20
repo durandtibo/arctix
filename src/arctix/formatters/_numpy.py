@@ -5,9 +5,10 @@ __all__ = ["NDArrayFormatter"]
 from typing import Any
 from unittest.mock import Mock
 
+from coola.utils.imports import check_numpy, is_numpy_available
+
 from arctix.formatters.base import BaseFormatter
 from arctix.summarizers.base import BaseSummarizer
-from arctix.utils.imports import check_numpy, is_numpy_available
 
 if is_numpy_available():
     import numpy

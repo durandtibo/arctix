@@ -2,9 +2,10 @@ from __future__ import annotations
 
 __all__ = ["Reduction"]
 
+from coola.utils.imports import is_torch_available
+
 from arctix.reducers import BasicReducer, TorchReducer
 from arctix.reducers.registry import ReducerRegistry
-from arctix.utils.imports import is_torch_available
 
 
 class Reduction:

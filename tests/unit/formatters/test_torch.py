@@ -1,11 +1,11 @@
 from unittest.mock import Mock
 
+from coola.utils.imports import is_torch_available
 from pytest import mark, raises
 
 from arctix import Summarizer, summary
 from arctix.formatters._torch import TensorFormatter
 from arctix.testing import torch_available
-from arctix.utils.imports import is_torch_available
 
 if is_torch_available():
     import torch

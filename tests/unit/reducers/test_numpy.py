@@ -204,6 +204,6 @@ def test_numpy_reducer_std_empty(values: Sequence[int | float]) -> None:
 
 @numpy_available
 def test_numpy_reducer_no_numpy() -> None:
-    with patch("arctix.utils.imports.is_numpy_available", lambda *args, **kwargs: False):
+    with patch("coola.utils.imports.is_numpy_available", lambda *args, **kwargs: False):
         with raises(RuntimeError, match="`numpy` package is required but not installed."):
             NumpyReducer()
