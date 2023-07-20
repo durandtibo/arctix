@@ -365,4 +365,4 @@ class FloatTensorSequenceDataSummary(BaseSequenceDataSummary[torch.Tensor]):
         -------
             int: The sequence length.
         """
-        return data.shape[0]
+        return data.shape[0]  # TODO: make seq_dim configurable
