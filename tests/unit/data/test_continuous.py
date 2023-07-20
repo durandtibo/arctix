@@ -6,7 +6,7 @@ from unittest.mock import Mock
 from coola import objects_are_allclose, objects_are_equal
 from pytest import mark, raises
 
-from arctix import is_torch_available
+from arctix.utils.imports import is_torch_available
 from arctix.data import EmptyDataSummaryError
 from arctix.data.continuous import (
     FloatDataSummary,
