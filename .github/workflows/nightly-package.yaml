@@ -32,8 +32,8 @@ jobs:
         run: |
           python -c "import arctix; from arctix import summary;" \
             "isinstance(summary(1), str);" \
-            "assert not arctix.is_numpy_available();" \
-            "assert not arctix.is_torch_available();"
+            "assert not arctix.utils.imports.is_numpy_available();" \
+            "assert not arctix.utils.imports.is_torch_available();"
 
   stable-package-all:
     runs-on: ${{ matrix.os }}
@@ -62,9 +62,9 @@ jobs:
         run: |
           python -c "import arctix; from arctix import summary;" \
             "isinstance(summary(1), str);" \
-            "assert arctix.is_numpy_available();" \
+            "assert arctix.utils.imports.is_numpy_available();" \
             "import numpy; isinstance(summary(numpy.ones((2, 3))), str);" \
-            "assert arctix.is_torch_available();" \
+            "assert arctix.utils.imports.is_torch_available();" \
             "import torch; isinstance(summary(torch.ones(2, 3)), str);"
 
 
@@ -95,8 +95,8 @@ jobs:
         run: |
           python -c "import arctix; from arctix import summary;" \
             "isinstance(summary(1), str);" \
-            "assert not arctix.is_numpy_available();" \
-            "assert not arctix.is_torch_available();"
+            "assert not arctix.utils.imports.is_numpy_available();" \
+            "assert not arctix.utils.imports.is_torch_available();"
 
   latest-package-all:
     runs-on: ${{ matrix.os }}
@@ -125,7 +125,7 @@ jobs:
         run: |
           python -c "import arctix; from arctix import summary;" \
             "isinstance(summary(1), str);" \
-            "assert arctix.is_numpy_available();" \
+            "assert arctix.utils.imports.is_numpy_available();" \
             "import numpy; isinstance(summary(numpy.ones((2, 3))), str);" \
-            "assert arctix.is_torch_available();" \
+            "assert arctix.utils.imports.is_torch_available();" \
             "import torch; isinstance(summary(torch.ones(2, 3)), str);"

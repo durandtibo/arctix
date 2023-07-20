@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Any
 from unittest.mock import Mock
 
-from arctix.formatter import BaseFormatter
-from arctix.summarizer import BaseSummarizer, Summarizer
+from arctix.formatters.base import BaseFormatter
+from arctix.summarizers.base import BaseSummarizer
 from arctix.utils.imports import check_torch, is_torch_available
 
 if is_torch_available():
@@ -71,7 +71,7 @@ class TensorFormatter(BaseFormatter[torch.Tensor]):
 
         .. code-block:: pycon
 
-            >>> from arctix._torch import TensorFormatter
+            >>> from arctix.formatters import TensorFormatter
             >>> formatter = TensorFormatter()
             >>> formatter.get_show_data()
             False
@@ -94,7 +94,7 @@ class TensorFormatter(BaseFormatter[torch.Tensor]):
 
         .. code-block:: pycon
 
-            >>> from arctix._torch import TensorFormatter
+            >>> from arctix.formatters import TensorFormatter
             >>> formatter = TensorFormatter()
             >>> formatter.set_show_data(True)
             >>> formatter.get_show_data()
@@ -105,8 +105,3 @@ class TensorFormatter(BaseFormatter[torch.Tensor]):
                 "Incorrect type for show_data. Expected bool value but received {show_data}"
             )
         self._show_data = show_data
-
-
-if is_torch_available():  # pragma: no cover
-    if not Summarizer.has_formatter(torch.Tensor):
-        Summarizer.add_formatter(torch.Tensor, TensorFormatter())

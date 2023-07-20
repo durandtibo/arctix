@@ -11,7 +11,7 @@ from arctix import (
     summarizer_options,
     summary,
 )
-from arctix.formatter import (
+from arctix.formatters import (
     BaseFormatter,
     DefaultFormatter,
     MappingFormatter,

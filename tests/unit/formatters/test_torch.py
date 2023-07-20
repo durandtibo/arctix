@@ -3,7 +3,7 @@ from unittest.mock import Mock
 from pytest import mark, raises
 
 from arctix import Summarizer, summary
-from arctix._torch import TensorFormatter
+from arctix.formatters._torch import TensorFormatter
 from arctix.testing import torch_available
 from arctix.utils.imports import is_torch_available
 

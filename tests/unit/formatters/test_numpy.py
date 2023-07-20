@@ -3,7 +3,7 @@ from unittest.mock import Mock
 from pytest import mark, raises
 
 from arctix import Summarizer, summary
-from arctix._numpy import NDArrayFormatter
+from arctix.formatters._numpy import NDArrayFormatter
 from arctix.testing import numpy_available
 from arctix.utils.imports import is_numpy_available
 

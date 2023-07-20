@@ -1,137 +1,23 @@
 from __future__ import annotations
 
 __all__ = [
-    "BaseFormatter",
     "DefaultFormatter",
     "MappingFormatter",
     "SequenceFormatter",
     "SetFormatter",
 ]
 
-from abc import ABC, abstractmethod
 from collections.abc import Mapping, Sequence
 from itertools import islice
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
+from arctix.formatters.base import BaseFormatter
 from arctix.utils.format import str_indent, str_mapping, str_sequence
 
 if TYPE_CHECKING:
-    from arctix.summarizer import BaseSummarizer
+    from arctix.summarizers.base import BaseSummarizer
 
 T = TypeVar("T")
-
-
-class BaseFormatter(ABC, Generic[T]):
-    r"""Define the base class to implement a formatter."""
-
-    @abstractmethod
-    def clone(self) -> BaseFormatter:
-        r"""Return a copy of the formatter.
-
-        Returns:
-        -------
-            ``BaseFormatter``: A copy of the formatter.
-
-        Example usage:
-
-        .. code-block:: pycon
-
-            >>> from arctix.formatter import DefaultFormatter
-            >>> formatter = DefaultFormatter()
-            >>> formatter2 = formatter.clone()
-            >>> formatter.set_max_characters(10)
-            >>> formatter
-            DefaultFormatter(max_characters=10)
-            >>> formatter2
-            DefaultFormatter(max_characters=-1)
-        """
-
-    @abstractmethod
-    def equal(self, other: Any) -> bool:
-        r"""Indicate if the other object is equal to the self object.
-
-        Args:
-        ----
-            other: Specifies the other object to compare.
-
-        Returns:
-        -------
-            bool: ``True`` if the objects are equal,
-                otherwise ``False``.
-
-        Example usage:
-
-        .. code-block:: pycon
-
-            >>> from arctix.formatter import DefaultFormatter
-            >>> formatter = DefaultFormatter()
-            >>> formatter.equal(DefaultFormatter())
-            True
-            >>> formatter.equal(DefaultFormatter(max_characters=10))
-            False
-        """
-
-    @abstractmethod
-    def format(self, summarizer: BaseSummarizer, value: T, depth: int, max_depth: int) -> str:
-        r"""Format a value.
-
-        Args:
-        ----
-            summarizer (``BaseSummarizer``): Specifies the summarizer.
-            value: Specifies the value to summarize.
-
-        Returns:
-        -------
-            str: The formatted value.
-
-        Example usage:
-
-        .. code-block:: pycon
-
-            >>> from arctix import Summarizer
-            >>> from arctix.formatter import DefaultFormatter
-            >>> formatter = DefaultFormatter()
-            >>> formatter.format(Summarizer(), 1)
-            <class 'int'> 1
-        """
-
-    @abstractmethod
-    def load_state_dict(self, state_dict: dict) -> None:
-        r"""Load the state values from a dict.
-
-        Args:
-        ----
-            state_dict (dict): a dict with parameters
-
-        Example usage:
-
-        .. code-block:: pycon
-
-            >>> from arctix.formatter import DefaultFormatter
-            >>> formatter = DefaultFormatter()
-            >>> # Please take a look to the implementation of the state_dict
-            >>> # function to know the expected structure
-            >>> formatter.load_state_dict({"max_characters": 10})
-            >>> formatter
-            DefaultFormatter(max_characters=10)
-        """
-
-    @abstractmethod
-    def state_dict(self) -> dict:
-        r"""Return a dictionary containing state values.
-
-        Example usage:
-            dict: the state values in a dict.
-
-        Example usage:
-
-        .. code-block:: pycon
-
-            >>> from arctix.formatter import DefaultFormatter
-            >>> formatter = DefaultFormatter()
-            >>> formatter.state_dict()
-            {'max_characters': -1}
-        """
 
 
 class DefaultFormatter(BaseFormatter[Any]):
@@ -187,7 +73,7 @@ class DefaultFormatter(BaseFormatter[Any]):
 
         .. code-block:: pycon
 
-            >>> from arctix.formatter import DefaultFormatter
+            >>> from arctix.formatters import DefaultFormatter
             >>> formatter = DefaultFormatter()
             >>> formatter.get_max_characters()
             -1
@@ -210,7 +96,7 @@ class DefaultFormatter(BaseFormatter[Any]):
 
         .. code-block:: pycon
 
-            >>> from arctix.formatter import DefaultFormatter
+            >>> from arctix.formatters import DefaultFormatter
             >>> formatter = DefaultFormatter()
             >>> formatter.set_max_characters(10)
             >>> formatter.get_max_characters()
@@ -273,7 +159,7 @@ class BaseCollectionFormatter(BaseFormatter[T]):
 
         .. code-block:: pycon
 
-            >>> from arctix.formatter import MappingFormatter
+            >>> from arctix.formatters import MappingFormatter
             >>> formatter = MappingFormatter()
             >>> formatter.get_max_items()
             5
@@ -296,7 +182,7 @@ class BaseCollectionFormatter(BaseFormatter[T]):
 
         .. code-block:: pycon
 
-            >>> from arctix.formatter import MappingFormatter
+            >>> from arctix.formatters import MappingFormatter
             >>> formatter = MappingFormatter()
             >>> formatter.set_max_items(10)
             >>> formatter.get_max_items()
@@ -319,7 +205,7 @@ class BaseCollectionFormatter(BaseFormatter[T]):
 
         .. code-block:: pycon
 
-            >>> from arctix.formatter import MappingFormatter
+            >>> from arctix.formatters import MappingFormatter
             >>> formatter = MappingFormatter()
             >>> formatter.get_num_spaces()
             2
@@ -343,7 +229,7 @@ class BaseCollectionFormatter(BaseFormatter[T]):
 
         .. code-block:: pycon
 
-            >>> from arctix.formatter import MappingFormatter
+            >>> from arctix.formatters import MappingFormatter
             >>> formatter = MappingFormatter()
             >>> formatter.set_num_spaces(4)
             >>> formatter.get_num_spaces()
