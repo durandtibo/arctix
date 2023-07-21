@@ -508,6 +508,16 @@ def test_continuous_tracker_reset() -> None:
     assert tracker._min_value == float("inf")
 
 
+def test_continuous_tracker_reset_empty() -> None:
+    tracker = ContinuousTracker()
+    tracker.reset()
+    assert tracker.count() == 0
+    assert tracker.values == ()
+    assert tracker._sum == 0
+    assert tracker._max_value == -float("inf")
+    assert tracker._min_value == float("inf")
+
+
 def test_continuous_tracker_std_scalar() -> None:
     tracker = ContinuousTracker()
     tracker.add(1)

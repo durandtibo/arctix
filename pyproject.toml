@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "arctix"
-version = "0.0.2a14"
+version = "0.0.2a15"
 description = "A library to compute a string representation of nested objects"
 readme = "README.md"
 authors = ["Thibaut Durand <durand.tibo+gh@gmail.com>"]
@@ -27,7 +27,7 @@ packages = [
 
 [tool.poetry.dependencies]
 # Core dependencies
-coola = ">=0.0.12,<1.0"
+coola = ">=0.0.13,<1.0"
 python = "^3.9"
 objectory = ">=0.0.6,<1.0"
 
