@@ -5,7 +5,6 @@ __all__ = ["BaseTracker", "EmptyTrackerError"]
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
-
 T = TypeVar("T")
 
 
