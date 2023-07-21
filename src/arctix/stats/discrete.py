@@ -31,6 +31,15 @@ class DiscreteTracker(
         Union[bool, float, int, str, Sequence[Union[bool, float, int, str]], Tensor, ndarray]
     ]
 ):
+    r"""Implements a statistics tracker for discrete values.
+
+    This statistics tracker computes the following statistics:
+
+        - ``count``: the number of values
+        - ``num_unique_values``: the number of unique values
+        - ``count_{value}``: the number of values per unique value
+    """
+
     def __init__(self) -> None:
         self._counter = Counter()
         self._total = 0
@@ -107,6 +116,16 @@ class DiscreteTracker(
             list: The list of the ``n`` most common elements and their
                 counts. Elements with equal counts are ordered in the
                 order first encountered.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.stats import DiscreteTracker
+            >>> tracker = DiscreteTracker()
+            >>> tracker.add([1, 4, 1])
+            >>> tracker.most_common()
+            [(1, 2), (4, 1)]
         """
         if not self.count():
             raise EmptyTrackerError(
