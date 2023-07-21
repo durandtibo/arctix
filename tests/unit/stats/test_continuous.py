@@ -58,6 +58,7 @@ def test_continuous_tracker_add_scalar_float_and_int() -> None:
         torch.tensor([[1.0, 1.1, 4.2, 2.0]], dtype=torch.float),
         torch.tensor([[1.0, 1.1], [4.2, 2.0]], dtype=torch.float),
         torch.tensor([[1.0], [1.1], [4.2], [2.0]], dtype=torch.float),
+        torch.tensor([1.0, 1.1, 4.2, 2.0], dtype=torch.double),
     ),
 )
 def test_continuous_tracker_add_tensor_float(tensor: torch.Tensor) -> None:
@@ -74,6 +75,7 @@ def test_continuous_tracker_add_tensor_float(tensor: torch.Tensor) -> None:
         torch.tensor([[1, 2, 4, 8]], dtype=torch.long),
         torch.tensor([[1, 2], [4, 8]], dtype=torch.long),
         torch.tensor([[1], [2], [4], [8]], dtype=torch.long),
+        torch.tensor([1, 2, 4, 8], dtype=torch.int),
     ),
 )
 def test_continuous_tracker_add_tensor_long(tensor: torch.Tensor) -> None:
