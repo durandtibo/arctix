@@ -1,6 +1,6 @@
 from unittest.mock import Mock
 
-from coola.utils.imports import is_numpy_available
+from coola.utils import is_numpy_available
 from pytest import mark, raises
 
 from arctix import Summarizer, summary

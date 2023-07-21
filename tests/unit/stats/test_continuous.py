@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from unittest.mock import Mock
 
 from coola import objects_are_allclose, objects_are_equal
-from coola.utils.imports import is_numpy_available, is_torch_available
+from coola.utils import is_numpy_available, is_torch_available
 from pytest import mark, raises
 
 from arctix.stats import ContinuousTracker, EmptyTrackerError

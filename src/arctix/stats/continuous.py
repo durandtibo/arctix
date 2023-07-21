@@ -6,7 +6,7 @@ from collections import deque
 from collections.abc import Sequence
 from typing import Union
 
-from coola.utils.imports import is_numpy_available
+from coola.utils import is_numpy_available
 
 from arctix.reduction import Reduction
 from arctix.stats.base import BaseTracker, EmptyTrackerError
