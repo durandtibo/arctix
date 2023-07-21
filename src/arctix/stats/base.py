@@ -5,12 +5,11 @@ __all__ = ["BaseTracker", "EmptyTrackerError"]
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
-from objectory import AbstractFactory
 
 T = TypeVar("T")
 
 
-class BaseTracker(Generic[T], ABC, metaclass=AbstractFactory):
+class BaseTracker(Generic[T], ABC):
     r"""Defines the base class to implement a statistics tracker.
 
     Note that the statistics tracker only stores some data statistics,
