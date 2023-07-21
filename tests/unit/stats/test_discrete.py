@@ -29,11 +29,28 @@ def test_discrete_tracker_str() -> None:
     assert str(DiscreteTracker()).startswith("DiscreteTracker(")
 
 
+def test_discrete_tracker_add() -> None:
+    tracker = DiscreteTracker()
+    tracker.add(1)
+    tracker.add(1)
+    tracker.add(4.2)
+    tracker.add(1)
+    tracker.add("meow")
+    tracker.add("meow")
+    assert objects_are_equal(dict(tracker.counter), {1: 3, 4.2: 1, "meow": 2})
+
+
 @mark.parametrize("data", (True, False, 1, 42, 4.2, 2.0, "meow", "abc"))
 def test_discrete_tracker_add_scalar(data: bool | float | int | str) -> None:
     tracker = DiscreteTracker()
     tracker.add(data)
     assert objects_are_equal(dict(tracker.counter), {data: 1})
+
+
+def test_discrete_tracker_add_sequence() -> None:
+    tracker = DiscreteTracker()
+    tracker.add([1, 4.2, 1, 1, "meow", "meow"])
+    assert objects_are_equal(dict(tracker.counter), {1: 3, 4.2: 1, "meow": 2})
 
 
 @mark.parametrize(

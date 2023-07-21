@@ -19,6 +19,7 @@ from arctix.formatters import (
 )
 from arctix.summarizers.base import BaseSummarizer
 from arctix.utils.format import str_indent, str_mapping
+from arctix.utils.types import Tensor, ndarray
 
 
 class Summarizer(BaseSummarizer):
@@ -363,13 +364,9 @@ def summarizer_options(**kwargs) -> None:
 
 
 if is_numpy_available():  # pragma: no cover
-    import numpy
-
-    if not Summarizer.has_formatter(numpy.ndarray):
-        Summarizer.add_formatter(numpy.ndarray, NDArrayFormatter())
+    if not Summarizer.has_formatter(ndarray):
+        Summarizer.add_formatter(ndarray, NDArrayFormatter())
 
 if is_torch_available():  # pragma: no cover
-    import torch
-
-    if not Summarizer.has_formatter(torch.Tensor):
-        Summarizer.add_formatter(torch.Tensor, TensorFormatter())
+    if not Summarizer.has_formatter(Tensor):
+        Summarizer.add_formatter(Tensor, TensorFormatter())

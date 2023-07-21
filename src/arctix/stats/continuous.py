@@ -6,26 +6,14 @@ from collections import deque
 from collections.abc import Sequence
 from typing import Union
 
-from coola.utils.imports import is_numpy_available, is_torch_available
+from coola.utils.imports import is_numpy_available
 
 from arctix.reduction import Reduction
 from arctix.stats.base import BaseTracker, EmptyTrackerError
+from arctix.utils.types import Tensor, ndarray
 
-if is_numpy_available():
+if is_numpy_available():  # pragma: no cover
     import numpy as np
-    from numpy import ndarray
-else:  # pragma: no cover
-
-    class ndarray:  # noqa: N801
-        pass
-
-
-if is_torch_available():
-    from torch import Tensor
-else:  # pragma: no cover
-
-    class Tensor:
-        pass
 
 
 class ContinuousTracker(
