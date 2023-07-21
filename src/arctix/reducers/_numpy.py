@@ -41,9 +41,7 @@ class NumpyReducer(BaseBasicReducer):
     def _min(self, values: Sequence[int | float]) -> int | float:
         return np.min(np.asarray(values)).item()
 
-    def _quantiles(
-        self, values: Sequence[int | float], quantiles: Sequence[float]
-    ) -> list[int | float]:
+    def _quantiles(self, values: Sequence[int | float], quantiles: Sequence[float]) -> list[float]:
         return np.quantile(np.asarray(values), q=quantiles).tolist()
 
     def sort(self, values: Sequence[int | float], descending: bool = False) -> list[int | float]:

@@ -119,9 +119,7 @@ class BaseReducer(ABC):
         """
 
     @abstractmethod
-    def quantiles(
-        self, values: Sequence[int | float], quantiles: Sequence[float]
-    ) -> list[int | float]:
+    def quantiles(self, values: Sequence[int | float], quantiles: Sequence[float]) -> list[float]:
         r"""Computes the quantiles.
 
         Args:
@@ -132,7 +130,7 @@ class BaseReducer(ABC):
 
         Returns:
         -------
-            float: The quantiles.
+            list of floats: The quantiles.
 
         Raises:
         ------
@@ -277,17 +275,13 @@ class BaseBasicReducer(BaseReducer):
             int or float: The minimum value.
         """
 
-    def quantiles(
-        self, values: Sequence[int | float], quantiles: Sequence[float]
-    ) -> list[int | float]:
+    def quantiles(self, values: Sequence[int | float], quantiles: Sequence[float]) -> list[float]:
         if not values:
             raise EmptySequenceError("Cannot compute the quantiles because the summary is empty")
         return self._quantiles(values, quantiles)
 
     @abstractmethod
-    def _quantiles(
-        self, values: Sequence[int | float], quantiles: Sequence[float]
-    ) -> list[int | float]:
+    def _quantiles(self, values: Sequence[int | float], quantiles: Sequence[float]) -> list[float]:
         r"""Computes the quantiles.
 
         Args:
@@ -298,7 +292,7 @@ class BaseBasicReducer(BaseReducer):
 
         Returns:
         -------
-            float: The quantiles.
+            list of floats: The quantiles.
         """
 
     def std(self, values: Sequence[int | float]) -> float:
