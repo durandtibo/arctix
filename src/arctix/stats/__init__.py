@@ -1,4 +1,5 @@
 __all__ = [
+    "AutoTracker",
     "BaseTracker",
     "ContinuousTracker",
     "DiscreteTracker",
@@ -6,6 +7,7 @@ __all__ = [
     "NoOpTracker",
 ]
 
+from arctix.stats.auto import AutoTracker
 from arctix.stats.base import BaseTracker, EmptyTrackerError
 from arctix.stats.continuous import ContinuousTracker
 from arctix.stats.discrete import DiscreteTracker
