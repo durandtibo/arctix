@@ -8,8 +8,6 @@ __all__ = [
     "TensorFormatter",
 ]
 
-from arctix.formatters._numpy import NDArrayFormatter
-from arctix.formatters._torch import TensorFormatter
 from arctix.formatters.base import BaseFormatter
 from arctix.formatters.default import (
     DefaultFormatter,
@@ -17,3 +15,5 @@ from arctix.formatters.default import (
     SequenceFormatter,
     SetFormatter,
 )
+from arctix.formatters.numpy_ import NDArrayFormatter
+from arctix.formatters.torch_ import TensorFormatter

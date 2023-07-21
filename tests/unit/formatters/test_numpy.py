@@ -4,7 +4,7 @@ from coola.utils.imports import is_numpy_available
 from pytest import mark, raises
 
 from arctix import Summarizer, summary
-from arctix.formatters._numpy import NDArrayFormatter
+from arctix.formatters.numpy_ import NDArrayFormatter
 from arctix.testing import numpy_available
 
 if is_numpy_available():
