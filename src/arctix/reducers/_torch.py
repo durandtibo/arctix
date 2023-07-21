@@ -41,9 +41,7 @@ class TorchReducer(BaseBasicReducer):
     def _min(self, values: Sequence[int | float]) -> int | float:
         return torch.as_tensor(values).min().item()
 
-    def _quantiles(
-        self, values: Sequence[int | float], quantiles: Sequence[float]
-    ) -> list[int | float]:
+    def _quantiles(self, values: Sequence[int | float], quantiles: Sequence[float]) -> list[float]:
         return torch.quantile(
             torch.as_tensor(values, dtype=torch.float),
             torch.as_tensor(quantiles, dtype=torch.float),
