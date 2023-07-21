@@ -2,16 +2,15 @@ from __future__ import annotations
 
 __all__ = ["Reduction"]
 
-from coola.utils.imports import is_torch_available
 
-from arctix.reducers import BasicReducer, TorchReducer
+from arctix.reducers import auto_reducer
 from arctix.reducers.registry import ReducerRegistry
 
 
 class Reduction:
     r"""Implement the class that defines the reduction strategy."""
 
-    reducer = TorchReducer() if is_torch_available() else BasicReducer()
+    reducer = auto_reducer()
 
     @classmethod
     def available_reducers(cls) -> tuple[str, ...]:

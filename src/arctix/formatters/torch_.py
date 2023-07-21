@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 from unittest.mock import Mock
 
-from coola.utils.imports import check_torch, is_torch_available
+from coola.utils import check_torch, is_torch_available
 
 from arctix.formatters.base import BaseFormatter
 from arctix.summarizers.base import BaseSummarizer

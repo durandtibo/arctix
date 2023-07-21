@@ -5,7 +5,7 @@ __all__ = ["TorchReducer"]
 from collections.abc import Sequence
 from unittest.mock import Mock
 
-from coola.utils.imports import check_torch, is_torch_available
+from coola.utils import check_torch, is_torch_available
 
 from arctix.reducers.base import BaseBasicReducer
 from arctix.reducers.registry import ReducerRegistry
