@@ -6,24 +6,8 @@ from collections import Counter
 from collections.abc import Sequence
 from typing import Union
 
-from coola.utils.imports import is_numpy_available, is_torch_available
-
 from arctix.stats.base import BaseTracker, EmptyTrackerError
-
-if is_numpy_available():
-    from numpy import ndarray
-else:  # pragma: no cover
-
-    class ndarray:  # noqa: N801
-        pass
-
-
-if is_torch_available():
-    from torch import Tensor
-else:  # pragma: no cover
-
-    class Tensor:
-        pass
+from arctix.utils.types import Tensor, ndarray
 
 
 class DiscreteTracker(
