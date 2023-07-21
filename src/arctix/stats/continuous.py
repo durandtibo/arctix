@@ -271,7 +271,8 @@ class ContinuousTracker(
 
         Returns
         -------
-            float: The standard deviation from the last values.
+            list of floats: The standard deviation from the last
+                values.
 
         Raises
         ------
@@ -285,7 +286,7 @@ class ContinuousTracker(
             >>> tracker = ContinuousTracker()
             >>> tracker.add([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
             >>> tracker.quantiles()
-            (1, 2.5, 5, 7.5, 9)
+            [1.0, 2.5, 5.0, 7.5, 9.0]
         """
         if not self._count:
             raise EmptyTrackerError("Cannot compute the quantiles because the tracker is empty")
@@ -321,8 +322,8 @@ class ContinuousTracker(
             >>> from arctix.stats import ContinuousTracker
             >>> tracker = ContinuousTracker()
             >>> tracker.add([1, 2, 4])
-            >>> tracker.std()
-            3...
+            >>> tracker.std()  # doctest: +ELLIPSIS
+            1.527525...
         """
         if not self._count:
             raise EmptyTrackerError(
