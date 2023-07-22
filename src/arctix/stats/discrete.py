@@ -120,3 +120,11 @@ class DiscreteTracker(
     def reset(self) -> None:
         self._counter.clear()
         self._total = 0
+
+    def load_state_dict(self, state_dict: dict) -> None:
+        self._total = state_dict["total"]
+        self._counter.clear()
+        self._counter.update(state_dict["counter"])
+
+    def state_dict(self) -> dict:
+        return {"total": self._total, "counter": dict(self._counter)}

@@ -261,3 +261,30 @@ def test_discrete_tracker_reset_empty() -> None:
     tracker.reset()
     assert objects_are_equal(dict(tracker.counter), {})
     assert tracker.count() == 0
+
+
+def test_discrete_tracker_load_state_dict() -> None:
+    tracker = DiscreteTracker()
+    state = {"total": 8, "counter": {1: 4, 2: 3, 3: 1}}
+    tracker.load_state_dict(state)
+    assert tracker.count() == 8
+    assert objects_are_equal(tracker.state_dict(), state)
+
+
+def test_discrete_tracker_load_state_dict_empty() -> None:
+    tracker = DiscreteTracker()
+    state = tracker.state_dict()
+    tracker.add(3)
+    assert tracker.count() == 1
+    tracker.load_state_dict(state)
+    assert objects_are_equal(tracker.state_dict(), state)
+
+
+def test_discrete_tracker_state_dict() -> None:
+    tracker = DiscreteTracker()
+    tracker.add([1, 1, 2, 3, 1, 2, 2, 1])
+    assert tracker.state_dict() == {"total": 8, "counter": {1: 4, 2: 3, 3: 1}}
+
+
+def test_discrete_tracker_state_dict_empty() -> None:
+    assert DiscreteTracker().state_dict() == {"total": 0, "counter": {}}

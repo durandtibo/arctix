@@ -186,3 +186,45 @@ def test_auto_tracker_reset_empty() -> None:
     tracker = AutoTracker()
     tracker.reset()
     assert tracker.tracker is None
+
+
+def test_continuous_tracker_load_state_dict() -> None:
+    tracker = AutoTracker()
+    tracker.add(1)
+    state = {
+        "count": 3,
+        "max_value": 4,
+        "min_value": 1,
+        "quantiles": (0.1, 0.25, 0.5, 0.75, 0.9),
+        "sum": 7.0,
+        "values": (1, 2, 4),
+    }
+    tracker.load_state_dict(state)
+    assert tracker.tracker.count() == 3
+    assert objects_are_equal(tracker.state_dict(), state)
+
+
+def test_continuous_tracker_load_state_dict_empty() -> None:
+    tracker = AutoTracker()
+    tracker.load_state_dict({})
+    assert objects_are_equal(tracker.state_dict(), {})
+
+
+def test_auto_tracker_state_dict() -> None:
+    tracker = AutoTracker()
+    tracker.add([1, 2, 4])
+    assert objects_are_equal(
+        tracker.state_dict(),
+        {
+            "count": 3,
+            "max_value": 4,
+            "min_value": 1,
+            "quantiles": (0.1, 0.25, 0.5, 0.75, 0.9),
+            "sum": 7.0,
+            "values": (1, 2, 4),
+        },
+    )
+
+
+def test_auto_tracker_state_dict_empty() -> None:
+    assert objects_are_equal(AutoTracker().state_dict(), {})

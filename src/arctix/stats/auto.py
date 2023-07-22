@@ -48,6 +48,15 @@ class AutoTracker(BaseTracker[Any]):
     def reset(self) -> None:
         self._tracker = None
 
+    def load_state_dict(self, state_dict: dict) -> None:
+        if self._tracker:
+            self._tracker.load_state_dict(state_dict)
+
+    def state_dict(self) -> dict:
+        if self._tracker is None:
+            return {}
+        return self._tracker.state_dict()
+
     def _initialize_tracker_from_data(self, data: Any) -> BaseTracker:
         if isinstance(data, Tensor):
             if data.dtype in (torch.float, torch.double, torch.int, torch.long):
