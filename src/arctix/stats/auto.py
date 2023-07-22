@@ -46,7 +46,8 @@ class AutoTracker(BaseTracker[Any]):
         return self._tracker.get_statistics()
 
     def reset(self) -> None:
-        self._tracker = None
+        if self._tracker:
+            self._tracker.reset()
 
     def load_state_dict(self, state_dict: dict) -> None:
         if self._tracker:
