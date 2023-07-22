@@ -585,3 +585,57 @@ def test_continuous_tracker_sum_empty() -> None:
     tracker = ContinuousTracker()
     with raises(EmptyTrackerError, match="Cannot compute the sum because the tracker is empty"):
         tracker.sum()
+
+
+def test_continuous_tracker_load_state_dict() -> None:
+    tracker = ContinuousTracker()
+    state = {
+        "count": 3,
+        "max_value": 4,
+        "min_value": 1,
+        "quantiles": (0.1, 0.25, 0.5, 0.75, 0.9),
+        "sum": 7.0,
+        "values": (1, 2, 4),
+    }
+    tracker.load_state_dict(state)
+    assert tracker.count() == 3
+    assert objects_are_equal(tracker.state_dict(), state)
+
+
+def test_continuous_tracker_load_state_dict_empty() -> None:
+    tracker = ContinuousTracker()
+    state = tracker.state_dict()
+    tracker.add(3)
+    assert tracker.count() == 1
+    tracker.load_state_dict(state)
+    assert objects_are_equal(tracker.state_dict(), state)
+
+
+def test_continuous_tracker_state_dict() -> None:
+    tracker = ContinuousTracker()
+    tracker.add([1, 2, 4])
+    assert objects_are_equal(
+        tracker.state_dict(),
+        {
+            "count": 3,
+            "max_value": 4,
+            "min_value": 1,
+            "quantiles": (0.1, 0.25, 0.5, 0.75, 0.9),
+            "sum": 7.0,
+            "values": (1, 2, 4),
+        },
+    )
+
+
+def test_continuous_tracker_state_dict_empty() -> None:
+    assert objects_are_equal(
+        ContinuousTracker().state_dict(),
+        {
+            "count": 0,
+            "max_value": -float("inf"),
+            "min_value": float("inf"),
+            "quantiles": (0.1, 0.25, 0.5, 0.75, 0.9),
+            "sum": 0.0,
+            "values": tuple(),
+        },
+    )

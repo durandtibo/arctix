@@ -22,11 +22,18 @@ class BaseTracker(Generic[T], ABC):
         Args:
         ----
             data: Specifies the data to add to the statistics tracker.
-        """
 
-    @abstractmethod
-    def reset(self) -> None:
-        r"""Resets the statistics tracker."""
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.stats import ContinuousTracker
+            >>> tracker = ContinuousTracker()
+            >>> tracker.add(1)
+            >>> tracker.add(4.2)
+            >>> tracker.mean()
+            2.6
+        """
 
     @abstractmethod
     def get_statistics(self) -> dict:
@@ -41,6 +48,79 @@ class BaseTracker(Generic[T], ABC):
         Raises
         ------
             ``EmptyTrackerError`` if the tracker is empty.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.stats import ContinuousTracker
+            >>> tracker = ContinuousTracker()
+            >>> tracker.add([1, 4.2])
+            >>> tracker.get_statistics()  # doctest: +ELLIPSIS
+            {'count': 2, 'sum': 5.2, 'mean': 2.6, ...}
+        """
+
+    @abstractmethod
+    def reset(self) -> None:
+        r"""Resets the statistics tracker.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.stats import ContinuousTracker
+            >>> tracker = ContinuousTracker()
+            >>> tracker.add([1, 4.2])
+            >>> tracker.reset()
+            >>> tracker.count()
+            0
+        """
+
+    @abstractmethod
+    def load_state_dict(self, state_dict: dict) -> None:
+        r"""Load the state values from a dict.
+
+        Args:
+        ----
+            state_dict (dict): a dict with parameters
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.stats import ContinuousTracker
+            >>> tracker = ContinuousTracker()
+            >>> # Please take a look to the implementation of the state_dict
+            >>> # function to know the expected structure
+            >>> tracker.load_state_dict(
+            ...     {
+            ...         "count": 3,
+            ...         "max_value": 4,
+            ...         "min_value": 1,
+            ...         "quantiles": (0.1, 0.25, 0.5, 0.75, 0.9),
+            ...         "sum": 7.0,
+            ...         "values": (1, 2, 4),
+            ...     }
+            ... )
+            >>> tracker.state_dict()  # doctest: +ELLIPSIS
+            {'count': 3, 'max_value': 4, 'min_value': 1, ...}
+        """
+
+    @abstractmethod
+    def state_dict(self) -> dict:
+        r"""Return a dictionary containing state values.
+
+        Example usage:
+            dict: the state values in a dict.
+
+        Example usage:
+
+        .. code-block:: pycon
+
+            >>> from arctix.stats import ContinuousTracker
+            >>> tracker = ContinuousTracker()
+            >>> tracker.state_dict()  # doctest: +ELLIPSIS
+            {'count': 0, 'max_value': -inf, 'min_value': inf, ...}
         """
 
 

@@ -48,7 +48,7 @@ class ContinuousTracker(
         self, max_size: int = 10000, quantiles: Sequence[float] = (0.1, 0.25, 0.5, 0.75, 0.9)
     ) -> None:
         self._sum = 0.0
-        self._count = 0.0
+        self._count = 0
         self._min_value = float("inf")
         self._max_value = -float("inf")
         self._quantiles = tuple(sorted(quantiles))
@@ -88,7 +88,7 @@ class ContinuousTracker(
     def _add_scalar(self, data: float | int) -> None:
         value = data
         self._sum += value
-        self._count += 1.0
+        self._count += 1
         self._min_value = min(self._min_value, value)
         self._max_value = max(self._max_value, value)
         self._values.append(value)
@@ -282,7 +282,7 @@ class ContinuousTracker(
 
     def reset(self) -> None:
         self._sum = 0.0
-        self._count = 0.0
+        self._count = 0
         self._min_value = float("inf")
         self._max_value = -float("inf")
         self._values.clear()
@@ -343,3 +343,22 @@ class ContinuousTracker(
         if not self._count:
             raise EmptyTrackerError("Cannot compute the sum because the tracker is empty")
         return self._sum
+
+    def load_state_dict(self, state_dict: dict) -> None:
+        self._count = state_dict["count"]
+        self._max_value = state_dict["max_value"]
+        self._min_value = state_dict["min_value"]
+        self._quantiles = state_dict["quantiles"]
+        self._sum = state_dict["sum"]
+        self._values.clear()
+        self._values.extend(state_dict["values"])
+
+    def state_dict(self) -> dict:
+        return {
+            "count": self._count,
+            "max_value": self._max_value,
+            "min_value": self._min_value,
+            "quantiles": self._quantiles,
+            "sum": self._sum,
+            "values": tuple(self._values),
+        }

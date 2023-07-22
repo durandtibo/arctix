@@ -28,3 +28,19 @@ def test_noop_tracker_reset() -> None:
     tracker = NoOpTracker()
     tracker.add(1)
     tracker.reset()  # check it does not raise error
+
+
+def test_noop_tracker_load_state_dict() -> None:
+    tracker = NoOpTracker()
+    tracker.load_state_dict({})
+    assert tracker.state_dict() == {}
+
+
+def test_noop_tracker_state_dict() -> None:
+    tracker = NoOpTracker()
+    tracker.add(1)
+    assert tracker.state_dict() == {}
+
+
+def test_noop_tracker_state_dict_empty() -> None:
+    assert NoOpTracker().state_dict() == {}

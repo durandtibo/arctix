@@ -21,3 +21,9 @@ class NoOpTracker(BaseTracker[Any]):
 
     def get_statistics(self) -> dict:
         return {}
+
+    def load_state_dict(self, state_dict: dict) -> None:
+        pass
+
+    def state_dict(self) -> dict:
+        return {}
