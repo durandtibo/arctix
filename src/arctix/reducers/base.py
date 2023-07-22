@@ -119,7 +119,7 @@ class BaseReducer(ABC):
         """
 
     @abstractmethod
-    def quantiles(self, values: Sequence[int | float], quantiles: Sequence[float]) -> list[float]:
+    def quantile(self, values: Sequence[int | float], quantiles: Sequence[float]) -> list[float]:
         r"""Computes the quantiles.
 
         Args:
@@ -142,7 +142,7 @@ class BaseReducer(ABC):
 
             >>> from arctix.reducers import TorchReducer
             >>> reducer = TorchReducer()
-            >>> reducer.quantiles([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], (0.2, 0.5, 0.9))
+            >>> reducer.quantile([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], (0.2, 0.5, 0.9))
             [2.0, 5.0, 9.0]
         """
 
@@ -275,13 +275,13 @@ class BaseBasicReducer(BaseReducer):
             int or float: The minimum value.
         """
 
-    def quantiles(self, values: Sequence[int | float], quantiles: Sequence[float]) -> list[float]:
+    def quantile(self, values: Sequence[int | float], quantiles: Sequence[float]) -> list[float]:
         if not values:
             raise EmptySequenceError("Cannot compute the quantiles because the summary is empty")
-        return self._quantiles(values, quantiles)
+        return self._quantile(values, quantiles)
 
     @abstractmethod
-    def _quantiles(self, values: Sequence[int | float], quantiles: Sequence[float]) -> list[float]:
+    def _quantile(self, values: Sequence[int | float], quantiles: Sequence[float]) -> list[float]:
         r"""Computes the quantiles.
 
         Args:

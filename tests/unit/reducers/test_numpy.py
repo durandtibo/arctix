@@ -125,8 +125,8 @@ def test_numpy_reducer_min_empty(values: Sequence[int | float]) -> None:
 @mark.parametrize(
     "values", ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
 )
-def test_numpy_reducer_quantiles_int(values: Sequence[int | float]) -> None:
-    assert NumpyReducer().quantiles(values, (0.2, 0.5, 0.9)) == [2, 5, 9]
+def test_numpy_reducer_quantile_int(values: Sequence[int | float]) -> None:
+    assert NumpyReducer().quantile(values, (0.2, 0.5, 0.9)) == [2, 5, 9]
 
 
 @numpy_available
@@ -137,17 +137,17 @@ def test_numpy_reducer_quantiles_int(values: Sequence[int | float]) -> None:
         (0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5),
     ),
 )
-def test_numpy_reducer_quantiles_float(values: Sequence[int | float]) -> None:
-    assert NumpyReducer().quantiles(values, (0.0, 0.1, 0.4, 0.9)) == [0.5, 1.5, 4.5, 9.5]
+def test_numpy_reducer_quantile_float(values: Sequence[int | float]) -> None:
+    assert NumpyReducer().quantile(values, (0.0, 0.1, 0.4, 0.9)) == [0.5, 1.5, 4.5, 9.5]
 
 
 @numpy_available
 @mark.parametrize("values", ([], ()))
-def test_numpy_reducer_quantiles_empty(values: Sequence[int | float]) -> None:
+def test_numpy_reducer_quantile_empty(values: Sequence[int | float]) -> None:
     with raises(
         EmptySequenceError, match="Cannot compute the quantiles because the summary is empty"
     ):
-        NumpyReducer().quantiles([], [0.5])
+        NumpyReducer().quantile([], [0.5])
 
 
 @numpy_available

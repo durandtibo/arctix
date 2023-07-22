@@ -30,7 +30,7 @@ class ContinuousTracker(
         - ``std``: the standard deviation of tne values
         - ``max``: the max value
         - ``min``: the min value
-        - ``quantiles``: the quantile values
+        - ``quantile``: the quantile values
 
     Args:
     ----
@@ -129,7 +129,7 @@ class ContinuousTracker(
         stats.update(
             {
                 f"quantile {quantile:.3f}": value
-                for quantile, value in zip(self._quantiles, self.quantiles())
+                for quantile, value in zip(self._quantiles, self.quantile())
             }
         )
         return stats
@@ -233,7 +233,7 @@ class ContinuousTracker(
             raise EmptyTrackerError("Cannot compute the minimum because the tracker is empty")
         return self._min_value
 
-    def quantiles(self) -> list[float]:
+    def quantile(self) -> list[float]:
         r"""Computes the quantiles.
 
         If there are more values than the maximum size, only the last
@@ -257,12 +257,12 @@ class ContinuousTracker(
             >>> from arctix.stats import ContinuousTracker
             >>> tracker = ContinuousTracker()
             >>> tracker.add([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-            >>> tracker.quantiles()
+            >>> tracker.quantile()
             [1.0, 2.5, 5.0, 7.5, 9.0]
         """
         if not self._count:
             raise EmptyTrackerError("Cannot compute the quantiles because the tracker is empty")
-        return Reduction.reducer.quantiles(self._values, self._quantiles)
+        return Reduction.reducer.quantile(self._values, self._quantiles)
 
     def reset(self) -> None:
         self._sum = 0.0

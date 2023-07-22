@@ -455,46 +455,46 @@ def test_continuous_tracker_min_empty() -> None:
 
 
 @numpy_or_torch_available
-def test_continuous_tracker_quantiles_scalar() -> None:
+def test_continuous_tracker_quantile_scalar() -> None:
     tracker = ContinuousTracker()
     tracker.add(1)
-    assert objects_are_equal(tracker.quantiles(), [1.0, 1.0, 1.0, 1.0, 1.0])
+    assert objects_are_equal(tracker.quantile(), [1.0, 1.0, 1.0, 1.0, 1.0])
 
 
 @numpy_or_torch_available
-def test_continuous_tracker_quantiles_list() -> None:
+def test_continuous_tracker_quantile_list() -> None:
     tracker = ContinuousTracker()
     tracker.add([1, 1, 1, 1, 1, 1, 1, 1])
-    assert objects_are_equal(tracker.quantiles(), [1.0, 1.0, 1.0, 1.0, 1.0])
+    assert objects_are_equal(tracker.quantile(), [1.0, 1.0, 1.0, 1.0, 1.0])
 
 
 @torch_available
-def test_continuous_tracker_quantiles_tensor() -> None:
+def test_continuous_tracker_quantile_tensor() -> None:
     tracker = ContinuousTracker()
     tracker.add(torch.arange(21))
-    assert objects_are_equal(tracker.quantiles(), [2.0, 5.0, 10.0, 15.0, 18.0])
+    assert objects_are_equal(tracker.quantile(), [2.0, 5.0, 10.0, 15.0, 18.0])
 
 
 @numpy_available
-def test_continuous_tracker_quantiles_ndarray() -> None:
+def test_continuous_tracker_quantile_ndarray() -> None:
     tracker = ContinuousTracker()
     tracker.add(np.arange(11))
-    assert objects_are_equal(tracker.quantiles(), [1.0, 2.5, 5.0, 7.5, 9.0])
+    assert objects_are_equal(tracker.quantile(), [1.0, 2.5, 5.0, 7.5, 9.0])
 
 
 @numpy_or_torch_available
-def test_continuous_tracker_quantiles_quantiles_2() -> None:
+def test_continuous_tracker_quantile_quantiles_2() -> None:
     tracker = ContinuousTracker(quantiles=(0.2, 0.8))
     tracker.add(list(range(11)))
-    assert objects_are_equal(tracker.quantiles(), [2.0, 8.0])
+    assert objects_are_equal(tracker.quantile(), [2.0, 8.0])
 
 
-def test_continuous_tracker_quantiles_empty() -> None:
+def test_continuous_tracker_quantile_empty() -> None:
     tracker = ContinuousTracker()
     with raises(
         EmptyTrackerError, match="Cannot compute the quantiles because the tracker is empty"
     ):
-        tracker.quantiles()
+        tracker.quantile()
 
 
 def test_continuous_tracker_reset() -> None:

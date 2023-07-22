@@ -111,7 +111,7 @@ def test_basic_reducer_min_empty(values: Sequence[int | float]) -> None:
 
 def test_basic_reducer_quantiles() -> None:
     with raises(NotImplementedError):
-        BasicReducer().quantiles(list(range(11)), (0.2, 0.5, 0.9))
+        BasicReducer().quantile(list(range(11)), (0.2, 0.5, 0.9))
 
 
 @mark.parametrize("values", ([2, 1, -2, 3, 0], (2, 1, -2, 3, 0)))
