@@ -112,22 +112,6 @@ class ContinuousTracker(
             self._values.extend(values.tolist())
 
     def count(self) -> int:
-        r"""Gets the number of values seen by the statistics tracker.
-
-        Returns
-        -------
-            int: The number of values seen by the statistics tracker.
-
-        Example usage:
-
-        .. code-block:: pycon
-
-            >>> from arctix.stats import ContinuousTracker
-            >>> tracker = ContinuousTracker()
-            >>> tracker.add([1, 2, 4])
-            >>> tracker.count()
-            3
-        """
         return int(self._count)
 
     def get_statistics(self) -> dict:

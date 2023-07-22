@@ -56,22 +56,6 @@ class DiscreteTracker(
         self._total += len(data)
 
     def count(self) -> int:
-        r"""Gets the number of values seen by the statistics tracker.
-
-        Returns
-        -------
-            int: The number of values seen by the statistics tracker.
-
-        Example usage:
-
-        .. code-block:: pycon
-
-            >>> from arctix.stats import DiscreteTracker
-            >>> tracker = DiscreteTracker()
-            >>> tracker.add([1, 2, 4])
-            >>> tracker.count()
-            3
-        """
         return self._total
 
     def get_statistics(self) -> dict:

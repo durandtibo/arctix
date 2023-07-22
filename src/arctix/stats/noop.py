@@ -16,6 +16,9 @@ class NoOpTracker(BaseTracker[Any]):
     def add(self, data: Any) -> None:
         pass
 
+    def count(self) -> int:
+        return 0
+
     def reset(self) -> None:
         pass
 

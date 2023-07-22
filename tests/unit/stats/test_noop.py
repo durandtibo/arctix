@@ -1,5 +1,6 @@
 from typing import Any
 
+from coola import objects_are_equal
 from pytest import mark
 
 from arctix.stats import NoOpTracker
@@ -19,9 +20,18 @@ def test_noop_tracker_add(data: Any) -> None:
     tracker.add(data)  # check it does not raise error
 
 
-def test_noop_tracker_get_statistics() -> None:
+def test_noop_tracker_count() -> None:
     tracker = NoOpTracker()
-    assert tracker.get_statistics() == {}
+    tracker.add([1, 2, 4])
+    assert objects_are_equal(tracker.count(), 0)
+
+
+def test_noop_tracker_count_empty() -> None:
+    assert objects_are_equal(NoOpTracker().count(), 0)
+
+
+def test_noop_tracker_get_statistics() -> None:
+    assert NoOpTracker().get_statistics() == {}
 
 
 def test_noop_tracker_reset() -> None:
