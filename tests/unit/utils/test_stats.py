@@ -60,7 +60,7 @@ def test_quantile_numpy(array: np.ndarray, num_quantiles: int) -> None:
     q: list[float] = np.random.rand(num_quantiles).tolist()
     assert objects_are_allclose(
         quantile(array.tolist(), q),
-        np.quantile(array, q=q, method="linear").tolist(),
+        np.quantile(array, q=q).tolist(),
         show_difference=True,
         atol=1e-6,
     )
