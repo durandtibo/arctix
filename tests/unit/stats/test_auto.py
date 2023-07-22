@@ -179,7 +179,7 @@ def test_auto_tracker_reset() -> None:
     tracker.add("meow")
     assert isinstance(tracker.tracker, DiscreteTracker)
     tracker.reset()
-    assert tracker.tracker is None
+    assert tracker.tracker.count() == 0
 
 
 def test_auto_tracker_reset_empty() -> None:
@@ -195,7 +195,6 @@ def test_continuous_tracker_load_state_dict() -> None:
         "count": 3,
         "max_value": 4,
         "min_value": 1,
-        "quantiles": (0.1, 0.25, 0.5, 0.75, 0.9),
         "sum": 7.0,
         "values": (1, 2, 4),
     }
@@ -219,7 +218,6 @@ def test_auto_tracker_state_dict() -> None:
             "count": 3,
             "max_value": 4,
             "min_value": 1,
-            "quantiles": (0.1, 0.25, 0.5, 0.75, 0.9),
             "sum": 7.0,
             "values": (1, 2, 4),
         },

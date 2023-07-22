@@ -593,7 +593,6 @@ def test_continuous_tracker_load_state_dict() -> None:
         "count": 3,
         "max_value": 4,
         "min_value": 1,
-        "quantiles": (0.1, 0.25, 0.5, 0.75, 0.9),
         "sum": 7.0,
         "values": (1, 2, 4),
     }
@@ -620,7 +619,6 @@ def test_continuous_tracker_state_dict() -> None:
             "count": 3,
             "max_value": 4,
             "min_value": 1,
-            "quantiles": (0.1, 0.25, 0.5, 0.75, 0.9),
             "sum": 7.0,
             "values": (1, 2, 4),
         },
@@ -634,7 +632,6 @@ def test_continuous_tracker_state_dict_empty() -> None:
             "count": 0,
             "max_value": -float("inf"),
             "min_value": float("inf"),
-            "quantiles": (0.1, 0.25, 0.5, 0.75, 0.9),
             "sum": 0.0,
             "values": tuple(),
         },

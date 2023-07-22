@@ -348,7 +348,6 @@ class ContinuousTracker(
         self._count = state_dict["count"]
         self._max_value = state_dict["max_value"]
         self._min_value = state_dict["min_value"]
-        self._quantiles = state_dict["quantiles"]
         self._sum = state_dict["sum"]
         self._values.clear()
         self._values.extend(state_dict["values"])
@@ -358,7 +357,6 @@ class ContinuousTracker(
             "count": self._count,
             "max_value": self._max_value,
             "min_value": self._min_value,
-            "quantiles": self._quantiles,
             "sum": self._sum,
             "values": tuple(self._values),
         }
