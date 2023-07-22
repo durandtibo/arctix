@@ -8,6 +8,7 @@ from statistics import mean, median, stdev
 from arctix.reducers.base import BaseBasicReducer
 from arctix.utils.stats import quantile
 
+
 class BasicReducer(BaseBasicReducer):
     r"""Implements a basic reducer.
 

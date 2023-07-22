@@ -9,7 +9,7 @@ from coola.utils import is_numpy_available, is_torch_available
 from pytest import mark, raises
 
 from arctix.stats import ContinuousTracker, EmptyTrackerError
-from arctix.testing import numpy_available, numpy_or_torch_available, torch_available
+from arctix.testing import numpy_available, torch_available
 
 if is_numpy_available():
     import numpy as np
@@ -207,7 +207,6 @@ def test_continuous_tracker_count_empty() -> None:
     assert objects_are_equal(ContinuousTracker().count(), 0)
 
 
-@numpy_or_torch_available
 def test_continuous_tracker_get_statistics_scalar() -> None:
     tracker = ContinuousTracker()
     tracker.add(1)
@@ -231,7 +230,6 @@ def test_continuous_tracker_get_statistics_scalar() -> None:
     )
 
 
-@numpy_or_torch_available
 def test_continuous_tracker_get_statistics_list() -> None:
     tracker = ContinuousTracker()
     tracker.add([1, 1, 1, 1, 1, 1, 1, 1])
@@ -300,7 +298,6 @@ def test_continuous_tracker_get_statistics_ndarray() -> None:
     )
 
 
-@numpy_or_torch_available
 def test_continuous_tracker_get_statistics_no_quantiles() -> None:
     tracker = ContinuousTracker(quantiles=[])
     tracker.add([1, 1, 1, 1, 1, 1, 1, 1])
@@ -454,14 +451,12 @@ def test_continuous_tracker_min_empty() -> None:
         tracker.min()
 
 
-@numpy_or_torch_available
 def test_continuous_tracker_quantile_scalar() -> None:
     tracker = ContinuousTracker()
     tracker.add(1)
     assert objects_are_equal(tracker.quantile(), [1.0, 1.0, 1.0, 1.0, 1.0])
 
 
-@numpy_or_torch_available
 def test_continuous_tracker_quantile_list() -> None:
     tracker = ContinuousTracker()
     tracker.add([1, 1, 1, 1, 1, 1, 1, 1])
@@ -482,7 +477,6 @@ def test_continuous_tracker_quantile_ndarray() -> None:
     assert objects_are_equal(tracker.quantile(), [1.0, 2.5, 5.0, 7.5, 9.0])
 
 
-@numpy_or_torch_available
 def test_continuous_tracker_quantile_quantiles_2() -> None:
     tracker = ContinuousTracker(quantiles=(0.2, 0.8))
     tracker.add(list(range(11)))
