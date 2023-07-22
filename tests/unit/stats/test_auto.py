@@ -152,6 +152,16 @@ def test_auto_tracker_add_multiple() -> None:
     assert objects_are_equal(dict(tracker.tracker.counter), {"meow": 1, 1: 1})
 
 
+def test_auto_tracker_count() -> None:
+    tracker = AutoTracker()
+    tracker.add([1, 2, 4])
+    assert objects_are_equal(tracker.count(), 3)
+
+
+def test_auto_tracker_count_empty() -> None:
+    assert objects_are_equal(AutoTracker().count(), 0)
+
+
 def test_auto_tracker_get_statistics() -> None:
     tracker = AutoTracker()
     tracker.add(["meow", "abc", "meow", "meow"])

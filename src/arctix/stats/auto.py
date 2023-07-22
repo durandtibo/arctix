@@ -40,6 +40,11 @@ class AutoTracker(BaseTracker[Any]):
             self._tracker = self._initialize_tracker_from_data(data)
         self._tracker.add(data)
 
+    def count(self) -> int:
+        if self._tracker is None:
+            return 0
+        return self._tracker.count()
+
     def get_statistics(self) -> dict:
         if self._tracker is None:
             raise EmptyTrackerError("Cannot compute the statistics because the tracker is empty")
