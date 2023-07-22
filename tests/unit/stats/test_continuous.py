@@ -230,14 +230,36 @@ def test_continuous_tracker_get_statistics_scalar() -> None:
     )
 
 
-def test_continuous_tracker_get_statistics_list() -> None:
+def test_continuous_tracker_get_statistics_list_float() -> None:
     tracker = ContinuousTracker()
-    tracker.add([1, 1, 1, 1, 1, 1, 1, 1])
+    tracker.add([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
     assert objects_are_allclose(
         tracker.get_statistics(),
         {
             "count": 8,
             "sum": 8.0,
+            "mean": 1.0,
+            "median": 1.0,
+            "max": 1.0,
+            "min": 1.0,
+            "std": 0.0,
+            "quantile 0.100": 1.0,
+            "quantile 0.250": 1.0,
+            "quantile 0.500": 1.0,
+            "quantile 0.750": 1.0,
+            "quantile 0.900": 1.0,
+        },
+    )
+
+
+def test_continuous_tracker_get_statistics_list_int() -> None:
+    tracker = ContinuousTracker()
+    tracker.add([1, 1, 1, 1, 1, 1, 1, 1, 1])
+    assert objects_are_allclose(
+        tracker.get_statistics(),
+        {
+            "count": 9,
+            "sum": 9.0,
             "mean": 1.0,
             "median": 1,
             "max": 1,
@@ -300,12 +322,12 @@ def test_continuous_tracker_get_statistics_ndarray() -> None:
 
 def test_continuous_tracker_get_statistics_no_quantiles() -> None:
     tracker = ContinuousTracker(quantiles=[])
-    tracker.add([1, 1, 1, 1, 1, 1, 1, 1])
+    tracker.add([1, 1, 1, 1, 1, 1, 1, 1, 1])
     assert objects_are_allclose(
         tracker.get_statistics(),
         {
-            "count": 8,
-            "sum": 8.0,
+            "count": 9,
+            "sum": 9.0,
             "mean": 1.0,
             "median": 1,
             "max": 1,
