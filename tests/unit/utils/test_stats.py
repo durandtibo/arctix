@@ -1,11 +1,18 @@
 from __future__ import annotations
 
-import numpy as np
+from unittest.mock import Mock
+
 from coola import objects_are_allclose, objects_are_equal
+from coola.utils import is_numpy_available
 from pytest import mark
 
 from arctix.testing import numpy_available
 from arctix.utils.stats import quantile
+
+if is_numpy_available():
+    import numpy as np
+else:
+    np = Mock()
 
 ##############################
 #     Tests for quantile     #
