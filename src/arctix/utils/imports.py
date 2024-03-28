@@ -30,6 +30,7 @@ def is_gdown_available() -> bool:
     Example usage:
 
     ```pycon
+
     >>> from arctix.utils.imports import is_gdown_available
     >>> is_gdown_available()
 
@@ -47,6 +48,7 @@ def check_gdown() -> None:
     Example usage:
 
     ```pycon
+
     >>> from arctix.utils.imports import check_gdown
     >>> check_gdown()
 
@@ -75,6 +77,7 @@ def gdown_available(fn: Callable[..., Any]) -> Callable[..., Any]:
     Example usage:
 
     ```pycon
+
     >>> from arctix.utils.imports import gdown_available
     >>> @gdown_available
     ... def my_function(n: int = 0) -> int:
