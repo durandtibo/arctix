@@ -56,6 +56,10 @@ test :
 unit-test :
 	python -m pytest --xdoctest --timeout 10 $(UNIT_TESTS)
 
+.PHONY : integration-test
+integration-test :
+	python -m pytest --xdoctest $(INTEGRATION_TESTS)
+
 .PHONY : unit-test-cov
 unit-test-cov :
 	python -m pytest --xdoctest --timeout 10 --cov-report html --cov-report xml --cov-report term --cov=$(NAME) $(UNIT_TESTS)
