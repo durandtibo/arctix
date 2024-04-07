@@ -259,3 +259,9 @@ max-doc-length = 72
 force-sort-within-sections = true
 combine-as-imports = true
 known-first-party = ["src"]
+
+[tool.ruff.lint.flake8-import-conventions]
+[tool.ruff.lint.flake8-import-conventions.aliases]
+numpy = "np"
+pandas = "pd"
+polars = "pl"
