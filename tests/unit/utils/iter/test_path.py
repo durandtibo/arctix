@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import pytest
 from iden.io import save_text
 
-from arctix.utils.iter import PathLister
+from arctix.utils.iter import DirFilter, FileFilter, PathLister
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -17,6 +17,64 @@ def data_path(tmp_path_factory: pytest.TempPathFactory) -> Path:
     save_text("", path.joinpath("file.txt"))
     save_text("", path.joinpath("dir/file.txt"))
     return path
+
+
+###############################
+#     Tests for DirFilter     #
+###############################
+
+
+def test_dir_filter_repr() -> None:
+    assert repr(DirFilter([])).startswith("DirFilter(")
+
+
+def test_dir_filter_str() -> None:
+    assert str(DirFilter([])).startswith("DirFilter(")
+
+
+def test_dir_filter_iter(data_path: Path) -> None:
+    assert list(
+        DirFilter(
+            [
+                data_path.joinpath("dir/file.txt"),
+                data_path.joinpath("dir/"),
+                data_path.joinpath("file.txt"),
+            ]
+        )
+    ) == [data_path.joinpath("dir/")]
+
+
+def test_dir_filter_iter_empty() -> None:
+    assert list(DirFilter([])) == []
+
+
+################################
+#     Tests for FileFilter     #
+################################
+
+
+def test_file_filter_repr() -> None:
+    assert repr(FileFilter([])).startswith("FileFilter(")
+
+
+def test_file_filter_str() -> None:
+    assert str(FileFilter([])).startswith("FileFilter(")
+
+
+def test_file_filter_iter(data_path: Path) -> None:
+    assert list(
+        FileFilter(
+            [
+                data_path.joinpath("dir/file.txt"),
+                data_path.joinpath("dir/"),
+                data_path.joinpath("file.txt"),
+            ]
+        )
+    ) == [data_path.joinpath("dir/file.txt"), data_path.joinpath("file.txt")]
+
+
+def test_dir_filter_iter_file() -> None:
+    assert list(FileFilter([])) == []
 
 
 ################################
