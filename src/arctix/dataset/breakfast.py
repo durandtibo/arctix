@@ -26,12 +26,17 @@ import tarfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import polars as pl
 from iden.utils.path import sanitize_path
 
+from arctix.utils.dataframe import drop_duplicates
 from arctix.utils.download import download_drive_file
+from arctix.utils.iter import FileFilter, PathLister
+from arctix.utils.mapping import convert_to_dict_of_flat_lists
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
 
 logger = logging.getLogger(__name__)
 
@@ -103,6 +108,25 @@ def download_annotations(path: Path, force_download: bool = False) -> None:
             tar_file.unlink(missing_ok=True)
 
 
+def load_annotations(path: Path, remove_duplicate: bool = True) -> pl.DataFrame:
+    r"""Load all the annotations in a DataFrame.
+
+    Args:
+        path: The directory where the dataset annotations are stored.
+        remove_duplicate: If ``True``, the duplicate rows are removed.
+
+    Returns:
+        tuple: A tuple with the data and metadata.
+    """
+    paths = FileFilter(PathLister([sanitize_path(path)], pattern="**/*.txt"))
+    annotations = list(map(load_annotation, paths))
+    data = convert_to_dict_of_flat_lists(annotations)
+    data = pl.DataFrame(data)
+    if remove_duplicate:
+        data = drop_duplicates(data)
+    return data
+
+
 def load_annotation(path: Path) -> dict[str, list]:
     r"""Load the annotation data from a text file.
 
@@ -123,13 +147,13 @@ def load_annotation(path: Path) -> dict[str, list]:
     logger.info(f"Reading {path}...")
     with Path.open(path) as file:
         lines = [x.strip() for x in file.readlines()]
-    annotations = parse_action_annotation_lines(lines)
 
+    annotation = parse_action_annotation_lines(lines)
     person_id = path.stem.split("_", maxsplit=1)[0]
     cooking_activity = path.stem.rsplit("_", maxsplit=1)[-1]
-    annotations[Column.PERSON_ID] = [person_id] * len(lines)
-    annotations[Column.COOKING_ACTIVITY] = [cooking_activity] * len(lines)
-    return annotations
+    annotation[Column.PERSON_ID] = [person_id] * len(lines)
+    annotation[Column.COOKING_ACTIVITY] = [cooking_activity] * len(lines)
+    return annotation
 
 
 def parse_action_annotation_lines(lines: Sequence[str]) -> dict:
@@ -160,3 +184,5 @@ if __name__ == "__main__":  # pragma: no cover
 
     path = Path("~/Downloads/breakfast")
     download_annotations(path)
+    data = load_annotations(path.joinpath("segmentation_coarse"))
+    logger.info(f"data:\n{data}")
