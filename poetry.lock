@@ -1535,4 +1535,4 @@ all = ["gdown"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.13"
-content-hash = "8602b68c34df7a3a6a52f74c8565298211bcd3790b75fd4c4e83b770a8901d83"
+content-hash = "8f167be1e9d145b73e8f502ce43409f84922f7f801852f685c904b3f6a0070ff"
