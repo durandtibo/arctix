@@ -19,15 +19,19 @@ The documentation assumes the data are downloaded in the directory `/path/to/dat
 
 from __future__ import annotations
 
-__all__ = ["download_annotations"]
+__all__ = ["download_annotations", "load_annotation", "parse_action_annotation_lines"]
 
 import logging
 import tarfile
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from iden.utils.path import sanitize_path
 
 from arctix.utils.download import download_drive_file
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +65,14 @@ NUM_COOKING_ACTIVITIES = {
 }
 
 
+class Column:
+    ACTION: str = "action"
+    COOKING_ACTIVITY: str = "cooking_activity"
+    END_TIME: str = "end_time"
+    PERSON_ID: str = "person_id"
+    START_TIME: str = "start_time"
+
+
 def download_annotations(path: Path, force_download: bool = False) -> None:
     r"""Download the Breakfast annotations.
 
@@ -77,7 +89,7 @@ def download_annotations(path: Path, force_download: bool = False) -> None:
 
     >>> from pathlib import Path
     >>> from arctix.dataset.breakfast import download_annotations
-    >>> download_annotations(Path("/path/to/data"))  # doctest: +SKIP
+    >>> download_annotations(Path("/path/to/data/breakfast/"))  # doctest: +SKIP
 
     ```
     """
@@ -89,6 +101,58 @@ def download_annotations(path: Path, force_download: bool = False) -> None:
             download_drive_file(url, tar_file, quiet=False, fuzzy=True)
             tarfile.open(tar_file).extractall(path)  # noqa: S202
             tar_file.unlink(missing_ok=True)
+
+
+def load_annotation(path: Path) -> dict[str, list]:
+    r"""Load the annotation data from a text file.
+
+    Args:
+        path: The file path to the annotation data.
+
+    Returns:
+        A dictionary with the action, the start time, and end time
+            of each action.
+    """
+    path = sanitize_path(path)
+    if path.suffix != ".txt":
+        msg = (
+            "Incorrect file extension. This function can only parse `.txt` files "
+            f"but received {path.suffix}"
+        )
+        raise ValueError(msg)
+    logger.info(f"Reading {path}...")
+    with Path.open(path) as file:
+        lines = [x.strip() for x in file.readlines()]
+    annotations = parse_action_annotation_lines(lines)
+
+    person_id = path.stem.split("_", maxsplit=1)[0]
+    cooking_activity = path.stem.rsplit("_", maxsplit=1)[-1]
+    annotations[Column.PERSON_ID] = [person_id] * len(lines)
+    annotations[Column.COOKING_ACTIVITY] = [cooking_activity] * len(lines)
+    return annotations
+
+
+def parse_action_annotation_lines(lines: Sequence[str]) -> dict:
+    r"""Parse the action annotation lines and returns a dictionary with
+    the prepared data.
+
+    Args:
+        lines: The lines to parse.
+
+    Returns:
+        A dictionary with the sequence of actions, the start
+            time and end time of each action.
+    """
+    actions = []
+    start_time = []
+    end_time = []
+    for line in lines:
+        pair_time, action = line.strip().split()
+        actions.append(action)
+        start, end = pair_time.split("-")
+        start_time.append(float(start))
+        end_time.append(float(end))
+    return {Column.ACTION: actions, Column.START_TIME: start_time, Column.END_TIME: end_time}
 
 
 if __name__ == "__main__":  # pragma: no cover
