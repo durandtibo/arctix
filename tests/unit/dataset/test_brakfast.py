@@ -13,6 +13,7 @@ from arctix.dataset.breakfast import (
     URLS,
     Column,
     download_annotations,
+    fetch_data,
     load_annotation_file,
     load_annotations,
     parse_action_annotation_lines,
@@ -44,7 +45,7 @@ def annotation_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
         "429-575 pour_milk  \n"
         "576-705 stir_cereals  \n"
         "706-836 SIL\n",
-        path.joinpath("P03_cam01_P03_cereals.txt"),
+        path.joinpath("segmentation_coarse/P03_cam01_P03_cereals.txt"),
     )
     save_text(  # duplicate example
         "1-30 SIL  \n"
@@ -53,13 +54,193 @@ def annotation_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
         "429-575 pour_milk  \n"
         "576-705 stir_cereals  \n"
         "706-836 SIL\n",
-        path.joinpath("P03_cam02_P03_cereals.txt"),
+        path.joinpath("segmentation_coarse/P03_cam02_P03_cereals.txt"),
     )
     save_text(
         "1-47 SIL  \n48-215 pour_milk  \n216-565 spoon_powder  \n566-747 SIL  \n",
-        path.joinpath("milk/P54_webcam02_P54_milk.txt"),
+        path.joinpath("segmentation_coarse/milk/P54_webcam02_P54_milk.txt"),
     )
     return path
+
+
+################################
+#     Tests for fetch_data     #
+################################
+
+
+def test_fetch_data_remove_duplicate_examples(annotation_dir: Path) -> None:
+    with patch("arctix.dataset.breakfast.download_annotations") as download_mock:
+        data = fetch_data(annotation_dir, name="segmentation_coarse")
+        download_mock.assert_called_once_with(annotation_dir, False)
+    assert_frame_equal(
+        data,
+        pl.DataFrame(
+            {
+                Column.ACTION: [
+                    "SIL",
+                    "take_bowl",
+                    "pour_cereals",
+                    "pour_milk",
+                    "stir_cereals",
+                    "SIL",
+                    "SIL",
+                    "pour_milk",
+                    "spoon_powder",
+                    "SIL",
+                ],
+                Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
+                Column.END_TIME: [
+                    30.0,
+                    150.0,
+                    428.0,
+                    575.0,
+                    705.0,
+                    836.0,
+                    47.0,
+                    215.0,
+                    565.0,
+                    747.0,
+                ],
+                Column.COOKING_ACTIVITY: [
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "milk",
+                    "milk",
+                    "milk",
+                    "milk",
+                ],
+                Column.PERSON_ID: [
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P54",
+                    "P54",
+                    "P54",
+                    "P54",
+                ],
+            }
+        ),
+        check_row_order=False,
+        check_column_order=False,
+    )
+
+
+def test_fetch_data_keep_duplicate_examples(annotation_dir: Path) -> None:
+    with patch("arctix.dataset.breakfast.download_annotations") as download_mock:
+        data = fetch_data(
+            annotation_dir, name="segmentation_coarse", remove_duplicate=False, force_download=True
+        )
+        download_mock.assert_called_once_with(annotation_dir, True)
+    assert_frame_equal(
+        data,
+        pl.DataFrame(
+            {
+                Column.ACTION: [
+                    "SIL",
+                    "take_bowl",
+                    "pour_cereals",
+                    "pour_milk",
+                    "stir_cereals",
+                    "SIL",
+                    "SIL",
+                    "take_bowl",
+                    "pour_cereals",
+                    "pour_milk",
+                    "stir_cereals",
+                    "SIL",
+                    "SIL",
+                    "pour_milk",
+                    "spoon_powder",
+                    "SIL",
+                ],
+                Column.START_TIME: [
+                    1.0,
+                    31.0,
+                    151.0,
+                    429.0,
+                    576.0,
+                    706.0,
+                    1.0,
+                    31.0,
+                    151.0,
+                    429.0,
+                    576.0,
+                    706.0,
+                    1.0,
+                    48.0,
+                    216.0,
+                    566.0,
+                ],
+                Column.END_TIME: [
+                    30.0,
+                    150.0,
+                    428.0,
+                    575.0,
+                    705.0,
+                    836.0,
+                    30.0,
+                    150.0,
+                    428.0,
+                    575.0,
+                    705.0,
+                    836.0,
+                    47.0,
+                    215.0,
+                    565.0,
+                    747.0,
+                ],
+                Column.COOKING_ACTIVITY: [
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "milk",
+                    "milk",
+                    "milk",
+                    "milk",
+                ],
+                Column.PERSON_ID: [
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P54",
+                    "P54",
+                    "P54",
+                    "P54",
+                ],
+            }
+        ),
+        check_column_order=False,
+    )
+
+
+def test_fetch_data_incorrect_name(tmp_path: Path) -> None:
+    with pytest.raises(RuntimeError):
+        fetch_data(tmp_path, "incorrect")
 
 
 ##########################################
@@ -131,9 +312,9 @@ def test_download_annotations_dir_exists_force_download(tmp_path: Path) -> None:
         ]
 
 
-##########################################
+######################################
 #     Tests for load_annotations     #
-##########################################
+######################################
 
 
 def test_load_annotations_empty(tmp_path: Path) -> None:
