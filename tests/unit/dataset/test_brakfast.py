@@ -21,7 +21,7 @@ from arctix.dataset.breakfast import (
 
 
 @pytest.fixture(scope="module")
-def annotation_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
+def data_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
     path = tmp_path_factory.mktemp("data").joinpath("P03_cam01_P03_cereals.txt")
     save_text(
         "1-30 SIL  \n"
@@ -36,7 +36,7 @@ def annotation_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
 
 
 @pytest.fixture(scope="module")
-def annotation_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
+def data_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
     path = tmp_path_factory.mktemp("dataset")
     save_text(
         "1-30 SIL  \n"
@@ -68,10 +68,10 @@ def annotation_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
 ################################
 
 
-def test_fetch_data_remove_duplicate_examples(annotation_dir: Path) -> None:
+def test_fetch_data_remove_duplicate_examples(data_dir: Path) -> None:
     with patch("arctix.dataset.breakfast.download_data") as download_mock:
-        data = fetch_data(annotation_dir, name="segmentation_coarse")
-        download_mock.assert_called_once_with(annotation_dir, False)
+        data = fetch_data(data_dir, name="segmentation_coarse")
+        download_mock.assert_called_once_with(data_dir, False)
     assert_frame_equal(
         data,
         pl.DataFrame(
@@ -132,12 +132,12 @@ def test_fetch_data_remove_duplicate_examples(annotation_dir: Path) -> None:
     )
 
 
-def test_fetch_data_keep_duplicate_examples(annotation_dir: Path) -> None:
+def test_fetch_data_keep_duplicate_examples(data_dir: Path) -> None:
     with patch("arctix.dataset.breakfast.download_data") as download_mock:
         data = fetch_data(
-            annotation_dir, name="segmentation_coarse", remove_duplicate=False, force_download=True
+            data_dir, name="segmentation_coarse", remove_duplicate=False, force_download=True
         )
-        download_mock.assert_called_once_with(annotation_dir, True)
+        download_mock.assert_called_once_with(data_dir, True)
     assert_frame_equal(
         data,
         pl.DataFrame(
@@ -321,9 +321,9 @@ def test_load_data_empty(tmp_path: Path) -> None:
     assert_frame_equal(load_data(tmp_path), pl.DataFrame({}))
 
 
-def test_load_data(annotation_dir: Path) -> None:
+def test_load_data(data_dir: Path) -> None:
     assert_frame_equal(
-        load_data(annotation_dir),
+        load_data(data_dir),
         pl.DataFrame(
             {
                 Column.ACTION: [
@@ -382,9 +382,9 @@ def test_load_data(annotation_dir: Path) -> None:
     )
 
 
-def test_load_data_keep_duplicates(annotation_dir: Path) -> None:
+def test_load_data_keep_duplicates(data_dir: Path) -> None:
     assert_frame_equal(
-        load_data(annotation_dir, remove_duplicate=False),
+        load_data(data_dir, remove_duplicate=False),
         pl.DataFrame(
             {
                 Column.ACTION: [
@@ -493,9 +493,9 @@ def test_load_annotation_file_incorrect_extension() -> None:
         load_annotation_file(Mock(spec=Path))
 
 
-def test_load_annotation_file(annotation_file: Path) -> None:
+def test_load_annotation_file(data_file: Path) -> None:
     assert objects_are_equal(
-        load_annotation_file(annotation_file),
+        load_annotation_file(data_file),
         {
             Column.ACTION: ["SIL", "take_bowl", "pour_cereals", "pour_milk", "stir_cereals", "SIL"],
             Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0],
