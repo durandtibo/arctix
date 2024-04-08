@@ -80,7 +80,7 @@ class Column:
     ACTION: str = "action"
     COOKING_ACTIVITY: str = "cooking_activity"
     END_TIME: str = "end_time"
-    PERSON_ID: str = "person_id"
+    PERSON: str = "person"
     START_TIME: str = "start_time"
 
 
@@ -199,7 +199,7 @@ def load_annotation_file(path: Path) -> dict[str, list]:
     annotation = parse_annotation_lines(lines)
     person_id = path.stem.split("_", maxsplit=1)[0]
     cooking_activity = path.stem.rsplit("_", maxsplit=1)[-1]
-    annotation[Column.PERSON_ID] = [person_id] * len(lines)
+    annotation[Column.PERSON] = [person_id] * len(lines)
     annotation[Column.COOKING_ACTIVITY] = [cooking_activity] * len(lines)
     return annotation
 

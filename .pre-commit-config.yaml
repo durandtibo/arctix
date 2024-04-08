@@ -4,6 +4,10 @@ default_language_version:
 default_stages: [ commit ]
 
 repos:
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.7.1
+    hooks:
+      - id: nbstripout
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.15.2
     hooks:
