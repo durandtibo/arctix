@@ -20,11 +20,11 @@ The documentation assumes the data are downloaded in the directory `/path/to/dat
 from __future__ import annotations
 
 __all__ = [
-    "download_annotations",
+    "download_data",
     "fetch_data",
-    "load_annotations",
     "load_annotation_file",
-    "parse_action_annotation_lines",
+    "load_data",
+    "parse_annotation_lines",
 ]
 
 import logging
@@ -122,11 +122,11 @@ def fetch_data(
         msg = f"Incorrect name: {name}. Valid names are: {valid_names}"
         raise RuntimeError(msg)
     path = sanitize_path(path)
-    download_annotations(path, force_download)
-    return load_annotations(path.joinpath(name), remove_duplicate)
+    download_data(path, force_download)
+    return load_data(path.joinpath(name), remove_duplicate)
 
 
-def download_annotations(path: Path, force_download: bool = False) -> None:
+def download_data(path: Path, force_download: bool = False) -> None:
     r"""Download the Breakfast annotations.
 
     Args:
@@ -141,8 +141,8 @@ def download_annotations(path: Path, force_download: bool = False) -> None:
     ```pycon
 
     >>> from pathlib import Path
-    >>> from arctix.dataset.breakfast import download_annotations
-    >>> download_annotations(Path("/path/to/data/breakfast/"))  # doctest: +SKIP
+    >>> from arctix.dataset.breakfast import download_data
+    >>> download_data(Path("/path/to/data/breakfast/"))  # doctest: +SKIP
 
     ```
     """
@@ -156,7 +156,7 @@ def download_annotations(path: Path, force_download: bool = False) -> None:
             tar_file.unlink(missing_ok=True)
 
 
-def load_annotations(path: Path, remove_duplicate: bool = True) -> pl.DataFrame:
+def load_data(path: Path, remove_duplicate: bool = True) -> pl.DataFrame:
     r"""Load all the annotations in a DataFrame.
 
     Args:
@@ -196,7 +196,7 @@ def load_annotation_file(path: Path) -> dict[str, list]:
     with Path.open(path) as file:
         lines = [x.strip() for x in file.readlines()]
 
-    annotation = parse_action_annotation_lines(lines)
+    annotation = parse_annotation_lines(lines)
     person_id = path.stem.split("_", maxsplit=1)[0]
     cooking_activity = path.stem.rsplit("_", maxsplit=1)[-1]
     annotation[Column.PERSON_ID] = [person_id] * len(lines)
@@ -204,7 +204,7 @@ def load_annotation_file(path: Path) -> dict[str, list]:
     return annotation
 
 
-def parse_action_annotation_lines(lines: Sequence[str]) -> dict:
+def parse_annotation_lines(lines: Sequence[str]) -> dict:
     r"""Parse the action annotation lines and returns a dictionary with
     the prepared data.
 
@@ -231,6 +231,6 @@ if __name__ == "__main__":  # pragma: no cover
     logging.basicConfig(level=logging.DEBUG)
 
     path = Path("~/Downloads/breakfast")
-    download_annotations(path)
-    data = load_annotations(path.joinpath("segmentation_coarse"))
+    download_data(path)
+    data = load_data(path.joinpath("segmentation_coarse"))
     logger.info(f"data:\n{data}")
