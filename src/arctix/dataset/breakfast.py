@@ -21,6 +21,7 @@ from __future__ import annotations
 
 __all__ = [
     "download_annotations",
+    "fetch_data",
     "load_annotations",
     "load_annotation_file",
     "parse_action_annotation_lines",
@@ -81,6 +82,48 @@ class Column:
     END_TIME: str = "end_time"
     PERSON_ID: str = "person_id"
     START_TIME: str = "start_time"
+
+
+def fetch_data(
+    path: Path, name: str, remove_duplicate: bool = True, force_download: bool = False
+) -> pl.DataFrame:
+    r"""Download and load the data for Breakfast dataset.
+
+    Args:
+        path: The path where to store the downloaded data.
+        name: The name of the dataset. The valid names are
+            ``'segmentation_coarse'`` and ``'segmentation_fine'``.
+        remove_duplicate: If ``True``, the duplicate examples are
+            removed.
+        force_download: If ``True``, the annotations are downloaded
+            everytime this function is called. If ``False``,
+            the annotations are downloaded only if the
+            given path does not contain the annotation data.
+
+    Returns:
+        The data in a DataFrame
+
+    Raises:
+        RuntimeError: if the name is incorrect
+
+    Example usage:
+
+    ```pycon
+
+    >>> from pathlib import Path
+    >>> from arctix.dataset.breakfast import fetch_data
+    >>> data = fetch_data(
+    ...     Path("/path/to/data/breakfast/"), "segmentation_coarse"
+    ... )  # doctest: +SKIP
+
+    ```
+    """
+    if name not in (valid_names := set(URLS.keys())):
+        msg = f"Incorrect name: {name}. Valid names are: {valid_names}"
+        raise RuntimeError(msg)
+    path = sanitize_path(path)
+    download_annotations(path, force_download)
+    return load_annotations(path.joinpath(name), remove_duplicate)
 
 
 def download_annotations(path: Path, force_download: bool = False) -> None:
