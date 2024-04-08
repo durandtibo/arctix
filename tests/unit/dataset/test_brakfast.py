@@ -12,11 +12,11 @@ from polars.testing import assert_frame_equal
 from arctix.dataset.breakfast import (
     URLS,
     Column,
-    download_annotations,
+    download_data,
     fetch_data,
     load_annotation_file,
-    load_annotations,
-    parse_action_annotation_lines,
+    load_data,
+    parse_annotation_lines,
 )
 
 
@@ -69,7 +69,7 @@ def annotation_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
 
 
 def test_fetch_data_remove_duplicate_examples(annotation_dir: Path) -> None:
-    with patch("arctix.dataset.breakfast.download_annotations") as download_mock:
+    with patch("arctix.dataset.breakfast.download_data") as download_mock:
         data = fetch_data(annotation_dir, name="segmentation_coarse")
         download_mock.assert_called_once_with(annotation_dir, False)
     assert_frame_equal(
@@ -133,7 +133,7 @@ def test_fetch_data_remove_duplicate_examples(annotation_dir: Path) -> None:
 
 
 def test_fetch_data_keep_duplicate_examples(annotation_dir: Path) -> None:
-    with patch("arctix.dataset.breakfast.download_annotations") as download_mock:
+    with patch("arctix.dataset.breakfast.download_data") as download_mock:
         data = fetch_data(
             annotation_dir, name="segmentation_coarse", remove_duplicate=False, force_download=True
         )
@@ -243,17 +243,17 @@ def test_fetch_data_incorrect_name(tmp_path: Path) -> None:
         fetch_data(tmp_path, "incorrect")
 
 
-##########################################
-#     Tests for download_annotations     #
-##########################################
+###################################
+#     Tests for download_data     #
+###################################
 
 
-def test_download_annotations(tmp_path: Path) -> None:
+def test_download_data(tmp_path: Path) -> None:
     with (
         patch("arctix.dataset.breakfast.download_drive_file") as download_mock,
         patch("arctix.dataset.breakfast.tarfile.open") as tarfile_mock,
     ):
-        download_annotations(tmp_path)
+        download_data(tmp_path)
         assert download_mock.call_args_list == [
             call(
                 URLS["segmentation_coarse"],
@@ -274,24 +274,24 @@ def test_download_annotations(tmp_path: Path) -> None:
         ]
 
 
-def test_download_annotations_dir_exists(tmp_path: Path) -> None:
+def test_download_data_dir_exists(tmp_path: Path) -> None:
     with (
         patch("arctix.dataset.breakfast.Path.is_dir", lambda *args, **kwargs: True),  # noqa: ARG005
         patch("arctix.dataset.breakfast.download_drive_file") as download_mock,
         patch("arctix.dataset.breakfast.tarfile.open") as tarfile_mock,
     ):
-        download_annotations(tmp_path)
+        download_data(tmp_path)
         download_mock.assert_not_called()
         tarfile_mock.assert_not_called()
 
 
-def test_download_annotations_dir_exists_force_download(tmp_path: Path) -> None:
+def test_download_data_dir_exists_force_download(tmp_path: Path) -> None:
     with (
         patch("arctix.dataset.breakfast.Path.is_dir", lambda *args, **kwargs: True),  # noqa: ARG005
         patch("arctix.dataset.breakfast.download_drive_file") as download_mock,
         patch("arctix.dataset.breakfast.tarfile.open") as tarfile_mock,
     ):
-        download_annotations(tmp_path, force_download=True)
+        download_data(tmp_path, force_download=True)
         assert download_mock.call_args_list == [
             call(
                 URLS["segmentation_coarse"],
@@ -312,18 +312,18 @@ def test_download_annotations_dir_exists_force_download(tmp_path: Path) -> None:
         ]
 
 
-######################################
-#     Tests for load_annotations     #
-######################################
+###############################
+#     Tests for load_data     #
+###############################
 
 
-def test_load_annotations_empty(tmp_path: Path) -> None:
-    assert_frame_equal(load_annotations(tmp_path), pl.DataFrame({}))
+def test_load_data_empty(tmp_path: Path) -> None:
+    assert_frame_equal(load_data(tmp_path), pl.DataFrame({}))
 
 
-def test_load_annotations(annotation_dir: Path) -> None:
+def test_load_data(annotation_dir: Path) -> None:
     assert_frame_equal(
-        load_annotations(annotation_dir),
+        load_data(annotation_dir),
         pl.DataFrame(
             {
                 Column.ACTION: [
@@ -382,9 +382,9 @@ def test_load_annotations(annotation_dir: Path) -> None:
     )
 
 
-def test_load_annotations_keep_duplicates(annotation_dir: Path) -> None:
+def test_load_data_keep_duplicates(annotation_dir: Path) -> None:
     assert_frame_equal(
-        load_annotations(annotation_dir, remove_duplicate=False),
+        load_data(annotation_dir, remove_duplicate=False),
         pl.DataFrame(
             {
                 Column.ACTION: [
@@ -513,14 +513,14 @@ def test_load_annotation_file(annotation_file: Path) -> None:
     )
 
 
-###################################################
-#     Tests for parse_action_annotation_lines     #
-###################################################
+############################################
+#     Tests for parse_annotation_lines     #
+############################################
 
 
-def test_parse_action_annotation_lines_empty() -> None:
+def test_parse_annotation_lines_empty() -> None:
     assert objects_are_equal(
-        parse_action_annotation_lines([]),
+        parse_annotation_lines([]),
         {
             Column.ACTION: [],
             Column.START_TIME: [],
@@ -531,7 +531,7 @@ def test_parse_action_annotation_lines_empty() -> None:
 
 def test_parse_annotation_lines() -> None:
     assert objects_are_equal(
-        parse_action_annotation_lines(
+        parse_annotation_lines(
             [
                 "1-30 SIL  \n",
                 "31-150 take_bowl  \n",
