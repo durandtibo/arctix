@@ -113,7 +113,7 @@ def test_fetch_data_remove_duplicate_examples(data_dir: Path) -> None:
                     "milk",
                     "milk",
                 ],
-                Column.PERSON_ID: [
+                Column.PERSON: [
                     "P03",
                     "P03",
                     "P03",
@@ -214,7 +214,7 @@ def test_fetch_data_keep_duplicate_examples(data_dir: Path) -> None:
                     "milk",
                     "milk",
                 ],
-                Column.PERSON_ID: [
+                Column.PERSON: [
                     "P03",
                     "P03",
                     "P03",
@@ -363,7 +363,7 @@ def test_load_data(data_dir: Path) -> None:
                     "milk",
                     "milk",
                 ],
-                Column.PERSON_ID: [
+                Column.PERSON: [
                     "P03",
                     "P03",
                     "P03",
@@ -459,7 +459,7 @@ def test_load_data_keep_duplicates(data_dir: Path) -> None:
                     "milk",
                     "milk",
                 ],
-                Column.PERSON_ID: [
+                Column.PERSON: [
                     "P03",
                     "P03",
                     "P03",
@@ -508,7 +508,7 @@ def test_load_annotation_file(data_file: Path) -> None:
                 "cereals",
                 "cereals",
             ],
-            Column.PERSON_ID: ["P03", "P03", "P03", "P03", "P03", "P03"],
+            Column.PERSON: ["P03", "P03", "P03", "P03", "P03", "P03"],
         },
     )
 
