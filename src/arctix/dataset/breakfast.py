@@ -19,7 +19,12 @@ The documentation assumes the data are downloaded in the directory `/path/to/dat
 
 from __future__ import annotations
 
-__all__ = ["download_annotations", "load_annotation", "parse_action_annotation_lines"]
+__all__ = [
+    "download_annotations",
+    "load_annotations",
+    "load_annotation_file",
+    "parse_action_annotation_lines",
+]
 
 import logging
 import tarfile
@@ -116,10 +121,10 @@ def load_annotations(path: Path, remove_duplicate: bool = True) -> pl.DataFrame:
         remove_duplicate: If ``True``, the duplicate rows are removed.
 
     Returns:
-        tuple: A tuple with the data and metadata.
+        The annotations in a DataFrame.
     """
     paths = FileFilter(PathLister([sanitize_path(path)], pattern="**/*.txt"))
-    annotations = list(map(load_annotation, paths))
+    annotations = list(map(load_annotation_file, paths))
     data = convert_to_dict_of_flat_lists(annotations)
     data = pl.DataFrame(data)
     if remove_duplicate:
@@ -127,7 +132,7 @@ def load_annotations(path: Path, remove_duplicate: bool = True) -> pl.DataFrame:
     return data
 
 
-def load_annotation(path: Path) -> dict[str, list]:
+def load_annotation_file(path: Path) -> dict[str, list]:
     r"""Load the annotation data from a text file.
 
     Args:

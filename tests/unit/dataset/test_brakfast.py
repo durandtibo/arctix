@@ -13,7 +13,7 @@ from arctix.dataset.breakfast import (
     URLS,
     Column,
     download_annotations,
-    load_annotation,
+    load_annotation_file,
     load_annotations,
     parse_action_annotation_lines,
 )
@@ -302,19 +302,19 @@ def test_load_annotations_keep_duplicates(annotation_dir: Path) -> None:
     )
 
 
-#####################################
-#     Tests for load_annotation     #
-#####################################
+##########################################
+#     Tests for load_annotation_file     #
+##########################################
 
 
-def test_load_annotation_incorrect_extension() -> None:
+def test_load_annotation_file_incorrect_extension() -> None:
     with pytest.raises(ValueError, match="Incorrect file extension."):
-        load_annotation(Mock(spec=Path))
+        load_annotation_file(Mock(spec=Path))
 
 
-def test_load_annotation(annotation_file: Path) -> None:
+def test_load_annotation_file(annotation_file: Path) -> None:
     assert objects_are_equal(
-        load_annotation(annotation_file),
+        load_annotation_file(annotation_file),
         {
             Column.ACTION: ["SIL", "take_bowl", "pour_cereals", "pour_milk", "stir_cereals", "SIL"],
             Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0],
