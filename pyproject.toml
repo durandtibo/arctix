@@ -35,9 +35,10 @@ python = ">=3.9,<3.13"
 
 # Optional dependencies
 gdown = { version = ">=5.0,<6.0", optional = true }
+tqdm = { version = ">=4.65,<5.0", optional = true }
 
 [tool.poetry.extras]
-all = ["gdown"]
+all = ["gdown", "tqdm"]
 
 [tool.poetry.group.exp]
 optional = true
