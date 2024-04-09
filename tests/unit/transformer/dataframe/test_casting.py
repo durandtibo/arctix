@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import numpy as np
 import polars as pl
 from polars.testing import assert_frame_equal
 
@@ -32,11 +31,12 @@ def test_cast_dataframe_transformer_transform_int32() -> None:
         out,
         pl.DataFrame(
             {
-                "col1": np.array([1, 2, 3, 4, 5], dtype=np.int32),
+                "col1": [1, 2, 3, 4, 5],
                 "col2": ["1", "2", "3", "4", "5"],
-                "col3": np.array([1, 2, 3, 4, 5], dtype=np.int32),
+                "col3": [1, 2, 3, 4, 5],
                 "col4": ["a", "b", "c", "d", "e"],
-            }
+            },
+            schema={"col1": pl.Int32, "col2": pl.String, "col3": pl.Int32, "col4": pl.String},
         ),
     )
 
@@ -55,11 +55,12 @@ def test_cast_dataframe_transformer_transform_float32() -> None:
     assert_frame_equal(
         out,
         pl.DataFrame(
-            {
-                "col1": np.array([1, 2, 3, 4, 5], dtype=np.float32),
-                "col2": np.array([1, 2, 3, 4, 5], dtype=np.float32),
+            data={
+                "col1": [1, 2, 3, 4, 5],
+                "col2": [1, 2, 3, 4, 5],
                 "col3": ["1", "2", "3", "4", "5"],
                 "col4": ["a", "b", "c", "d", "e"],
-            }
+            },
+            schema={"col1": pl.Float32, "col2": pl.Float32, "col3": pl.String, "col4": pl.String},
         ),
     )
