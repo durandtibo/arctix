@@ -4,8 +4,11 @@ from __future__ import annotations
 
 __all__ = [
     "check_gdown",
-    "is_gdown_available",
+    "check_tqdm",
     "gdown_available",
+    "is_gdown_available",
+    "is_tqdm_available",
+    "tqdm_available",
 ]
 
 from importlib.util import find_spec
@@ -88,3 +91,77 @@ def gdown_available(fn: Callable[..., Any]) -> Callable[..., Any]:
     ```
     """
     return decorator_package_available(fn, is_gdown_available)
+
+
+################
+#     tqdm     #
+################
+
+
+def is_tqdm_available() -> bool:
+    r"""Indicate if the ``tqdm`` package is installed or not.
+
+    Returns:
+        ``True`` if ``tqdm`` is available otherwise ``False``.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from arctix.utils.imports import is_tqdm_available
+    >>> is_tqdm_available()
+
+    ```
+    """
+    return find_spec("tqdm") is not None
+
+
+def check_tqdm() -> None:
+    r"""Check if the ``tqdm`` package is installed.
+
+    Raises:
+        RuntimeError: if the ``tqdm`` package is not installed.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from arctix.utils.imports import check_tqdm
+    >>> check_tqdm()
+
+    ```
+    """
+    if not is_tqdm_available():
+        msg = (
+            "`tqdm` package is required but not installed. "
+            "You can install `tqdm` package with the command:\n\n"
+            "pip install tqdm\n"
+        )
+        raise RuntimeError(msg)
+
+
+def tqdm_available(fn: Callable[..., Any]) -> Callable[..., Any]:
+    r"""Implement a decorator to execute a function only if ``tqdm``
+    package is installed.
+
+    Args:
+        fn: Specifies the function to execute.
+
+    Returns:
+        A wrapper around ``fn`` if ``tqdm`` package is installed,
+            otherwise ``None``.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from arctix.utils.imports import tqdm_available
+    >>> @tqdm_available
+    ... def my_function(n: int = 0) -> int:
+    ...     return 42 + n
+    ...
+    >>> my_function()
+
+    ```
+    """
+    return decorator_package_available(fn, is_tqdm_available)

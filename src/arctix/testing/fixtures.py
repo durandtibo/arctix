@@ -2,10 +2,11 @@ r"""Define some PyTest fixtures."""
 
 from __future__ import annotations
 
-__all__ = ["gdown_available"]
+__all__ = ["gdown_available", "tqdm_available"]
 
 import pytest
 
-from arctix.utils.imports import is_gdown_available
+from arctix.utils.imports import is_gdown_available, is_tqdm_available
 
 gdown_available = pytest.mark.skipif(not is_gdown_available(), reason="Require gdown")
+tqdm_available = pytest.mark.skipif(not is_tqdm_available(), reason="Require tqdm")
