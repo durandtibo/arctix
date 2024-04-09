@@ -6,6 +6,8 @@ __all__ = [
     "BaseDataFrameTransformer",
     "Cast",
     "CastDataFrameTransformer",
+    "Replace",
+    "ReplaceDataFrameTransformer",
     "is_dataframe_transformer_config",
     "setup_dataframe_transformer",
 ]
@@ -17,3 +19,5 @@ from arctix.transformer.dataframe.base import (
 )
 from arctix.transformer.dataframe.casting import CastDataFrameTransformer
 from arctix.transformer.dataframe.casting import CastDataFrameTransformer as Cast
+from arctix.transformer.dataframe.replace import ReplaceDataFrameTransformer
+from arctix.transformer.dataframe.replace import ReplaceDataFrameTransformer as Replace
