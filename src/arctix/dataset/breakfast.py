@@ -25,6 +25,7 @@ __all__ = [
     "load_annotation_file",
     "load_data",
     "parse_annotation_lines",
+    "prepare_data",
 ]
 
 import logging
@@ -35,7 +36,8 @@ from typing import TYPE_CHECKING
 import polars as pl
 from iden.utils.path import sanitize_path
 
-from arctix.utils.dataframe import drop_duplicates
+from arctix.transformer import dataframe as td
+from arctix.utils.dataframe import drop_duplicates, generate_vocabulary
 from arctix.utils.download import download_drive_file
 from arctix.utils.iter import FileFilter, PathLister
 from arctix.utils.mapping import convert_to_dict_of_flat_lists
@@ -78,9 +80,11 @@ NUM_COOKING_ACTIVITIES = {
 
 class Column:
     ACTION: str = "action"
+    ACTION_ID: str = "action_id"
     COOKING_ACTIVITY: str = "cooking_activity"
     END_TIME: str = "end_time"
     PERSON: str = "person"
+    PERSON_ID: str = "person_id"
     START_TIME: str = "start_time"
 
 
@@ -225,6 +229,31 @@ def parse_annotation_lines(lines: Sequence[str]) -> dict:
         start_time.append(float(start))
         end_time.append(float(end))
     return {Column.ACTION: actions, Column.START_TIME: start_time, Column.END_TIME: end_time}
+
+
+def prepare_data(frame: pl.DataFrame) -> tuple[pl.DataFrame, dict]:
+    r"""Prepare the data.
+
+    Args:
+        frame: The raw DataFrame.
+
+    Returns:
+        A tuple containing the prepared data and the metadata.
+    """
+    vocab_action = generate_vocabulary(frame, col=Column.ACTION)
+    vocab_person = generate_vocabulary(frame, col=Column.PERSON)
+    transformer = td.Sequential(
+        [
+            td.TokenToIndex(
+                vocab=vocab_action, token_column=Column.ACTION, index_column=Column.ACTION_ID
+            ),
+            td.TokenToIndex(
+                vocab=vocab_person, token_column=Column.PERSON, index_column=Column.PERSON_ID
+            ),
+        ]
+    )
+    out = transformer.transform(frame)
+    return out, {"vocab_action": vocab_action, "vocab_person": vocab_person}
 
 
 if __name__ == "__main__":  # pragma: no cover
