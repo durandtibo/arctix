@@ -87,6 +87,6 @@ class CastDataFrameTransformer(BaseDataFrameTransformer):
         return f"{self.__class__.__qualname__}(columns={self._columns}, dtype={self._dtype})"
 
     def transform(self, frame: pl.DataFrame) -> pl.DataFrame:
-        for col in tqdm(self._columns, desc=f"Converting to {self._dtype}"):
+        for col in tqdm(self._columns, desc=f"converting to {self._dtype}"):
             frame = frame.with_columns(frame.select(pl.col(col).cast(self._dtype)))
         return frame
