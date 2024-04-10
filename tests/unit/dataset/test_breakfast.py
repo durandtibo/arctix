@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from pathlib import Path
 from unittest.mock import Mock, call, patch
 
@@ -17,7 +18,9 @@ from arctix.dataset.breakfast import (
     load_annotation_file,
     load_data,
     parse_annotation_lines,
+    prepare_data,
 )
+from arctix.utils.vocab import Vocabulary
 
 
 @pytest.fixture(scope="module")
@@ -545,5 +548,144 @@ def test_parse_annotation_lines() -> None:
             Column.ACTION: ["SIL", "take_bowl", "pour_cereals", "pour_milk", "stir_cereals", "SIL"],
             Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0],
             Column.END_TIME: [30.0, 150.0, 428.0, 575.0, 705.0, 836.0],
+        },
+    )
+
+
+##################################
+#     Tests for prepare_data     #
+##################################
+
+
+def test_prepare_data_empty() -> None:
+    data, metadata = prepare_data(
+        pl.DataFrame(
+            {
+                Column.ACTION: [
+                    "SIL",
+                    "take_bowl",
+                    "pour_cereals",
+                    "pour_milk",
+                    "stir_cereals",
+                    "SIL",
+                    "SIL",
+                    "pour_milk",
+                    "spoon_powder",
+                    "SIL",
+                ],
+                Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
+                Column.END_TIME: [
+                    30.0,
+                    150.0,
+                    428.0,
+                    575.0,
+                    705.0,
+                    836.0,
+                    47.0,
+                    215.0,
+                    565.0,
+                    747.0,
+                ],
+                Column.COOKING_ACTIVITY: [
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "milk",
+                    "milk",
+                    "milk",
+                    "milk",
+                ],
+                Column.PERSON: [
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P54",
+                    "P54",
+                    "P54",
+                    "P54",
+                ],
+            }
+        )
+    )
+    assert_frame_equal(
+        data,
+        pl.DataFrame(
+            {
+                Column.ACTION: [
+                    "SIL",
+                    "take_bowl",
+                    "pour_cereals",
+                    "pour_milk",
+                    "stir_cereals",
+                    "SIL",
+                    "SIL",
+                    "pour_milk",
+                    "spoon_powder",
+                    "SIL",
+                ],
+                Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
+                Column.END_TIME: [
+                    30.0,
+                    150.0,
+                    428.0,
+                    575.0,
+                    705.0,
+                    836.0,
+                    47.0,
+                    215.0,
+                    565.0,
+                    747.0,
+                ],
+                Column.COOKING_ACTIVITY: [
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "milk",
+                    "milk",
+                    "milk",
+                    "milk",
+                ],
+                Column.PERSON: [
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P54",
+                    "P54",
+                    "P54",
+                    "P54",
+                ],
+                Column.ACTION_ID: [0, 2, 3, 1, 4, 0, 0, 1, 5, 0],
+                Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+            }
+        ),
+    )
+    assert objects_are_equal(
+        metadata,
+        {
+            "vocab_action": Vocabulary(
+                Counter(
+                    {
+                        "SIL": 4,
+                        "pour_milk": 2,
+                        "take_bowl": 1,
+                        "pour_cereals": 1,
+                        "stir_cereals": 1,
+                        "spoon_powder": 1,
+                    }
+                )
+            ),
+            "vocab_person": Vocabulary(Counter({"P03": 6, "P54": 4})),
         },
     )
