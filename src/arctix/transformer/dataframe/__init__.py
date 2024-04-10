@@ -10,6 +10,8 @@ __all__ = [
     "IndexToTokenDataFrameTransformer",
     "Replace",
     "ReplaceDataFrameTransformer",
+    "Sequential",
+    "SequentialDataFrameTransformer",
     "TokenToIndex",
     "TokenToIndexDataFrameTransformer",
     "is_dataframe_transformer_config",
@@ -25,6 +27,10 @@ from arctix.transformer.dataframe.casting import CastDataFrameTransformer
 from arctix.transformer.dataframe.casting import CastDataFrameTransformer as Cast
 from arctix.transformer.dataframe.replace import ReplaceDataFrameTransformer
 from arctix.transformer.dataframe.replace import ReplaceDataFrameTransformer as Replace
+from arctix.transformer.dataframe.sequential import SequentialDataFrameTransformer
+from arctix.transformer.dataframe.sequential import (
+    SequentialDataFrameTransformer as Sequential,
+)
 from arctix.transformer.dataframe.vocab import IndexToTokenDataFrameTransformer
 from arctix.transformer.dataframe.vocab import (
     IndexToTokenDataFrameTransformer as IndexToToken,
