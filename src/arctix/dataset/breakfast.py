@@ -175,10 +175,10 @@ def load_data(path: Path, remove_duplicate: bool = True) -> pl.DataFrame:
     annotations = list(map(load_annotation_file, paths))
     data = convert_to_dict_of_flat_lists(annotations)
     data = pl.DataFrame(data)
-    if data.shape[0]:
-        data = data.sort(by=[Column.COOKING_ACTIVITY, Column.PERSON, Column.START_TIME])
     if remove_duplicate:
         data = drop_duplicates(data)
+    if data.select(pl.count()).item():
+        data = data.sort(by=[Column.COOKING_ACTIVITY, Column.PERSON, Column.START_TIME])
     return data
 
 
@@ -250,6 +250,7 @@ def prepare_data(frame: pl.DataFrame) -> tuple[pl.DataFrame, dict]:
     )
     transformer = td.Sequential(
         [
+            td.Sort(columns=[Column.COOKING_ACTIVITY, Column.PERSON, Column.START_TIME]),
             td.Cast(columns=[Column.START_TIME, Column.END_TIME], dtype=pl.Float32),
             td.StripChars(columns=[Column.ACTION, Column.PERSON, Column.COOKING_ACTIVITY]),
             td.TokenToIndex(
