@@ -12,10 +12,12 @@ __all__ = [
     "ReplaceDataFrameTransformer",
     "Sequential",
     "SequentialDataFrameTransformer",
+    "Sort",
+    "SortDataFrameTransformer",
+    "StripChars",
+    "StripCharsDataFrameTransformer",
     "TokenToIndex",
     "TokenToIndexDataFrameTransformer",
-    "StripCharsDataFrameTransformer",
-    "StripChars",
     "is_dataframe_transformer_config",
     "setup_dataframe_transformer",
 ]
@@ -33,6 +35,8 @@ from arctix.transformer.dataframe.sequential import SequentialDataFrameTransform
 from arctix.transformer.dataframe.sequential import (
     SequentialDataFrameTransformer as Sequential,
 )
+from arctix.transformer.dataframe.sorting import SortDataFrameTransformer
+from arctix.transformer.dataframe.sorting import SortDataFrameTransformer as Sort
 from arctix.transformer.dataframe.string import StripCharsDataFrameTransformer
 from arctix.transformer.dataframe.string import (
     StripCharsDataFrameTransformer as StripChars,
