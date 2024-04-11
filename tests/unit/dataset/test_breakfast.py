@@ -147,16 +147,16 @@ def test_fetch_data_keep_duplicate_examples(data_dir: Path) -> None:
             {
                 Column.ACTION: [
                     "SIL",
-                    "take_bowl",
-                    "pour_cereals",
-                    "pour_milk",
-                    "stir_cereals",
-                    "SIL",
                     "SIL",
                     "take_bowl",
+                    "take_bowl",
+                    "pour_cereals",
                     "pour_cereals",
                     "pour_milk",
+                    "pour_milk",
                     "stir_cereals",
+                    "stir_cereals",
+                    "SIL",
                     "SIL",
                     "SIL",
                     "pour_milk",
@@ -165,16 +165,16 @@ def test_fetch_data_keep_duplicate_examples(data_dir: Path) -> None:
                 ],
                 Column.START_TIME: [
                     1.0,
-                    31.0,
-                    151.0,
-                    429.0,
-                    576.0,
-                    706.0,
                     1.0,
                     31.0,
+                    31.0,
+                    151.0,
                     151.0,
                     429.0,
+                    429.0,
                     576.0,
+                    576.0,
+                    706.0,
                     706.0,
                     1.0,
                     48.0,
@@ -183,16 +183,16 @@ def test_fetch_data_keep_duplicate_examples(data_dir: Path) -> None:
                 ],
                 Column.END_TIME: [
                     30.0,
-                    150.0,
-                    428.0,
-                    575.0,
-                    705.0,
-                    836.0,
                     30.0,
                     150.0,
+                    150.0,
+                    428.0,
                     428.0,
                     575.0,
+                    575.0,
                     705.0,
+                    705.0,
+                    836.0,
                     836.0,
                     47.0,
                     215.0,
@@ -392,16 +392,16 @@ def test_load_data_keep_duplicates(data_dir: Path) -> None:
             {
                 Column.ACTION: [
                     "SIL",
-                    "take_bowl",
-                    "pour_cereals",
-                    "pour_milk",
-                    "stir_cereals",
-                    "SIL",
                     "SIL",
                     "take_bowl",
+                    "take_bowl",
+                    "pour_cereals",
                     "pour_cereals",
                     "pour_milk",
+                    "pour_milk",
                     "stir_cereals",
+                    "stir_cereals",
+                    "SIL",
                     "SIL",
                     "SIL",
                     "pour_milk",
@@ -410,16 +410,16 @@ def test_load_data_keep_duplicates(data_dir: Path) -> None:
                 ],
                 Column.START_TIME: [
                     1.0,
-                    31.0,
-                    151.0,
-                    429.0,
-                    576.0,
-                    706.0,
                     1.0,
                     31.0,
+                    31.0,
+                    151.0,
                     151.0,
                     429.0,
+                    429.0,
                     576.0,
+                    576.0,
+                    706.0,
                     706.0,
                     1.0,
                     48.0,
@@ -428,16 +428,16 @@ def test_load_data_keep_duplicates(data_dir: Path) -> None:
                 ],
                 Column.END_TIME: [
                     30.0,
-                    150.0,
-                    428.0,
-                    575.0,
-                    705.0,
-                    836.0,
                     30.0,
                     150.0,
+                    150.0,
+                    428.0,
                     428.0,
                     575.0,
+                    575.0,
                     705.0,
+                    705.0,
+                    836.0,
                     836.0,
                     47.0,
                     215.0,
@@ -557,7 +557,7 @@ def test_parse_annotation_lines() -> None:
 ##################################
 
 
-def test_prepare_data_empty() -> None:
+def test_prepare_data() -> None:
     data, metadata = prepare_data(
         pl.DataFrame(
             {
@@ -666,9 +666,20 @@ def test_prepare_data_empty() -> None:
                     "P54",
                     "P54",
                 ],
-                Column.ACTION_ID: [0, 2, 3, 1, 4, 0, 0, 1, 5, 0],
+                Column.ACTION_ID: [0, 2, 5, 1, 3, 0, 0, 1, 4, 0],
                 Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-            }
+                Column.COOKING_ACTIVITY_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+            },
+            schema={
+                Column.ACTION: pl.String,
+                Column.START_TIME: pl.Float32,
+                Column.END_TIME: pl.Float32,
+                Column.COOKING_ACTIVITY: pl.String,
+                Column.PERSON: pl.String,
+                Column.ACTION_ID: pl.Int64,
+                Column.PERSON_ID: pl.Int64,
+                Column.COOKING_ACTIVITY_ID: pl.Int64,
+            },
         ),
     )
     assert objects_are_equal(
@@ -680,12 +691,67 @@ def test_prepare_data_empty() -> None:
                         "SIL": 4,
                         "pour_milk": 2,
                         "take_bowl": 1,
-                        "pour_cereals": 1,
                         "stir_cereals": 1,
                         "spoon_powder": 1,
+                        "pour_cereals": 1,
                     }
                 )
             ),
+            "vocab_activity": Vocabulary(Counter({"cereals": 6, "milk": 4})),
             "vocab_person": Vocabulary(Counter({"P03": 6, "P54": 4})),
+        },
+    )
+
+
+def test_prepare_data_empty() -> None:
+    data, metadata = prepare_data(
+        pl.DataFrame(
+            {
+                Column.ACTION: [],
+                Column.START_TIME: [],
+                Column.END_TIME: [],
+                Column.COOKING_ACTIVITY: [],
+                Column.PERSON: [],
+            },
+            schema={
+                Column.ACTION: pl.String,
+                Column.START_TIME: pl.Float32,
+                Column.END_TIME: pl.Float32,
+                Column.COOKING_ACTIVITY: pl.String,
+                Column.PERSON: pl.String,
+            },
+        )
+    )
+    assert_frame_equal(
+        data,
+        pl.DataFrame(
+            {
+                Column.ACTION: [],
+                Column.START_TIME: [],
+                Column.END_TIME: [],
+                Column.COOKING_ACTIVITY: [],
+                Column.PERSON: [],
+                Column.ACTION_ID: [],
+                Column.PERSON_ID: [],
+                Column.COOKING_ACTIVITY_ID: [],
+            },
+            schema={
+                Column.ACTION: pl.String,
+                Column.START_TIME: pl.Float32,
+                Column.END_TIME: pl.Float32,
+                Column.COOKING_ACTIVITY: pl.String,
+                Column.PERSON: pl.String,
+                Column.ACTION_ID: pl.Int64,
+                Column.PERSON_ID: pl.Int64,
+                Column.COOKING_ACTIVITY_ID: pl.Int64,
+            },
+        ),
+    )
+    assert objects_are_equal(
+        metadata,
+        {
+            "vocab_action": Vocabulary(Counter({})),
+            "vocab_activity": Vocabulary(Counter({})),
+            "vocab_person": Vocabulary(Counter({})),
         },
     )
