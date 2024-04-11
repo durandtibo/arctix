@@ -6,10 +6,13 @@ import pytest
 
 from arctix.utils.imports import (
     check_gdown,
+    check_matplotlib,
     check_tqdm,
     gdown_available,
     is_gdown_available,
+    is_matplotlib_available,
     is_tqdm_available,
+    matplotlib_available,
     tqdm_available,
 )
 
@@ -66,6 +69,60 @@ def test_gdown_available_decorator_without_package() -> None:
     with patch("arctix.utils.imports.is_gdown_available", lambda: False):
 
         @gdown_available
+        def fn(n: int = 0) -> int:
+            return 42 + n
+
+        assert fn(2) is None
+
+
+######################
+#     matplotlib     #
+######################
+
+
+def test_check_matplotlib_with_package() -> None:
+    with patch("arctix.utils.imports.is_matplotlib_available", lambda: True):
+        check_matplotlib()
+
+
+def test_check_matplotlib_without_package() -> None:
+    with (
+        patch("arctix.utils.imports.is_matplotlib_available", lambda: False),
+        pytest.raises(RuntimeError, match="`matplotlib` package is required but not installed."),
+    ):
+        check_matplotlib()
+
+
+def test_is_matplotlib_available() -> None:
+    assert isinstance(is_matplotlib_available(), bool)
+
+
+def test_matplotlib_available_with_package() -> None:
+    with patch("arctix.utils.imports.is_matplotlib_available", lambda: True):
+        fn = matplotlib_available(my_function)
+        assert fn(2) == 44
+
+
+def test_matplotlib_available_without_package() -> None:
+    with patch("arctix.utils.imports.is_matplotlib_available", lambda: False):
+        fn = matplotlib_available(my_function)
+        assert fn(2) is None
+
+
+def test_matplotlib_available_decorator_with_package() -> None:
+    with patch("arctix.utils.imports.is_matplotlib_available", lambda: True):
+
+        @matplotlib_available
+        def fn(n: int = 0) -> int:
+            return 42 + n
+
+        assert fn(2) == 44
+
+
+def test_matplotlib_available_decorator_without_package() -> None:
+    with patch("arctix.utils.imports.is_matplotlib_available", lambda: False):
+
+        @matplotlib_available
         def fn(n: int = 0) -> int:
             return 42 + n
 
