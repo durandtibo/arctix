@@ -175,6 +175,8 @@ def load_data(path: Path, remove_duplicate: bool = True) -> pl.DataFrame:
     annotations = list(map(load_annotation_file, paths))
     data = convert_to_dict_of_flat_lists(annotations)
     data = pl.DataFrame(data)
+    if data.shape[0]:
+        data = data.sort(by=[Column.COOKING_ACTIVITY, Column.PERSON, Column.START_TIME])
     if remove_duplicate:
         data = drop_duplicates(data)
     return data
@@ -241,9 +243,11 @@ def prepare_data(frame: pl.DataFrame) -> tuple[pl.DataFrame, dict]:
     Returns:
         A tuple containing the prepared data and the metadata.
     """
-    vocab_action = generate_vocabulary(frame, col=Column.ACTION).sort_by_token().sort_by_count()
-    vocab_person = generate_vocabulary(frame, col=Column.PERSON).sort_by_token().sort_by_count()
-    vocab_activity = generate_vocabulary(frame, col=Column.COOKING_ACTIVITY).sort_by_token().sort_by_count()
+    vocab_action = generate_vocabulary(frame, col=Column.ACTION).sort_by_count()
+    vocab_person = generate_vocabulary(frame, col=Column.PERSON).sort_by_count()
+    vocab_activity = (
+        generate_vocabulary(frame, col=Column.COOKING_ACTIVITY).sort_by_token().sort_by_count()
+    )
     transformer = td.Sequential(
         [
             td.Cast(columns=[Column.START_TIME, Column.END_TIME], dtype=pl.Float32),
