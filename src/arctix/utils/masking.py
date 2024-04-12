@@ -2,9 +2,65 @@ r"""Contain utility functions to generate or manipulate masks."""
 
 from __future__ import annotations
 
-__all__ = ["generate_mask_from_lengths"]
+__all__ = ["convert_sequences_to_array", "generate_mask_from_lengths"]
+
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from numpy.typing import DTypeLike
+
+
+def convert_sequences_to_array(
+    data: Sequence[Sequence], max_len: int, dtype: DTypeLike = None, padded_value: Any = 0
+) -> np.ndarray:
+    r"""Convert a list of sequences to a ``numpy.ndarray``.
+
+    The sequences can have different lengths, so the sequences are
+    padded to all have the same length.
+
+    Args:
+        data: The list of sequence to convert to an array.
+        max_len: The maximum sequence length which is used to define
+            the second dimension of the array. If a sequence is longer,
+            it is truncated to the maximum sequence length.
+        dtype: The data type of the generated array.
+        padded_value: The value used to pad the sequences.
+
+    Returns:
+        The generated array.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from arctix.utils.masking import convert_sequences_to_array
+    >>> arr = convert_sequences_to_array([[1, 2, 3], [9, 8, 7, 6, 5], [1]], max_len=5)
+    >>> arr
+    array([[1, 2, 3, 0, 0],
+           [9, 8, 7, 6, 5],
+           [1, 0, 0, 0, 0]])
+    >>> arr = convert_sequences_to_array(
+    ...     [[1, 2, 3], [9, 8, 7, 6, 5], [1]],
+    ...     max_len=5,
+    ...     dtype=float,
+    ...     padded_value=-1,
+    ... )
+    >>> arr
+    array([[ 1.,  2.,  3., -1., -1.],
+           [ 9.,  8.,  7.,  6.,  5.],
+           [ 1., -1., -1., -1., -1.]])
+
+    ```
+    """
+    array = np.full((len(data), max_len), fill_value=padded_value, dtype=dtype)
+    for i, values in enumerate(data):
+        length = min(len(values), max_len)
+        array[i, :length] = values[:length]
+    return array
 
 
 def generate_mask_from_lengths(lengths: np.ndarray, max_len: int | None = None) -> np.ndarray:
