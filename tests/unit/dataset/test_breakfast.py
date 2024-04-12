@@ -15,10 +15,12 @@ from arctix.dataset.breakfast import (
     Column,
     download_data,
     fetch_data,
+    group_by_sequence,
     load_annotation_file,
     load_data,
     parse_annotation_lines,
     prepare_data,
+    to_array_data,
 )
 from arctix.utils.vocab import Vocabulary
 
@@ -754,4 +756,131 @@ def test_prepare_data_empty() -> None:
             "vocab_activity": Vocabulary(Counter({})),
             "vocab_person": Vocabulary(Counter({})),
         },
+    )
+
+
+#######################################
+#     Tests for group_by_sequence     #
+#######################################
+
+
+def test_group_by_sequence() -> None:
+    assert_frame_equal(
+        group_by_sequence(
+            pl.DataFrame(
+                {
+                    Column.START_TIME: [
+                        1.0,
+                        31.0,
+                        151.0,
+                        429.0,
+                        576.0,
+                        706.0,
+                        1.0,
+                        48.0,
+                        216.0,
+                        566.0,
+                    ],
+                    Column.END_TIME: [
+                        30.0,
+                        150.0,
+                        428.0,
+                        575.0,
+                        705.0,
+                        836.0,
+                        47.0,
+                        215.0,
+                        565.0,
+                        747.0,
+                    ],
+                    Column.ACTION_ID: [0, 2, 5, 1, 3, 0, 0, 1, 4, 0],
+                    Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+                    Column.COOKING_ACTIVITY_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+                },
+                schema={
+                    Column.START_TIME: pl.Float32,
+                    Column.END_TIME: pl.Float32,
+                    Column.ACTION_ID: pl.Int64,
+                    Column.PERSON_ID: pl.Int64,
+                    Column.COOKING_ACTIVITY_ID: pl.Int64,
+                },
+            ),
+        ),
+        pl.DataFrame(
+            {
+                Column.PERSON_ID: [0, 1],
+                Column.COOKING_ACTIVITY_ID: [0, 1],
+                Column.ACTION_ID + "_seq": [[0, 2, 5, 1, 3, 0], [0, 1, 4, 0]],
+                Column.START_TIME
+                + "_seq": [
+                    [1.0, 31.0, 151.0, 429.0, 576.0, 706.0],
+                    [1.0, 48.0, 216.0, 566.0],
+                ],
+                Column.END_TIME
+                + "_seq": [
+                    [30.0, 150.0, 428.0, 575.0, 705.0, 836.0],
+                    [47.0, 215.0, 565.0, 747.0],
+                ],
+                Column.SEQUENCE_LENGTH: [6, 4],
+            },
+            schema={
+                Column.PERSON_ID: pl.Int64,
+                Column.COOKING_ACTIVITY_ID: pl.Int64,
+                Column.ACTION_ID + "_seq": pl.List(pl.Int64),
+                Column.START_TIME + "_seq": pl.List(pl.Float32),
+                Column.END_TIME + "_seq": pl.List(pl.Float32),
+                Column.SEQUENCE_LENGTH: pl.UInt32,
+            },
+        ),
+    )
+
+
+###################################
+#     Tests for to_array_data     #
+###################################
+
+
+def test_to_array_data() -> None:
+    assert objects_are_equal(
+        to_array_data(
+            pl.DataFrame(
+                {
+                    Column.START_TIME: [
+                        1.0,
+                        31.0,
+                        151.0,
+                        429.0,
+                        576.0,
+                        706.0,
+                        1.0,
+                        48.0,
+                        216.0,
+                        566.0,
+                    ],
+                    Column.END_TIME: [
+                        30.0,
+                        150.0,
+                        428.0,
+                        575.0,
+                        705.0,
+                        836.0,
+                        47.0,
+                        215.0,
+                        565.0,
+                        747.0,
+                    ],
+                    Column.ACTION_ID: [0, 2, 5, 1, 3, 0, 0, 1, 4, 0],
+                    Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+                    Column.COOKING_ACTIVITY_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+                },
+                schema={
+                    Column.START_TIME: pl.Float32,
+                    Column.END_TIME: pl.Float32,
+                    Column.ACTION_ID: pl.Int64,
+                    Column.PERSON_ID: pl.Int64,
+                    Column.COOKING_ACTIVITY_ID: pl.Int64,
+                },
+            )
+        ),
+        {},
     )
