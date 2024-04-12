@@ -4,6 +4,7 @@ from collections import Counter
 from pathlib import Path
 from unittest.mock import Mock, call, patch
 
+import numpy as np
 import polars as pl
 import pytest
 from coola import objects_are_equal
@@ -810,14 +811,12 @@ def test_group_by_sequence() -> None:
             {
                 Column.PERSON_ID: [0, 1],
                 Column.COOKING_ACTIVITY_ID: [0, 1],
-                Column.ACTION_ID + "_seq": [[0, 2, 5, 1, 3, 0], [0, 1, 4, 0]],
-                Column.START_TIME
-                + "_seq": [
+                Column.ACTION_ID: [[0, 2, 5, 1, 3, 0], [0, 1, 4, 0]],
+                Column.START_TIME: [
                     [1.0, 31.0, 151.0, 429.0, 576.0, 706.0],
                     [1.0, 48.0, 216.0, 566.0],
                 ],
-                Column.END_TIME
-                + "_seq": [
+                Column.END_TIME: [
                     [30.0, 150.0, 428.0, 575.0, 705.0, 836.0],
                     [47.0, 215.0, 565.0, 747.0],
                 ],
@@ -826,9 +825,9 @@ def test_group_by_sequence() -> None:
             schema={
                 Column.PERSON_ID: pl.Int64,
                 Column.COOKING_ACTIVITY_ID: pl.Int64,
-                Column.ACTION_ID + "_seq": pl.List(pl.Int64),
-                Column.START_TIME + "_seq": pl.List(pl.Float32),
-                Column.END_TIME + "_seq": pl.List(pl.Float32),
+                Column.ACTION_ID: pl.List(pl.Int64),
+                Column.START_TIME: pl.List(pl.Float32),
+                Column.END_TIME: pl.List(pl.Float32),
                 Column.SEQUENCE_LENGTH: pl.UInt32,
             },
         ),
@@ -841,6 +840,9 @@ def test_group_by_sequence() -> None:
 
 
 def test_to_array_data() -> None:
+    mask = np.array(
+        [[False, False, False, False, False, False], [False, False, False, False, True, True]]
+    )
     assert objects_are_equal(
         to_array_data(
             pl.DataFrame(
@@ -882,5 +884,29 @@ def test_to_array_data() -> None:
                 },
             )
         ),
-        {},
+        {
+            Column.SEQUENCE_LENGTH: np.array([6, 4]),
+            Column.PERSON_ID: np.array([0, 1]),
+            Column.COOKING_ACTIVITY_ID: np.array([0, 1]),
+            Column.ACTION_ID: np.ma.masked_array(
+                data=np.array([[0, 2, 5, 1, 3, 0], [0, 1, 4, 0, 0, 0]]),
+                mask=mask,
+            ),
+            Column.START_TIME: np.ma.masked_array(
+                data=np.array(
+                    [[1.0, 31.0, 151.0, 429.0, 576.0, 706.0], [1.0, 48.0, 216.0, 566.0, 0.0, 0.0]]
+                ),
+                mask=mask,
+            ),
+            Column.END_TIME: np.ma.masked_array(
+                data=np.array(
+                    [
+                        [30.0, 150.0, 428.0, 575.0, 705.0, 836.0],
+                        [47.0, 215.0, 565.0, 747.0, 0.0, 0.0],
+                    ]
+                ),
+                mask=mask,
+            ),
+        },
+        show_difference=True,
     )
