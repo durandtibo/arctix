@@ -22,10 +22,12 @@ from __future__ import annotations
 __all__ = [
     "download_data",
     "fetch_data",
+    "group_by_sequence",
     "load_annotation_file",
     "load_data",
     "parse_annotation_lines",
     "prepare_data",
+    "to_array_data",
 ]
 
 import logging
@@ -44,6 +46,8 @@ from arctix.utils.mapping import convert_to_dict_of_flat_lists
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
+    import numpy as np
 
 
 logger = logging.getLogger(__name__)
@@ -87,6 +91,7 @@ class Column:
     PERSON: str = "person"
     PERSON_ID: str = "person_id"
     START_TIME: str = "start_time"
+    SEQUENCE_LENGTH: str = "sequence_length"
 
 
 def fetch_data(
@@ -177,7 +182,7 @@ def load_data(path: Path, remove_duplicate: bool = True) -> pl.DataFrame:
     data = pl.DataFrame(data)
     if remove_duplicate:
         data = drop_duplicates(data)
-    if data.select(pl.count()).item():
+    if data.select(pl.len()).item():
         data = data.sort(by=[Column.COOKING_ACTIVITY, Column.PERSON, Column.START_TIME])
     return data
 
@@ -272,6 +277,72 @@ def prepare_data(frame: pl.DataFrame) -> tuple[pl.DataFrame, dict]:
         "vocab_activity": vocab_activity,
         "vocab_person": vocab_person,
     }
+
+
+def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
+    r"""Group the DataFrame by sequences of actions.
+
+    Args:
+        frame: The input DataFrame.
+
+    Returns:
+        The DataFrame after the grouping.
+
+    Example usage:
+
+    ```pycon
+
+    >>> import polars as pl
+    >>> from arctix.dataset.breakfast import Column, group_by_sequence
+    >>> frame = pl.DataFrame(
+    ...     {
+    ...         Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
+    ...         Column.END_TIME: [30.0, 150.0, 428.0, 575.0, 705.0, 836.0, 47.0, 215.0, 565.0, 747.0],
+    ...         Column.ACTION_ID: [0, 2, 5, 1, 3, 0, 0, 1, 4, 0],
+    ...         Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+    ...         Column.COOKING_ACTIVITY_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+    ...     }
+    ... )
+    >>> groups = group_by_sequence(frame)
+    >>> groups
+    shape: (2, 6)
+    ┌───────────┬─────────────────┬───────────────┬─────────────────┬─────────────────┬────────────────┐
+    │ person_id ┆ cooking_activit ┆ action_id_seq ┆ start_time_seq  ┆ end_time_seq    ┆ sequence_lengt │
+    │ ---       ┆ y_id            ┆ ---           ┆ ---             ┆ ---             ┆ h              │
+    │ i64       ┆ ---             ┆ list[i64]     ┆ list[f64]       ┆ list[f64]       ┆ ---            │
+    │           ┆ i64             ┆               ┆                 ┆                 ┆ u32            │
+    ╞═══════════╪═════════════════╪═══════════════╪═════════════════╪═════════════════╪════════════════╡
+    │ 0         ┆ 0               ┆ [0, 2, … 0]   ┆ [1.0, 31.0, …   ┆ [30.0, 150.0, … ┆ 6              │
+    │           ┆                 ┆               ┆ 706.0]          ┆ 836.0]          ┆                │
+    │ 1         ┆ 1               ┆ [0, 1, … 0]   ┆ [1.0, 48.0, …   ┆ [47.0, 215.0, … ┆ 4              │
+    │           ┆                 ┆               ┆ 566.0]          ┆ 747.0]          ┆                │
+    └───────────┴─────────────────┴───────────────┴─────────────────┴─────────────────┴────────────────┘
+
+    ```
+    """
+    return (
+        frame.group_by([Column.PERSON_ID, Column.COOKING_ACTIVITY_ID])
+        .agg(
+            pl.col(Column.ACTION_ID).alias(Column.ACTION_ID + "_seq"),
+            pl.col(Column.START_TIME).alias(Column.START_TIME + "_seq"),
+            pl.col(Column.END_TIME).alias(Column.END_TIME + "_seq"),
+            pl.len().alias(Column.SEQUENCE_LENGTH),
+        )
+        .sort(by=[Column.PERSON_ID, Column.COOKING_ACTIVITY_ID])
+    )
+
+
+def to_array_data(frame: pl.DataFrame) -> dict[str, np.ndarray]:
+    r"""Convert a DataFrame to a dictionary of arrays.
+
+    Args:
+        frame: The input DataFrame.
+
+    Returns:
+        The dictionary of arrays.
+    """
+    group_by_sequence(frame)
+    return {}
 
 
 if __name__ == "__main__":  # pragma: no cover
