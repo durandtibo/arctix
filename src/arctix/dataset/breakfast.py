@@ -35,6 +35,7 @@ import tarfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import numpy as np
 import polars as pl
 from iden.utils.path import sanitize_path
 
@@ -43,11 +44,10 @@ from arctix.utils.dataframe import drop_duplicates, generate_vocabulary
 from arctix.utils.download import download_drive_file
 from arctix.utils.iter import FileFilter, PathLister
 from arctix.utils.mapping import convert_to_dict_of_flat_lists
+from arctix.utils.masking import convert_sequences_to_array, generate_mask_from_lengths
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-
-    import numpy as np
 
 
 logger = logging.getLogger(__name__)
@@ -306,26 +306,26 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
     >>> groups = group_by_sequence(frame)
     >>> groups
     shape: (2, 6)
-    ┌───────────┬─────────────────┬───────────────┬─────────────────┬─────────────────┬────────────────┐
-    │ person_id ┆ cooking_activit ┆ action_id_seq ┆ start_time_seq  ┆ end_time_seq    ┆ sequence_lengt │
-    │ ---       ┆ y_id            ┆ ---           ┆ ---             ┆ ---             ┆ h              │
-    │ i64       ┆ ---             ┆ list[i64]     ┆ list[f64]       ┆ list[f64]       ┆ ---            │
-    │           ┆ i64             ┆               ┆                 ┆                 ┆ u32            │
-    ╞═══════════╪═════════════════╪═══════════════╪═════════════════╪═════════════════╪════════════════╡
-    │ 0         ┆ 0               ┆ [0, 2, … 0]   ┆ [1.0, 31.0, …   ┆ [30.0, 150.0, … ┆ 6              │
-    │           ┆                 ┆               ┆ 706.0]          ┆ 836.0]          ┆                │
-    │ 1         ┆ 1               ┆ [0, 1, … 0]   ┆ [1.0, 48.0, …   ┆ [47.0, 215.0, … ┆ 4              │
-    │           ┆                 ┆               ┆ 566.0]          ┆ 747.0]          ┆                │
-    └───────────┴─────────────────┴───────────────┴─────────────────┴─────────────────┴────────────────┘
+    ┌───────────┬──────────────────┬─────────────┬─────────────────┬─────────────────┬─────────────────┐
+    │ person_id ┆ cooking_activity ┆ action_id   ┆ start_time      ┆ end_time        ┆ sequence_length │
+    │ ---       ┆ _id              ┆ ---         ┆ ---             ┆ ---             ┆ ---             │
+    │ i64       ┆ ---              ┆ list[i64]   ┆ list[f64]       ┆ list[f64]       ┆ u32             │
+    │           ┆ i64              ┆             ┆                 ┆                 ┆                 │
+    ╞═══════════╪══════════════════╪═════════════╪═════════════════╪═════════════════╪═════════════════╡
+    │ 0         ┆ 0                ┆ [0, 2, … 0] ┆ [1.0, 31.0, …   ┆ [30.0, 150.0, … ┆ 6               │
+    │           ┆                  ┆             ┆ 706.0]          ┆ 836.0]          ┆                 │
+    │ 1         ┆ 1                ┆ [0, 1, … 0] ┆ [1.0, 48.0, …   ┆ [47.0, 215.0, … ┆ 4               │
+    │           ┆                  ┆             ┆ 566.0]          ┆ 747.0]          ┆                 │
+    └───────────┴──────────────────┴─────────────┴─────────────────┴─────────────────┴─────────────────┘
 
     ```
     """
     return (
         frame.group_by([Column.PERSON_ID, Column.COOKING_ACTIVITY_ID])
         .agg(
-            pl.col(Column.ACTION_ID).alias(Column.ACTION_ID + "_seq"),
-            pl.col(Column.START_TIME).alias(Column.START_TIME + "_seq"),
-            pl.col(Column.END_TIME).alias(Column.END_TIME + "_seq"),
+            pl.col(Column.ACTION_ID).alias(Column.ACTION_ID),
+            pl.col(Column.START_TIME).alias(Column.START_TIME),
+            pl.col(Column.END_TIME).alias(Column.END_TIME),
             pl.len().alias(Column.SEQUENCE_LENGTH),
         )
         .sort(by=[Column.PERSON_ID, Column.COOKING_ACTIVITY_ID])
@@ -340,9 +340,73 @@ def to_array_data(frame: pl.DataFrame) -> dict[str, np.ndarray]:
 
     Returns:
         The dictionary of arrays.
+
+    Example usage:
+
+    ```pycon
+
+    >>> import polars as pl
+    >>> from arctix.dataset.breakfast import Column, to_array_data
+    >>> frame = pl.DataFrame(
+    ...     {
+    ...         Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
+    ...         Column.END_TIME: [30.0, 150.0, 428.0, 575.0, 705.0, 836.0, 47.0, 215.0, 565.0, 747.0],
+    ...         Column.ACTION_ID: [0, 2, 5, 1, 3, 0, 0, 1, 4, 0],
+    ...         Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+    ...         Column.COOKING_ACTIVITY_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+    ...     }
+    ... )
+    >>> arrays = to_array_data(frame)
+    >>> arrays
+    {'sequence_length': array([6, 4]), 'person_id': array([0, 1]),
+     'cooking_activity_id': array([0, 1]),
+     'action_id': masked_array(
+      data=[[0, 2, 5, 1, 3, 0],
+            [0, 1, 4, 0, --, --]],
+      mask=[[False, False, False, False, False, False],
+            [False, False, False, False,  True,  True]],
+      fill_value=999999), 'start_time': masked_array(
+      data=[[1.0, 31.0, 151.0, 429.0, 576.0, 706.0],
+            [1.0, 48.0, 216.0, 566.0, --, --]],
+      mask=[[False, False, False, False, False, False],
+            [False, False, False, False,  True,  True]],
+      fill_value=1e+20), 'end_time': masked_array(
+      data=[[30.0, 150.0, 428.0, 575.0, 705.0, 836.0],
+            [47.0, 215.0, 565.0, 747.0, --, --]],
+      mask=[[False, False, False, False, False, False],
+            [False, False, False, False,  True,  True]],
+      fill_value=1e+20)}
+
+    ```
     """
-    group_by_sequence(frame)
-    return {}
+    groups = group_by_sequence(frame)
+    lengths = groups.get_column(Column.SEQUENCE_LENGTH).to_numpy()
+    mask = generate_mask_from_lengths(lengths)
+    return {
+        Column.SEQUENCE_LENGTH: lengths.astype(int),
+        Column.PERSON_ID: groups.get_column(Column.PERSON_ID).to_numpy().astype(int),
+        Column.COOKING_ACTIVITY_ID: groups.get_column(Column.COOKING_ACTIVITY_ID)
+        .to_numpy()
+        .astype(int),
+        Column.ACTION_ID: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.ACTION_ID).to_list(), max_len=mask.shape[1]
+            ).astype(int),
+            mask=mask,
+        ),
+        Column.START_TIME: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.START_TIME).to_list(), max_len=mask.shape[1]
+            ).astype(float),
+            mask=mask,
+        ),
+        Column.END_TIME: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.END_TIME).to_list(), max_len=mask.shape[1]
+            ).astype(float),
+            mask=mask,
+        ),
+    }
 
 
 if __name__ == "__main__":  # pragma: no cover
