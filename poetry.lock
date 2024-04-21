@@ -3647,9 +3647,9 @@ docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.link
 testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy", "pytest-ruff (>=0.2.1)"]
 
 [extras]
-all = ["gdown", "tqdm"]
+all = ["gdown", "matplotlib", "requests", "tqdm"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.13"
-content-hash = "e0f70c354b1d0569b131689ec7dfcf4b343ef4fa98db1d6f5bc7d44ea729aebf"
+content-hash = "9cc82b31904252d63a0f6a1062f8a2cabba5a067c6d10983b19418d3e279f7c5"
