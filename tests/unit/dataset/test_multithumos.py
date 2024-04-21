@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from pathlib import Path
 from unittest.mock import Mock, patch
 from zipfile import ZipFile
@@ -19,7 +20,9 @@ from arctix.dataset.multithumos import (
     load_annotation_file,
     load_data,
     parse_annotation_lines,
+    prepare_data,
 )
+from arctix.utils.vocab import Vocabulary
 
 
 @pytest.fixture(scope="module")
@@ -119,6 +122,12 @@ def test_fetch_data_remove_duplicate_examples(data_dir: Path) -> None:
                     "guard",
                 ],
             },
+            schema={
+                Column.VIDEO: pl.String,
+                Column.START_TIME: pl.Float64,
+                Column.END_TIME: pl.Float64,
+                Column.ACTION: pl.String,
+            },
         ),
     )
 
@@ -155,6 +164,12 @@ def test_fetch_data_keep_duplicate_examples(data_dir: Path) -> None:
                     "guard",
                     "guard",
                 ],
+            },
+            schema={
+                Column.VIDEO: pl.String,
+                Column.START_TIME: pl.Float64,
+                Column.END_TIME: pl.Float64,
+                Column.ACTION: pl.String,
             },
         ),
     )
@@ -289,6 +304,12 @@ def test_load_data(data_dir: Path) -> None:
                     "guard",
                 ],
             },
+            schema={
+                Column.VIDEO: pl.String,
+                Column.START_TIME: pl.Float64,
+                Column.END_TIME: pl.Float64,
+                Column.ACTION: pl.String,
+            },
         ),
     )
 
@@ -322,6 +343,12 @@ def test_load_data_keep_duplicates(data_dir: Path) -> None:
                     "guard",
                     "guard",
                 ],
+            },
+            schema={
+                Column.VIDEO: pl.String,
+                Column.START_TIME: pl.Float64,
+                Column.END_TIME: pl.Float64,
+                Column.ACTION: pl.String,
             },
         ),
     )
@@ -388,3 +415,125 @@ def test_parse_annotation_lines_empty() -> None:
         parse_annotation_lines([]),
         {Column.VIDEO: [], Column.START_TIME: [], Column.END_TIME: []},
     )
+
+
+##################################
+#     Tests for prepare_data     #
+##################################
+
+
+def test_prepare_data() -> None:
+    data, metadata = prepare_data(
+        pl.DataFrame(
+            {
+                Column.VIDEO: [
+                    "video_validation_0000266",
+                    "video_validation_0000681",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000902",
+                    "video_validation_0000902",
+                    "video_validation_0000902",
+                ],
+                Column.START_TIME: [72.80, 44.00, 1.50, 17.57, 79.30, 2.97, 4.54, 20.22],
+                Column.END_TIME: [76.40, 50.90, 5.40, 18.33, 83.90, 3.60, 5.07, 20.49],
+                Column.ACTION: [
+                    "dribble",
+                    "dribble",
+                    "dribble",
+                    "guard",
+                    "dribble",
+                    "guard",
+                    "guard",
+                    "guard",
+                ],
+            },
+            schema={
+                Column.VIDEO: pl.String,
+                Column.START_TIME: pl.Float64,
+                Column.END_TIME: pl.Float64,
+                Column.ACTION: pl.String,
+            },
+        ),
+    )
+    assert_frame_equal(
+        data,
+        pl.DataFrame(
+            {
+                Column.VIDEO: [
+                    "video_validation_0000266",
+                    "video_validation_0000681",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000902",
+                    "video_validation_0000902",
+                    "video_validation_0000902",
+                ],
+                Column.START_TIME: [72.80, 44.00, 1.50, 17.57, 79.30, 2.97, 4.54, 20.22],
+                Column.END_TIME: [76.40, 50.90, 5.40, 18.33, 83.90, 3.60, 5.07, 20.49],
+                Column.ACTION: [
+                    "dribble",
+                    "dribble",
+                    "dribble",
+                    "guard",
+                    "dribble",
+                    "guard",
+                    "guard",
+                    "guard",
+                ],
+                Column.ACTION_ID: [1, 1, 1, 0, 1, 0, 0, 0],
+            },
+            schema={
+                Column.VIDEO: pl.String,
+                Column.START_TIME: pl.Float32,
+                Column.END_TIME: pl.Float32,
+                Column.ACTION: pl.String,
+                Column.ACTION_ID: pl.Int64,
+            },
+        ),
+    )
+    assert objects_are_equal(
+        metadata,
+        {"vocab_action": Vocabulary(Counter({"guard": 4, "dribble": 4}))},
+    )
+
+
+def test_prepare_data_empty() -> None:
+    data, metadata = prepare_data(
+        pl.DataFrame(
+            {
+                Column.VIDEO: [],
+                Column.START_TIME: [],
+                Column.END_TIME: [],
+                Column.ACTION: [],
+            },
+            schema={
+                Column.VIDEO: pl.String,
+                Column.START_TIME: pl.Float64,
+                Column.END_TIME: pl.Float64,
+                Column.ACTION: pl.String,
+            },
+        ),
+    )
+    assert_frame_equal(
+        data,
+        pl.DataFrame(
+            {
+                Column.VIDEO: [],
+                Column.START_TIME: [],
+                Column.END_TIME: [],
+                Column.ACTION: [],
+                Column.ACTION_ID: [],
+            },
+            schema={
+                Column.VIDEO: pl.String,
+                Column.START_TIME: pl.Float32,
+                Column.END_TIME: pl.Float32,
+                Column.ACTION: pl.String,
+                Column.ACTION_ID: pl.Int64,
+            },
+        ),
+    )
+    assert objects_are_equal(metadata, {"vocab_action": Vocabulary(Counter({}))})
