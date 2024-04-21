@@ -22,6 +22,7 @@ from __future__ import annotations
 __all__ = [
     "download_data",
     "fetch_data",
+    "filter_by_split",
     "group_by_sequence",
     "load_annotation_file",
     "load_data",
@@ -79,6 +80,31 @@ NUM_COOKING_ACTIVITIES = {
     "sandwich": 197,
     "scrambledegg": 188,
     "tea": 223,
+}
+
+PART1 = tuple(f"P{i:02d}" for i in range(3, 16))
+PART2 = tuple(f"P{i:02d}" for i in range(16, 29))
+PART3 = tuple(f"P{i:02d}" for i in range(29, 42))
+PART4 = tuple(f"P{i:02d}" for i in range(42, 55))
+
+DATASET_SPLITS = {
+    "all": sorted(PART1 + PART2 + PART3 + PART4),
+    "minitrain1": sorted(PART2 + PART3),
+    "minitrain2": sorted(PART3 + PART4),
+    "minitrain3": sorted(PART1 + PART4),
+    "minitrain4": sorted(PART1 + PART2),
+    "minival1": sorted(PART4),
+    "minival2": sorted(PART1),
+    "minival3": sorted(PART2),
+    "minival4": sorted(PART3),
+    "test1": sorted(PART1),
+    "test2": sorted(PART2),
+    "test3": sorted(PART3),
+    "test4": sorted(PART4),
+    "train1": sorted(PART2 + PART3 + PART4),
+    "train2": sorted(PART1 + PART3 + PART4),
+    "train3": sorted(PART1 + PART2 + PART4),
+    "train4": sorted(PART1 + PART2 + PART3),
 }
 
 
@@ -239,11 +265,28 @@ def parse_annotation_lines(lines: Sequence[str]) -> dict:
     return {Column.ACTION: actions, Column.START_TIME: start_time, Column.END_TIME: end_time}
 
 
-def prepare_data(frame: pl.DataFrame) -> tuple[pl.DataFrame, dict]:
+def filter_by_split(frame: pl.DataFrame, split: str = "all") -> pl.DataFrame:
+    r"""Filter the DataFrame to keep only the rows associated to a
+    dataset split.
+
+    Args:
+        frame: The DataFrame to filter.
+        split: The dataset split.
+
+    Returns:
+        The filtered DataFrame.
+    """
+    persons = DATASET_SPLITS[split]
+    return frame.filter(pl.col(Column.PERSON).is_in(persons))
+
+
+def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame, dict]:
     r"""Prepare the data.
 
     Args:
         frame: The raw DataFrame.
+        split: The dataset split. By default, the union of all the
+            dataset splits is used.
 
     Returns:
         A tuple containing the prepared data and the metadata.

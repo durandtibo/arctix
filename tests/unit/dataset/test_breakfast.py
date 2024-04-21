@@ -16,6 +16,7 @@ from arctix.dataset.breakfast import (
     Column,
     download_data,
     fetch_data,
+    filter_by_split,
     group_by_sequence,
     load_annotation_file,
     load_data,
@@ -553,6 +554,100 @@ def test_parse_annotation_lines() -> None:
             Column.END_TIME: [30.0, 150.0, 428.0, 575.0, 705.0, 836.0],
         },
     )
+
+
+#####################################
+#     Tests for filter_by_split     #
+#####################################
+
+
+def test_filter_by_split_train1() -> None:
+    out = filter_by_split(
+        pl.DataFrame(
+            {
+                Column.PERSON: ["P03", "P15", "P16", "P28", "P29", "P41", "P42", "P54"],
+                "col": [1, 2, 3, 4, 5, 6, 7, 8],
+            }
+        ),
+        split="train1",
+    )
+    assert_frame_equal(
+        out,
+        pl.DataFrame(
+            {
+                Column.PERSON: ["P16", "P28", "P29", "P41", "P42", "P54"],
+                "col": [3, 4, 5, 6, 7, 8],
+            }
+        ),
+    )
+
+
+def test_filter_by_split_train2() -> None:
+    out = filter_by_split(
+        pl.DataFrame(
+            {
+                Column.PERSON: ["P03", "P15", "P16", "P28", "P29", "P41", "P42", "P54"],
+                "col": [1, 2, 3, 4, 5, 6, 7, 8],
+            }
+        ),
+        split="train2",
+    )
+    assert_frame_equal(
+        out,
+        pl.DataFrame(
+            {
+                Column.PERSON: ["P03", "P15", "P29", "P41", "P42", "P54"],
+                "col": [1, 2, 5, 6, 7, 8],
+            }
+        ),
+    )
+
+
+def test_filter_by_split_train3() -> None:
+    out = filter_by_split(
+        pl.DataFrame(
+            {
+                Column.PERSON: ["P03", "P15", "P16", "P28", "P29", "P41", "P42", "P54"],
+                "col": [1, 2, 3, 4, 5, 6, 7, 8],
+            }
+        ),
+        split="train3",
+    )
+    assert_frame_equal(
+        out,
+        pl.DataFrame(
+            {
+                Column.PERSON: ["P03", "P15", "P16", "P28", "P42", "P54"],
+                "col": [1, 2, 3, 4, 7, 8],
+            }
+        ),
+    )
+
+
+def test_filter_by_split_train4() -> None:
+    out = filter_by_split(
+        pl.DataFrame(
+            {
+                Column.PERSON: ["P03", "P15", "P16", "P28", "P29", "P41", "P42", "P54"],
+                "col": [1, 2, 3, 4, 5, 6, 7, 8],
+            }
+        ),
+        split="train4",
+    )
+    assert_frame_equal(
+        out,
+        pl.DataFrame(
+            {
+                Column.PERSON: ["P03", "P15", "P16", "P28", "P29", "P41"],
+                "col": [1, 2, 3, 4, 5, 6],
+            }
+        ),
+    )
+
+
+def test_filter_by_split_empty() -> None:
+    out = filter_by_split(pl.DataFrame({Column.PERSON: []}))
+    assert_frame_equal(out, pl.DataFrame({Column.PERSON: []}))
 
 
 ##################################
