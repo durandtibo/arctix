@@ -48,6 +48,38 @@ class Column:
     VIDEO_ID: str = "video_id"
 
 
+def fetch_data(
+    path: Path, remove_duplicate: bool = True, force_download: bool = False
+) -> pl.DataFrame:
+    r"""Download and load the data for Breakfast dataset.
+
+    Args:
+        path: The path where to store the downloaded data.
+        remove_duplicate: If ``True``, the duplicate examples are
+            removed.
+        force_download: If ``True``, the annotations are downloaded
+            everytime this function is called. If ``False``,
+            the annotations are downloaded only if the
+            given path does not contain the annotation data.
+
+    Returns:
+        The data in a DataFrame
+
+    Example usage:
+
+    ```pycon
+
+    >>> from pathlib import Path
+    >>> from arctix.dataset.multithumos import fetch_data
+    >>> data = fetch_data(Path("/path/to/data/multithumos/"))  # doctest: +SKIP
+
+    ```
+    """
+    path = sanitize_path(path)
+    download_data(path, force_download)
+    return load_data(path, remove_duplicate)
+
+
 def download_data(path: Path, force_download: bool = False) -> None:
     r"""Download the MultiTHUMOS annotation data.
 
