@@ -16,6 +16,7 @@ from arctix.dataset.breakfast import (
     Column,
     download_data,
     fetch_data,
+    filter_by_split,
     group_by_sequence,
     load_annotation_file,
     load_data,
@@ -555,6 +556,100 @@ def test_parse_annotation_lines() -> None:
     )
 
 
+#####################################
+#     Tests for filter_by_split     #
+#####################################
+
+
+def test_filter_by_split_train1() -> None:
+    out = filter_by_split(
+        pl.DataFrame(
+            {
+                Column.PERSON: ["P03", "P15", "P16", "P28", "P29", "P41", "P42", "P54"],
+                "col": [1, 2, 3, 4, 5, 6, 7, 8],
+            }
+        ),
+        split="train1",
+    )
+    assert_frame_equal(
+        out,
+        pl.DataFrame(
+            {
+                Column.PERSON: ["P16", "P28", "P29", "P41", "P42", "P54"],
+                "col": [3, 4, 5, 6, 7, 8],
+            }
+        ),
+    )
+
+
+def test_filter_by_split_train2() -> None:
+    out = filter_by_split(
+        pl.DataFrame(
+            {
+                Column.PERSON: ["P03", "P15", "P16", "P28", "P29", "P41", "P42", "P54"],
+                "col": [1, 2, 3, 4, 5, 6, 7, 8],
+            }
+        ),
+        split="train2",
+    )
+    assert_frame_equal(
+        out,
+        pl.DataFrame(
+            {
+                Column.PERSON: ["P03", "P15", "P29", "P41", "P42", "P54"],
+                "col": [1, 2, 5, 6, 7, 8],
+            }
+        ),
+    )
+
+
+def test_filter_by_split_train3() -> None:
+    out = filter_by_split(
+        pl.DataFrame(
+            {
+                Column.PERSON: ["P03", "P15", "P16", "P28", "P29", "P41", "P42", "P54"],
+                "col": [1, 2, 3, 4, 5, 6, 7, 8],
+            }
+        ),
+        split="train3",
+    )
+    assert_frame_equal(
+        out,
+        pl.DataFrame(
+            {
+                Column.PERSON: ["P03", "P15", "P16", "P28", "P42", "P54"],
+                "col": [1, 2, 3, 4, 7, 8],
+            }
+        ),
+    )
+
+
+def test_filter_by_split_train4() -> None:
+    out = filter_by_split(
+        pl.DataFrame(
+            {
+                Column.PERSON: ["P03", "P15", "P16", "P28", "P29", "P41", "P42", "P54"],
+                "col": [1, 2, 3, 4, 5, 6, 7, 8],
+            }
+        ),
+        split="train4",
+    )
+    assert_frame_equal(
+        out,
+        pl.DataFrame(
+            {
+                Column.PERSON: ["P03", "P15", "P16", "P28", "P29", "P41"],
+                "col": [1, 2, 3, 4, 5, 6],
+            }
+        ),
+    )
+
+
+def test_filter_by_split_empty() -> None:
+    out = filter_by_split(pl.DataFrame({Column.PERSON: []}))
+    assert_frame_equal(out, pl.DataFrame({Column.PERSON: []}))
+
+
 ##################################
 #     Tests for prepare_data     #
 ##################################
@@ -672,6 +767,109 @@ def test_prepare_data() -> None:
                 Column.ACTION_ID: [0, 2, 5, 1, 3, 0, 0, 1, 4, 0],
                 Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
                 Column.COOKING_ACTIVITY_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+            },
+            schema={
+                Column.ACTION: pl.String,
+                Column.START_TIME: pl.Float32,
+                Column.END_TIME: pl.Float32,
+                Column.COOKING_ACTIVITY: pl.String,
+                Column.PERSON: pl.String,
+                Column.ACTION_ID: pl.Int64,
+                Column.PERSON_ID: pl.Int64,
+                Column.COOKING_ACTIVITY_ID: pl.Int64,
+            },
+        ),
+    )
+    assert objects_are_equal(
+        metadata,
+        {
+            "vocab_action": Vocabulary(
+                Counter(
+                    {
+                        "SIL": 4,
+                        "pour_milk": 2,
+                        "take_bowl": 1,
+                        "stir_cereals": 1,
+                        "spoon_powder": 1,
+                        "pour_cereals": 1,
+                    }
+                )
+            ),
+            "vocab_activity": Vocabulary(Counter({"cereals": 6, "milk": 4})),
+            "vocab_person": Vocabulary(Counter({"P03": 6, "P54": 4})),
+        },
+    )
+
+
+def test_prepare_data_split_train1() -> None:
+    data, metadata = prepare_data(
+        pl.DataFrame(
+            {
+                Column.ACTION: [
+                    "SIL",
+                    "take_bowl",
+                    "pour_cereals",
+                    "pour_milk",
+                    "stir_cereals",
+                    "SIL",
+                    "SIL",
+                    "pour_milk",
+                    "spoon_powder",
+                    "SIL",
+                ],
+                Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
+                Column.END_TIME: [
+                    30.0,
+                    150.0,
+                    428.0,
+                    575.0,
+                    705.0,
+                    836.0,
+                    47.0,
+                    215.0,
+                    565.0,
+                    747.0,
+                ],
+                Column.COOKING_ACTIVITY: [
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "milk",
+                    "milk",
+                    "milk",
+                    "milk",
+                ],
+                Column.PERSON: [
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P03",
+                    "P54",
+                    "P54",
+                    "P54",
+                    "P54",
+                ],
+            }
+        ),
+        split="train1",
+    )
+    assert_frame_equal(
+        data,
+        pl.DataFrame(
+            {
+                Column.ACTION: ["SIL", "pour_milk", "spoon_powder", "SIL"],
+                Column.START_TIME: [1.0, 48.0, 216.0, 566.0],
+                Column.END_TIME: [47.0, 215.0, 565.0, 747.0],
+                Column.COOKING_ACTIVITY: ["milk", "milk", "milk", "milk"],
+                Column.PERSON: ["P54", "P54", "P54", "P54"],
+                Column.ACTION_ID: [0, 1, 4, 0],
+                Column.PERSON_ID: [1, 1, 1, 1],
+                Column.COOKING_ACTIVITY_ID: [1, 1, 1, 1],
             },
             schema={
                 Column.ACTION: pl.String,
