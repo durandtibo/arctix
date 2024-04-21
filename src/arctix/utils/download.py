@@ -7,11 +7,16 @@ __all__ = ["download_drive_file", "download_url_to_file"]
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import requests
 from iden.io.utils import generate_unique_tmp_path
 from iden.utils.path import sanitize_path
 
-from arctix.utils.imports import check_gdown, is_gdown_available, is_tqdm_available
+from arctix.utils.imports import (
+    check_gdown,
+    check_requests,
+    is_gdown_available,
+    is_requests_available,
+    is_tqdm_available,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -20,6 +25,11 @@ if is_gdown_available():
     import gdown
 else:  # pragma: no cover
     gdown = None
+
+if is_requests_available():
+    import requests
+else:  # pragma: no cover
+    requests = None
 
 if is_tqdm_available():
     from tqdm import tqdm
@@ -87,6 +97,7 @@ def download_url_to_file(
 
     ```
     """
+    check_requests()
     dst = sanitize_path(dst)
     dst.parent.mkdir(exist_ok=True, parents=True)
 
