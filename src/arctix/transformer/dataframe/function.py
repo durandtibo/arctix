@@ -32,7 +32,7 @@ class FunctionDataFrameTransformer(BaseDataFrameTransformer):
     ...     func=lambda frame: frame.filter(pl.col("col1").is_in({2, 4}))
     ... )
     >>> transformer
-    FunctionTransformer(func=<function <lambda> at 0x...>)
+    FunctionDataFrameTransformer(func=<function <lambda> at 0x...>)
     >>> frame = pl.DataFrame(
     ...     {
     ...         "col1": [1, 2, 3, 4, 5],
