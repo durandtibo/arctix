@@ -22,9 +22,13 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
 
+import polars as pl
 from iden.utils.path import sanitize_path
 
+from arctix.utils.dataframe import drop_duplicates
 from arctix.utils.download import download_url_to_file
+from arctix.utils.iter import FileFilter, PathLister
+from arctix.utils.mapping import convert_to_dict_of_flat_lists
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -121,6 +125,27 @@ def is_annotation_path_ready(path: Path) -> bool:
     if not path.joinpath("annotations").is_dir():
         return False
     return len(tuple(path.joinpath("annotations").glob("*.txt"))) == 65
+
+
+def load_data(path: Path, remove_duplicate: bool = True) -> pl.DataFrame:
+    r"""Load all the annotations in a DataFrame.
+
+    Args:
+        path: The directory where the dataset annotations are stored.
+        remove_duplicate: If ``True``, the duplicate rows are removed.
+
+    Returns:
+        The annotations in a DataFrame.
+    """
+    paths = FileFilter(PathLister([sanitize_path(path)], pattern="annotations/*.txt"))
+    annotations = list(map(load_annotation_file, paths))
+    data = convert_to_dict_of_flat_lists(annotations)
+    data = pl.DataFrame(data)
+    if remove_duplicate:
+        data = drop_duplicates(data)
+    if data.select(pl.len()).item():
+        data = data.sort(by=[Column.VIDEO, Column.START_TIME])
+    return data
 
 
 def load_annotation_file(path: Path) -> dict[str, list]:

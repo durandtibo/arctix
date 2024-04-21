@@ -4,9 +4,11 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 from zipfile import ZipFile
 
+import polars as pl
 import pytest
 from coola import objects_are_equal
 from iden.io import save_text
+from polars.testing import assert_frame_equal
 
 from arctix.dataset.multithumos import (
     ANNOTATION_URL,
@@ -14,6 +16,7 @@ from arctix.dataset.multithumos import (
     download_data,
     is_annotation_path_ready,
     load_annotation_file,
+    load_data,
     parse_annotation_lines,
 )
 
@@ -31,7 +34,7 @@ def data_zip_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
 
 @pytest.fixture(scope="module")
 def data_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    path = tmp_path_factory.mktemp("data").joinpath("dribble.txt")
+    path = tmp_path_factory.mktemp("annotations").joinpath("dribble.txt")
     save_text(
         "\n".join(
             [
@@ -44,6 +47,37 @@ def data_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
             ]
         ),
         path,
+    )
+    return path
+
+
+@pytest.fixture(scope="module")
+def data_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    path = tmp_path_factory.mktemp("dataset")
+    save_text(
+        "\n".join(
+            [
+                "",
+                "  video_validation_0000266 72.80 76.40  ",
+                " video_validation_0000681 44.00 50.90 ",
+                "video_validation_0000682 1.50 5.40",
+                "   ",
+                "video_validation_0000682 79.30 83.90",
+            ]
+        ),
+        path.joinpath("annotations").joinpath("dribble.txt"),
+    )
+    save_text(
+        "\n".join(
+            [
+                "video_validation_0000682 17.57 18.33",
+                "video_validation_0000902 2.97 3.60",
+                "video_validation_0000902 4.54 5.07",
+                "video_validation_0000902 20.22 20.49",
+                "video_validation_0000682 17.57 18.33",
+            ]
+        ),
+        path.joinpath("annotations").joinpath("guard.txt"),
     )
     return path
 
@@ -138,6 +172,81 @@ def test_is_annotation_path_ready_false_missing_annotation_file(tmp_path: Path) 
     for i in range(64):
         save_text("", tmp_path.joinpath(f"annotations/{i + 1}.txt"))
     assert not is_annotation_path_ready(tmp_path)
+
+
+###############################
+#     Tests for load_data     #
+###############################
+
+
+def test_load_data_empty(tmp_path: Path) -> None:
+    assert_frame_equal(load_data(tmp_path), pl.DataFrame({}))
+
+
+def test_load_data(data_dir: Path) -> None:
+    assert_frame_equal(
+        load_data(data_dir),
+        pl.DataFrame(
+            {
+                Column.VIDEO: [
+                    "video_validation_0000266",
+                    "video_validation_0000681",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000902",
+                    "video_validation_0000902",
+                    "video_validation_0000902",
+                ],
+                Column.START_TIME: [72.80, 44.00, 1.50, 17.57, 79.30, 2.97, 4.54, 20.22],
+                Column.END_TIME: [76.40, 50.90, 5.40, 18.33, 83.90, 3.60, 5.07, 20.49],
+                Column.ACTION: [
+                    "dribble",
+                    "dribble",
+                    "dribble",
+                    "guard",
+                    "dribble",
+                    "guard",
+                    "guard",
+                    "guard",
+                ],
+            },
+        ),
+    )
+
+
+def test_load_data_keep_duplicates(data_dir: Path) -> None:
+    assert_frame_equal(
+        load_data(data_dir, remove_duplicate=False),
+        pl.DataFrame(
+            {
+                Column.VIDEO: [
+                    "video_validation_0000266",
+                    "video_validation_0000681",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000902",
+                    "video_validation_0000902",
+                    "video_validation_0000902",
+                ],
+                Column.START_TIME: [72.80, 44.00, 1.50, 17.57, 17.57, 79.30, 2.97, 4.54, 20.22],
+                Column.END_TIME: [76.40, 50.90, 5.40, 18.33, 18.33, 83.90, 3.60, 5.07, 20.49],
+                Column.ACTION: [
+                    "dribble",
+                    "dribble",
+                    "dribble",
+                    "guard",
+                    "guard",
+                    "dribble",
+                    "guard",
+                    "guard",
+                    "guard",
+                ],
+            },
+        ),
+    )
 
 
 ##########################################
