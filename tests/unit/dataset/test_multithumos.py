@@ -14,6 +14,7 @@ from arctix.dataset.multithumos import (
     ANNOTATION_URL,
     Column,
     download_data,
+    fetch_data,
     is_annotation_path_ready,
     load_annotation_file,
     load_data,
@@ -80,6 +81,83 @@ def data_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
         path.joinpath("annotations").joinpath("guard.txt"),
     )
     return path
+
+
+################################
+#     Tests for fetch_data     #
+################################
+
+
+def test_fetch_data_remove_duplicate_examples(data_dir: Path) -> None:
+    with patch("arctix.dataset.multithumos.download_data") as download_mock:
+        data = fetch_data(data_dir)
+        download_mock.assert_called_once_with(data_dir, False)
+    assert_frame_equal(
+        data,
+        pl.DataFrame(
+            {
+                Column.VIDEO: [
+                    "video_validation_0000266",
+                    "video_validation_0000681",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000902",
+                    "video_validation_0000902",
+                    "video_validation_0000902",
+                ],
+                Column.START_TIME: [72.80, 44.00, 1.50, 17.57, 79.30, 2.97, 4.54, 20.22],
+                Column.END_TIME: [76.40, 50.90, 5.40, 18.33, 83.90, 3.60, 5.07, 20.49],
+                Column.ACTION: [
+                    "dribble",
+                    "dribble",
+                    "dribble",
+                    "guard",
+                    "dribble",
+                    "guard",
+                    "guard",
+                    "guard",
+                ],
+            },
+        ),
+    )
+
+
+def test_fetch_data_keep_duplicate_examples(data_dir: Path) -> None:
+    with patch("arctix.dataset.multithumos.download_data") as download_mock:
+        data = fetch_data(data_dir, remove_duplicate=False, force_download=True)
+        download_mock.assert_called_once_with(data_dir, True)
+    assert_frame_equal(
+        data,
+        pl.DataFrame(
+            {
+                Column.VIDEO: [
+                    "video_validation_0000266",
+                    "video_validation_0000681",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000902",
+                    "video_validation_0000902",
+                    "video_validation_0000902",
+                ],
+                Column.START_TIME: [72.80, 44.00, 1.50, 17.57, 17.57, 79.30, 2.97, 4.54, 20.22],
+                Column.END_TIME: [76.40, 50.90, 5.40, 18.33, 18.33, 83.90, 3.60, 5.07, 20.49],
+                Column.ACTION: [
+                    "dribble",
+                    "dribble",
+                    "dribble",
+                    "guard",
+                    "guard",
+                    "dribble",
+                    "guard",
+                    "guard",
+                    "guard",
+                ],
+            },
+        ),
+    )
 
 
 ###################################
