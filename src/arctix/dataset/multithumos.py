@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+__all__ = ["download_data"]
+
 import logging
 import zipfile
 from pathlib import Path
@@ -96,5 +100,5 @@ if __name__ == "__main__":  # pragma: no cover
 
     logging.basicConfig(level=logging.DEBUG)
 
-    path = Path(os.environ["ARCTIX_DATA_PATH"])
+    path = Path(os.environ["ARCTIX_DATA_PATH"]).joinpath("multithumos")
     download_data(path)
