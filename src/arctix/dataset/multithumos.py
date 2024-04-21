@@ -20,14 +20,28 @@ import logging
 import zipfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING
 
 from iden.utils.path import sanitize_path
 
 from arctix.utils.download import download_url_to_file
 
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
 logger = logging.getLogger(__name__)
 
 ANNOTATION_URL = "http://ai.stanford.edu/~syyeung/resources/multithumos.zip"
+
+
+class Column:
+    ACTION: str = "action"
+    ACTION_ID: str = "action_id"
+    END_TIME: str = "end_time"
+    SEQUENCE_LENGTH: str = "sequence_length"
+    START_TIME: str = "start_time"
+    VIDEO: str = "video"
+    VIDEO_ID: str = "video_id"
 
 
 def download_data(path: Path, force_download: bool = False) -> None:
@@ -107,6 +121,30 @@ def is_annotation_path_ready(path: Path) -> bool:
     if not path.joinpath("annotations").is_dir():
         return False
     return len(tuple(path.joinpath("annotations").glob("*.txt"))) == 65
+
+
+def parse_annotation_lines(lines: Sequence[str]) -> dict:
+    r"""Parse the action annotation lines and returns a dictionary with
+    the prepared data.
+
+    Args:
+        lines: The lines to parse.
+
+    Returns:
+        A dictionary with the sequence of video names, the start
+            time and end time of each action.
+    """
+    videos = []
+    start_time = []
+    end_time = []
+    for line in (string.strip() for string in lines):
+        if not line:
+            continue
+        video, start, end = line.split(" ")
+        videos.append(video)
+        start_time.append(float(start))
+        end_time.append(float(end))
+    return {Column.VIDEO: videos, Column.START_TIME: start_time, Column.END_TIME: end_time}
 
 
 if __name__ == "__main__":  # pragma: no cover
