@@ -33,6 +33,7 @@ __all__ = [
 
 import logging
 import tarfile
+from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -271,7 +272,8 @@ def filter_by_split(frame: pl.DataFrame, split: str = "all") -> pl.DataFrame:
 
     Args:
         frame: The DataFrame to filter.
-        split: The dataset split.
+        split: The dataset split. By default, the union of all the
+            dataset splits is used.
 
     Returns:
         The filtered DataFrame.
@@ -301,6 +303,7 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
             td.Sort(columns=[Column.COOKING_ACTIVITY, Column.PERSON, Column.START_TIME]),
             td.Cast(columns=[Column.START_TIME, Column.END_TIME], dtype=pl.Float32),
             td.StripChars(columns=[Column.ACTION, Column.PERSON, Column.COOKING_ACTIVITY]),
+            td.Function(partial(filter_by_split, split=split)),
             td.TokenToIndex(
                 vocab=vocab_action, token_column=Column.ACTION, index_column=Column.ACTION_ID
             ),
