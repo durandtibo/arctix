@@ -38,10 +38,11 @@ python = ">=3.9,<3.13"
 # Optional dependencies
 gdown = { version = ">=5.0,<6.0", optional = true }
 matplotlib = { version = ">=3.6,<4.0", optional = true }
+requests = { version = ">=2.20,<3.0", optional = true }
 tqdm = { version = ">=4.65,<5.0", optional = true }
 
 [tool.poetry.extras]
-all = ["gdown", "tqdm"]
+all = ["gdown", "matplotlib", "requests", "tqdm"]
 
 [tool.poetry.group.exp]
 optional = true

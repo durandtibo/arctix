@@ -5,12 +5,15 @@ from __future__ import annotations
 __all__ = [
     "check_gdown",
     "check_matplotlib",
+    "check_requests",
     "check_tqdm",
     "gdown_available",
     "is_gdown_available",
     "is_matplotlib_available",
+    "is_requests_available",
     "is_tqdm_available",
     "matplotlib_available",
+    "requests_available",
     "tqdm_available",
 ]
 
@@ -168,6 +171,80 @@ def matplotlib_available(fn: Callable[..., Any]) -> Callable[..., Any]:
     ```
     """
     return decorator_package_available(fn, is_matplotlib_available)
+
+
+####################
+#     requests     #
+####################
+
+
+def is_requests_available() -> bool:
+    r"""Indicate if the ``requests`` package is installed or not.
+
+    Returns:
+        ``True`` if ``requests`` is available otherwise ``False``.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from arctix.utils.imports import is_requests_available
+    >>> is_requests_available()
+
+    ```
+    """
+    return find_spec("requests") is not None
+
+
+def check_requests() -> None:
+    r"""Check if the ``requests`` package is installed.
+
+    Raises:
+        RuntimeError: if the ``requests`` package is not installed.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from arctix.utils.imports import check_requests
+    >>> check_requests()
+
+    ```
+    """
+    if not is_requests_available():
+        msg = (
+            "`requests` package is required but not installed. "
+            "You can install `requests` package with the command:\n\n"
+            "pip install requests\n"
+        )
+        raise RuntimeError(msg)
+
+
+def requests_available(fn: Callable[..., Any]) -> Callable[..., Any]:
+    r"""Implement a decorator to execute a function only if ``requests``
+    package is installed.
+
+    Args:
+        fn: Specifies the function to execute.
+
+    Returns:
+        A wrapper around ``fn`` if ``requests`` package is installed,
+            otherwise ``None``.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from arctix.utils.imports import requests_available
+    >>> @requests_available
+    ... def my_function(n: int = 0) -> int:
+    ...     return 42 + n
+    ...
+    >>> my_function()
+
+    ```
+    """
+    return decorator_package_available(fn, is_requests_available)
 
 
 ################
