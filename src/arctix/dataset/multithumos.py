@@ -25,7 +25,8 @@ from typing import TYPE_CHECKING
 import polars as pl
 from iden.utils.path import sanitize_path
 
-from arctix.utils.dataframe import drop_duplicates
+from arctix.transformer import dataframe as td
+from arctix.utils.dataframe import drop_duplicates, generate_vocabulary
 from arctix.utils.download import download_url_to_file
 from arctix.utils.iter import FileFilter, PathLister
 from arctix.utils.mapping import convert_to_dict_of_flat_lists
@@ -230,10 +231,37 @@ def parse_annotation_lines(lines: Sequence[str]) -> dict:
     return {Column.VIDEO: videos, Column.START_TIME: start_time, Column.END_TIME: end_time}
 
 
+def prepare_data(frame: pl.DataFrame) -> tuple[pl.DataFrame, dict]:
+    r"""Prepare the data.
+
+    Args:
+        frame: The raw DataFrame.
+
+    Returns:
+        A tuple containing the prepared data and the metadata.
+    """
+    vocab_action = generate_vocabulary(frame, col=Column.ACTION).sort_by_count()
+    transformer = td.Sequential(
+        [
+            td.Sort(columns=[Column.VIDEO, Column.START_TIME]),
+            td.Cast(columns=[Column.START_TIME, Column.END_TIME], dtype=pl.Float32),
+            td.StripChars(columns=[Column.ACTION, Column.VIDEO]),
+            td.TokenToIndex(
+                vocab=vocab_action, token_column=Column.ACTION, index_column=Column.ACTION_ID
+            ),
+        ]
+    )
+    out = transformer.transform(frame)
+    return out, {"vocab_action": vocab_action}
+
+
 if __name__ == "__main__":  # pragma: no cover
     import os
 
     logging.basicConfig(level=logging.DEBUG)
 
     path = Path(os.environ["ARCTIX_DATA_PATH"]).joinpath("multithumos")
-    download_data(path)
+    raw_data = fetch_data(path)
+    data, metadata = prepare_data(raw_data)
+    logger.info(f"data:\n{data}")
+    logger.info(f"metadata:\n{metadata}")

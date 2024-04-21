@@ -74,3 +74,10 @@ def test_strip_chars_dataframe_transformer_transform_empty() -> None:
     transformer = StripChars(columns=[])
     out = transformer.transform(pl.DataFrame({}))
     assert_frame_equal(out, pl.DataFrame({}))
+
+
+def test_strip_chars_dataframe_transformer_transform_empty_row() -> None:
+    frame = pl.DataFrame({"col": []}, schema={"col": pl.String})
+    transformer = StripChars(columns=["col"])
+    out = transformer.transform(frame)
+    assert_frame_equal(out, pl.DataFrame({"col": []}, schema={"col": pl.String}))
