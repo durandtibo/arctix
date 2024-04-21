@@ -123,6 +123,32 @@ def is_annotation_path_ready(path: Path) -> bool:
     return len(tuple(path.joinpath("annotations").glob("*.txt"))) == 65
 
 
+def load_annotation_file(path: Path) -> dict[str, list]:
+    r"""Load the annotation data from a text file.
+
+    Args:
+        path: The file path to the annotation data.
+
+    Returns:
+        A dictionary with the action, the start time, and end time
+            of each action.
+    """
+    path = sanitize_path(path)
+    if path.suffix != ".txt":
+        msg = (
+            "Incorrect file extension. This function can only parse `.txt` files "
+            f"but received {path.suffix}"
+        )
+        raise ValueError(msg)
+    logger.info(f"Reading {path}...")
+    with Path.open(path) as file:
+        lines = [x.strip() for x in file.readlines()]
+
+    annotation = parse_annotation_lines(lines)
+    annotation[Column.ACTION] = [path.stem] * len(annotation[Column.VIDEO])
+    return annotation
+
+
 def parse_annotation_lines(lines: Sequence[str]) -> dict:
     r"""Parse the action annotation lines and returns a dictionary with
     the prepared data.
@@ -137,7 +163,7 @@ def parse_annotation_lines(lines: Sequence[str]) -> dict:
     videos = []
     start_time = []
     end_time = []
-    for line in (string.strip() for string in lines):
+    for line in (item.strip() for item in lines):
         if not line:
             continue
         video, start, end = line.split(" ")
