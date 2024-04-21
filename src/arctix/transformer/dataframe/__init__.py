@@ -6,6 +6,8 @@ __all__ = [
     "BaseDataFrameTransformer",
     "Cast",
     "CastDataFrameTransformer",
+    "Function",
+    "FunctionDataFrameTransformer",
     "IndexToToken",
     "IndexToTokenDataFrameTransformer",
     "Replace",
@@ -29,6 +31,10 @@ from arctix.transformer.dataframe.base import (
 )
 from arctix.transformer.dataframe.casting import CastDataFrameTransformer
 from arctix.transformer.dataframe.casting import CastDataFrameTransformer as Cast
+from arctix.transformer.dataframe.function import FunctionDataFrameTransformer
+from arctix.transformer.dataframe.function import (
+    FunctionDataFrameTransformer as Function,
+)
 from arctix.transformer.dataframe.replace import ReplaceDataFrameTransformer
 from arctix.transformer.dataframe.replace import ReplaceDataFrameTransformer as Replace
 from arctix.transformer.dataframe.sequential import SequentialDataFrameTransformer
