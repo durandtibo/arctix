@@ -1,3 +1,17 @@
+r"""Contain code to prepare/preprocess the MultiTHUMOS data.
+
+Information about the MultiTHUMOS dataset can be found in the following
+paper:
+
+Every Moment Counts: Dense Detailed Labeling of Actions in Complex
+Videos. Yeung S., Russakovsky O., Jin N., Andriluka M., Mori G., Fei-Fei
+L. IJCV 2017 (
+
+http://arxiv.org/pdf/1507.05738)
+
+Project page: http://ai.stanford.edu/~syyeung/everymoment.html
+"""
+
 from __future__ import annotations
 
 __all__ = ["download_data"]
