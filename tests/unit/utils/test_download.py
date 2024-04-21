@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from iden.io import load_text, save_text
 
-from arctix.testing import gdown_available
+from arctix.testing import gdown_available, requests_available
 from arctix.utils.download import download_drive_file, download_url_to_file
 
 if TYPE_CHECKING:
@@ -45,6 +45,7 @@ def test_download_drive_file_already_exist(tmp_path: Path) -> None:
 ##########################################
 
 
+@requests_available
 def test_download_url_to_file(tmp_path: Path) -> None:
     url = "https://raw.githubusercontent.com/durandtibo/arctix/main/README.md"
     path = tmp_path.joinpath("data.txt")
@@ -52,6 +53,7 @@ def test_download_url_to_file(tmp_path: Path) -> None:
     assert load_text(path).startswith("# arctix")
 
 
+@requests_available
 def test_download_url_to_file_progress_false(tmp_path: Path) -> None:
     url = "https://raw.githubusercontent.com/durandtibo/arctix/main/README.md"
     path = tmp_path.joinpath("data.txt")
