@@ -6,7 +6,7 @@ from unittest.mock import patch
 from iden.io import load_text, save_text
 
 from arctix.testing import gdown_available
-from arctix.utils.download import download_drive_file
+from arctix.utils.download import download_drive_file, download_url_to_file
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -38,3 +38,22 @@ def test_download_drive_file_already_exist(tmp_path: Path) -> None:
         download_drive_file(url, path)
         gdown_mock.download.assert_not_called()
     assert load_text(path) == "abc"
+
+
+##########################################
+#     Tests for download_url_to_file     #
+##########################################
+
+
+def test_download_url_to_file(tmp_path: Path) -> None:
+    url = "https://raw.githubusercontent.com/durandtibo/arctix/main/README.md"
+    path = tmp_path.joinpath("data.txt")
+    download_url_to_file(url=url, dst=path)
+    assert load_text(path).startswith("# arctix")
+
+
+def test_download_url_to_file_progress_false(tmp_path: Path) -> None:
+    url = "https://raw.githubusercontent.com/durandtibo/arctix/main/README.md"
+    path = tmp_path.joinpath("data.txt")
+    download_url_to_file(url=url, dst=path, progress=False)
+    assert load_text(path).startswith("# arctix")
