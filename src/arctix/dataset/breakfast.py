@@ -456,9 +456,11 @@ def to_array_data(frame: pl.DataFrame) -> dict[str, np.ndarray]:
 
 
 if __name__ == "__main__":  # pragma: no cover
+    import os
+
     logging.basicConfig(level=logging.DEBUG)
 
-    path = Path("~/Downloads/breakfast")
+    path = Path(os.environ["ARCTIX_DATA_PATH"]).joinpath("breakfast")
     download_data(path)
     data_raw = fetch_data(path, name="segmentation_coarse")
     data, metadata = prepare_data(data_raw)
