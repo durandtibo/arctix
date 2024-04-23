@@ -16,6 +16,7 @@ from arctix.dataset.multithumos import (
     Column,
     download_data,
     fetch_data,
+    generate_split_column,
     is_annotation_path_ready,
     load_annotation_file,
     load_data,
@@ -537,3 +538,70 @@ def test_prepare_data_empty() -> None:
         ),
     )
     assert objects_are_equal(metadata, {"vocab_action": Vocabulary(Counter({}))})
+
+
+###########################################
+#     Tests for generate_split_column     #
+###########################################
+
+
+def test_generate_split_column() -> None:
+    assert_frame_equal(
+        generate_split_column(
+            pl.DataFrame(
+                {
+                    Column.VIDEO: [
+                        "video_validation_0000266",
+                        "video_test_0000862",
+                        "video_validation_0000681",
+                        "video_validation_0000682",
+                        "video_test_0000234",
+                        "video_validation_0000902",
+                    ],
+                    "col": [1, 2, 3, 4, 5, 6],
+                },
+                schema={Column.VIDEO: pl.String, "col": pl.Int64},
+            )
+        ),
+        pl.DataFrame(
+            {
+                Column.VIDEO: [
+                    "video_validation_0000266",
+                    "video_test_0000862",
+                    "video_validation_0000681",
+                    "video_validation_0000682",
+                    "video_test_0000234",
+                    "video_validation_0000902",
+                ],
+                "col": [1, 2, 3, 4, 5, 6],
+                Column.SPLIT: [
+                    "validation",
+                    "test",
+                    "validation",
+                    "validation",
+                    "test",
+                    "validation",
+                ],
+            },
+            schema={Column.VIDEO: pl.String, "col": pl.Int64, Column.SPLIT: pl.String},
+        ),
+    )
+
+
+def test_generate_split_column_empty() -> None:
+    assert_frame_equal(
+        generate_split_column(
+            pl.DataFrame(
+                {Column.VIDEO: [], "col": []},
+                schema={Column.VIDEO: pl.String, "col": pl.Int64},
+            )
+        ),
+        pl.DataFrame(
+            {
+                Column.VIDEO: [],
+                "col": [],
+                Column.SPLIT: [],
+            },
+            schema={Column.VIDEO: pl.String, "col": pl.Int64, Column.SPLIT: pl.String},
+        ),
+    )
