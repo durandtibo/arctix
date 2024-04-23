@@ -44,6 +44,7 @@ class Column:
     ACTION_ID: str = "action_id"
     END_TIME: str = "end_time"
     SEQUENCE_LENGTH: str = "sequence_length"
+    SPLIT: str = "split"
     START_TIME: str = "start_time"
     VIDEO: str = "video"
     VIDEO_ID: str = "video_id"
@@ -253,6 +254,20 @@ def prepare_data(frame: pl.DataFrame) -> tuple[pl.DataFrame, dict]:
     )
     out = transformer.transform(frame)
     return out, {"vocab_action": vocab_action}
+
+
+def generate_split_column(frame: pl.DataFrame) -> pl.DataFrame:
+    r"""Generate the split column from the video name column.
+
+    Args:
+        frame: The input DataFrame with the video name column.
+
+    Returns:
+        The output DataFrame with the additional split column.
+    """
+    return frame.with_columns(
+        pl.col(Column.VIDEO).str.split_exact(by="_", n=3).struct[1].alias(Column.SPLIT)
+    )
 
 
 if __name__ == "__main__":  # pragma: no cover
