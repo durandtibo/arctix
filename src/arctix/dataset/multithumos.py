@@ -355,6 +355,92 @@ def generate_split_column(frame: pl.DataFrame) -> pl.DataFrame:
     )
 
 
+def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
+    r"""Group the DataFrame by sequences of actions.
+
+    Args:
+        frame: The input DataFrame.
+
+    Returns:
+        The DataFrame after the grouping.
+
+    Example usage:
+
+    ```pycon
+
+    >>> import polars as pl
+    >>> from arctix.dataset.multithumos import Column, group_by_sequence
+    >>> frame = pl.DataFrame(
+    ...     {
+    ...         Column.VIDEO: [
+    ...             "video_validation_1",
+    ...             "video_validation_1",
+    ...             "video_validation_1",
+    ...             "video_validation_2",
+    ...             "video_validation_2",
+    ...             "video_validation_2",
+    ...             "video_validation_2",
+    ...         ],
+    ...         Column.START_TIME: [1.50, 17.57, 79.30, 2.97, 4.54, 20.22, 27.42],
+    ...         Column.END_TIME: [5.40, 18.33, 83.90, 3.60, 5.07, 20.49, 30.23],
+    ...         Column.ACTION: [
+    ...             "dribble",
+    ...             "guard",
+    ...             "dribble",
+    ...             "guard",
+    ...             "guard",
+    ...             "guard",
+    ...             "shoot",
+    ...         ],
+    ...         Column.ACTION_ID: [1, 0, 1, 0, 0, 0, 2],
+    ...         Column.SPLIT: [
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...         ],
+    ...     },
+    ...     schema={
+    ...         Column.VIDEO: pl.String,
+    ...         Column.START_TIME: pl.Float32,
+    ...         Column.END_TIME: pl.Float32,
+    ...         Column.ACTION: pl.String,
+    ...         Column.ACTION_ID: pl.Int64,
+    ...         Column.SPLIT: pl.String,
+    ...     },
+    ... )
+    >>> groups = group_by_sequence(frame)
+    >>> groups
+    shape: (2, 6)
+    ┌─────────────────┬────────────┬─────────────┬─────────────────┬─────────────────┬─────────────────┐
+    │ video           ┆ split      ┆ action_id   ┆ start_time      ┆ end_time        ┆ sequence_length │
+    │ ---             ┆ ---        ┆ ---         ┆ ---             ┆ ---             ┆ ---             │
+    │ str             ┆ str        ┆ list[i64]   ┆ list[f32]       ┆ list[f32]       ┆ u32             │
+    ╞═════════════════╪════════════╪═════════════╪═════════════════╪═════════════════╪═════════════════╡
+    │ video_validatio ┆ validation ┆ [1, 0, 1]   ┆ [1.5, 17.57,    ┆ [5.4, 18.33,    ┆ 3               │
+    │ n_1             ┆            ┆             ┆ 79.300003]      ┆ 83.900002]      ┆                 │
+    │ video_validatio ┆ validation ┆ [0, 0, … 2] ┆ [2.97, 4.54, …  ┆ [3.6, 5.07, …   ┆ 4               │
+    │ n_2             ┆            ┆             ┆ 27.42]          ┆ 30.23]          ┆                 │
+    └─────────────────┴────────────┴─────────────┴─────────────────┴─────────────────┴─────────────────┘
+
+    ```
+    """
+    return (
+        frame.group_by([Column.VIDEO])
+        .agg(
+            pl.first(Column.SPLIT),
+            pl.col(Column.ACTION_ID).alias(Column.ACTION_ID),
+            pl.col(Column.START_TIME).alias(Column.START_TIME),
+            pl.col(Column.END_TIME).alias(Column.END_TIME),
+            pl.len().alias(Column.SEQUENCE_LENGTH),
+        )
+        .sort(by=[Column.VIDEO])
+    )
+
+
 if __name__ == "__main__":  # pragma: no cover
     import os
 
