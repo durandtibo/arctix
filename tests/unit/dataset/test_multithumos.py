@@ -485,6 +485,16 @@ def test_prepare_data() -> None:
                     "guard",
                 ],
                 Column.ACTION_ID: [1, 1, 1, 0, 1, 0, 0, 0],
+                Column.SPLIT: [
+                    "validation",
+                    "validation",
+                    "validation",
+                    "validation",
+                    "validation",
+                    "validation",
+                    "validation",
+                    "validation",
+                ],
             },
             schema={
                 Column.VIDEO: pl.String,
@@ -492,6 +502,7 @@ def test_prepare_data() -> None:
                 Column.END_TIME: pl.Float32,
                 Column.ACTION: pl.String,
                 Column.ACTION_ID: pl.Int64,
+                Column.SPLIT: pl.String,
             },
         ),
     )
@@ -527,6 +538,7 @@ def test_prepare_data_empty() -> None:
                 Column.END_TIME: [],
                 Column.ACTION: [],
                 Column.ACTION_ID: [],
+                Column.SPLIT: [],
             },
             schema={
                 Column.VIDEO: pl.String,
@@ -534,6 +546,7 @@ def test_prepare_data_empty() -> None:
                 Column.END_TIME: pl.Float32,
                 Column.ACTION: pl.String,
                 Column.ACTION_ID: pl.Int64,
+                Column.SPLIT: pl.String,
             },
         ),
     )

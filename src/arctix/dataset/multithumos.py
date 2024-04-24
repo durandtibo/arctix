@@ -218,6 +218,26 @@ def parse_annotation_lines(lines: Sequence[str]) -> dict:
     Returns:
         A dictionary with the sequence of video names, the start
             time and end time of each action.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from arctix.dataset.multithumos import parse_annotation_lines
+    >>> out = parse_annotation_lines(
+    ...     [
+    ...         "video_validation_0000266 72.80 76.40",
+    ...         "video_validation_0000681 44.00 50.90",
+    ...         "video_validation_0000682 1.50 5.40",
+    ...         "video_validation_0000682 79.30 83.90",
+    ...     ]
+    ... )
+    >>> out
+    {'video': ['video_validation_0000266', 'video_validation_0000681', 'video_validation_0000682', 'video_validation_0000682'],
+     'start_time': [72.8, 44.0, 1.5, 79.3],
+     'end_time': [76.4, 50.9, 5.4, 83.9]}
+
+    ```
     """
     videos = []
     start_time = []
@@ -240,6 +260,42 @@ def prepare_data(frame: pl.DataFrame) -> tuple[pl.DataFrame, dict]:
 
     Returns:
         A tuple containing the prepared data and the metadata.
+
+    Example usage:
+
+    ```pycon
+
+    >>> import polars as pl
+    >>> from arctix.dataset.multithumos import Column, prepare_data
+    >>> frame = pl.DataFrame(
+    ...     {
+    ...         Column.VIDEO: ["video_validation_1", "video_test_2", "video_validation_3", "video_test_4"],
+    ...         Column.START_TIME: [72.80, 44.00, 1.50, 17.57],
+    ...         Column.END_TIME: [76.40, 50.90, 5.40, 18.33],
+    ...         Column.ACTION: ["dribble", "dribble", "dribble", "guard"],
+    ...     }
+    ... )
+    >>> data, metadata = prepare_data(frame)
+    >>> data
+    shape: (4, 6)
+    ┌────────────────────┬────────────┬───────────┬─────────┬───────────┬────────────┐
+    │ video              ┆ start_time ┆ end_time  ┆ action  ┆ action_id ┆ split      │
+    │ ---                ┆ ---        ┆ ---       ┆ ---     ┆ ---       ┆ ---        │
+    │ str                ┆ f32        ┆ f32       ┆ str     ┆ i64       ┆ str        │
+    ╞════════════════════╪════════════╪═══════════╪═════════╪═══════════╪════════════╡
+    │ video_test_2       ┆ 44.0       ┆ 50.900002 ┆ dribble ┆ 0         ┆ test       │
+    │ video_test_4       ┆ 17.57      ┆ 18.33     ┆ guard   ┆ 1         ┆ test       │
+    │ video_validation_1 ┆ 72.800003  ┆ 76.400002 ┆ dribble ┆ 0         ┆ validation │
+    │ video_validation_3 ┆ 1.5        ┆ 5.4       ┆ dribble ┆ 0         ┆ validation │
+    └────────────────────┴────────────┴───────────┴─────────┴───────────┴────────────┘
+    >>> metadata
+    {'vocab_action': Vocabulary(
+      counter=Counter({'dribble': 3, 'guard': 1}),
+      index_to_token=('dribble', 'guard'),
+      token_to_index={'dribble': 0, 'guard': 1},
+    )}
+
+    ```
     """
     vocab_action = generate_vocabulary(frame, col=Column.ACTION).sort_by_count()
     transformer = td.Sequential(
@@ -250,6 +306,7 @@ def prepare_data(frame: pl.DataFrame) -> tuple[pl.DataFrame, dict]:
             td.TokenToIndex(
                 vocab=vocab_action, token_column=Column.ACTION, index_column=Column.ACTION_ID
             ),
+            td.Function(generate_split_column),
         ]
     )
     out = transformer.transform(frame)
@@ -264,6 +321,34 @@ def generate_split_column(frame: pl.DataFrame) -> pl.DataFrame:
 
     Returns:
         The output DataFrame with the additional split column.
+
+    Example usage:
+
+    ```pycon
+
+    >>> import polars as pl
+    >>> from arctix.dataset.multithumos import Column, generate_split_column
+    >>> frame = pl.DataFrame(
+    ...     {
+    ...         Column.VIDEO: ["video_validation_1", "video_test_2", "video_validation_3", "video_test_4"],
+    ...         Column.ACTION_ID: [0, 2, 5, 1],
+    ...     }
+    ... )
+    >>> out = generate_split_column(frame)
+    >>> out
+    shape: (4, 3)
+    ┌────────────────────┬───────────┬────────────┐
+    │ video              ┆ action_id ┆ split      │
+    │ ---                ┆ ---       ┆ ---        │
+    │ str                ┆ i64       ┆ str        │
+    ╞════════════════════╪═══════════╪════════════╡
+    │ video_validation_1 ┆ 0         ┆ validation │
+    │ video_test_2       ┆ 2         ┆ test       │
+    │ video_validation_3 ┆ 5         ┆ validation │
+    │ video_test_4       ┆ 1         ┆ test       │
+    └────────────────────┴───────────┴────────────┘
+
+    ```
     """
     return frame.with_columns(
         pl.col(Column.VIDEO).str.split_exact(by="_", n=3).struct[1].alias(Column.SPLIT)
