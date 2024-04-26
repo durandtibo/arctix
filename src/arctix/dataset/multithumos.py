@@ -14,7 +14,16 @@ Project page: http://ai.stanford.edu/~syyeung/everymoment.html
 
 from __future__ import annotations
 
-__all__ = ["download_data"]
+__all__ = [
+    "download_data",
+    "fetch_data",
+    "is_annotation_path_ready",
+    "load_annotation_file",
+    "load_data",
+    "parse_annotation_lines",
+    "prepare_data",
+    "to_array_data",
+]
 
 import logging
 import zipfile
@@ -22,6 +31,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
 
+import numpy as np
 import polars as pl
 from iden.utils.path import sanitize_path
 
@@ -30,6 +40,7 @@ from arctix.utils.dataframe import drop_duplicates, generate_vocabulary
 from arctix.utils.download import download_url_to_file
 from arctix.utils.iter import FileFilter, PathLister
 from arctix.utils.mapping import convert_to_dict_of_flat_lists
+from arctix.utils.masking import convert_sequences_to_array, generate_mask_from_lengths
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -439,6 +450,115 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
         )
         .sort(by=[Column.VIDEO])
     )
+
+
+def to_array_data(frame: pl.DataFrame) -> dict[str, np.ndarray]:
+    r"""Convert a DataFrame to a dictionary of arrays.
+
+    Args:
+        frame: The input DataFrame.
+
+    Returns:
+        The dictionary of arrays.
+
+    Example usage:
+
+    ```pycon
+
+    >>> import polars as pl
+    >>> from arctix.dataset.multithumos import Column, to_array_data
+    >>> frame = pl.DataFrame(
+    ...     {
+    ...         Column.VIDEO: [
+    ...             "video_validation_1",
+    ...             "video_validation_1",
+    ...             "video_validation_1",
+    ...             "video_validation_2",
+    ...             "video_validation_2",
+    ...             "video_validation_2",
+    ...             "video_validation_2",
+    ...         ],
+    ...         Column.START_TIME: [1.50, 17.57, 79.30, 2.97, 4.54, 20.22, 27.42],
+    ...         Column.END_TIME: [5.40, 18.33, 83.90, 3.60, 5.07, 20.49, 30.23],
+    ...         Column.ACTION: [
+    ...             "dribble",
+    ...             "guard",
+    ...             "dribble",
+    ...             "guard",
+    ...             "guard",
+    ...             "guard",
+    ...             "shoot",
+    ...         ],
+    ...         Column.ACTION_ID: [1, 0, 1, 0, 0, 0, 2],
+    ...         Column.SPLIT: [
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...         ],
+    ...     },
+    ...     schema={
+    ...         Column.VIDEO: pl.String,
+    ...         Column.START_TIME: pl.Float32,
+    ...         Column.END_TIME: pl.Float32,
+    ...         Column.ACTION: pl.String,
+    ...         Column.ACTION_ID: pl.Int64,
+    ...         Column.SPLIT: pl.String,
+    ...     },
+    ... )
+    >>> arrays = to_array_data(frame)
+    >>> arrays
+    {'sequence_length': array([3, 4]),
+     'split': array(['validation', 'validation'], dtype='<U10'),
+     'action_id': masked_array(
+      data=[[1, 0, 1, --],
+            [0, 0, 0, 2]],
+      mask=[[False, False, False,  True],
+            [False, False, False, False]],
+      fill_value=999999),
+     'start_time': masked_array(
+      data=[[1.0, 17.0, 79.0, --],
+            [2.0, 4.0, 20.0, 27.0]],
+      mask=[[False, False, False,  True],
+            [False, False, False, False]],
+      fill_value=1e+20),
+     'end_time': masked_array(
+      data=[[5.0, 18.0, 83.0, --],
+            [3.0, 5.0, 20.0, 30.0]],
+      mask=[[False, False, False,  True],
+            [False, False, False, False]],
+      fill_value=1e+20)}
+
+    ```
+    """
+    groups = group_by_sequence(frame)
+    lengths = groups.get_column(Column.SEQUENCE_LENGTH).to_numpy()
+    mask = generate_mask_from_lengths(lengths)
+    return {
+        Column.SEQUENCE_LENGTH: lengths.astype(int),
+        Column.SPLIT: groups.get_column(Column.SPLIT).to_numpy().astype(str),
+        Column.ACTION_ID: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.ACTION_ID).to_list(), dtype=int, max_len=mask.shape[1]
+            ).astype(int),
+            mask=mask,
+        ),
+        Column.START_TIME: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.START_TIME).to_list(), dtype=float, max_len=mask.shape[1]
+            ).astype(float),
+            mask=mask,
+        ),
+        Column.END_TIME: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.END_TIME).to_list(), dtype=float, max_len=mask.shape[1]
+            ).astype(float),
+            mask=mask,
+        ),
+    }
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 from zipfile import ZipFile
 
+import numpy as np
 import polars as pl
 import pytest
 from coola import objects_are_equal
@@ -23,6 +24,7 @@ from arctix.dataset.multithumos import (
     load_data,
     parse_annotation_lines,
     prepare_data,
+    to_array_data,
 )
 from arctix.utils.vocab import Vocabulary
 
@@ -733,4 +735,111 @@ def test_group_by_sequence_empty() -> None:
                 Column.SEQUENCE_LENGTH: pl.UInt32,
             },
         ),
+    )
+
+
+###################################
+#     Tests for to_array_data     #
+###################################
+
+
+def test_to_array_data() -> None:
+    mask = np.array([[False, False, False, True], [False, False, False, False]])
+    assert objects_are_equal(
+        to_array_data(
+            pl.DataFrame(
+                {
+                    Column.VIDEO: [
+                        "video_validation_0000682",
+                        "video_validation_0000682",
+                        "video_validation_0000682",
+                        "video_validation_0000902",
+                        "video_validation_0000902",
+                        "video_validation_0000902",
+                        "video_validation_0000902",
+                    ],
+                    Column.START_TIME: [1.0, 17.0, 79.0, 2.0, 4.0, 20.0, 27.0],
+                    Column.END_TIME: [5.0, 18.0, 83.0, 3.0, 5.0, 20.0, 30.0],
+                    Column.ACTION: [
+                        "dribble",
+                        "guard",
+                        "dribble",
+                        "guard",
+                        "guard",
+                        "guard",
+                        "shoot",
+                    ],
+                    Column.ACTION_ID: [1, 0, 1, 0, 0, 0, 2],
+                    Column.SPLIT: [
+                        "validation",
+                        "validation",
+                        "validation",
+                        "validation",
+                        "validation",
+                        "validation",
+                        "validation",
+                    ],
+                },
+                schema={
+                    Column.VIDEO: pl.String,
+                    Column.START_TIME: pl.Float32,
+                    Column.END_TIME: pl.Float32,
+                    Column.ACTION: pl.String,
+                    Column.ACTION_ID: pl.Int64,
+                    Column.SPLIT: pl.String,
+                },
+            )
+        ),
+        {
+            Column.SEQUENCE_LENGTH: np.array([3, 4], dtype=int),
+            Column.SPLIT: np.array(["validation", "validation"], dtype=str),
+            Column.ACTION_ID: np.ma.masked_array(
+                data=np.array([[1, 0, 1, 0], [0, 0, 0, 2]], dtype=int), mask=mask
+            ),
+            Column.START_TIME: np.ma.masked_array(
+                data=np.array([[1.0, 17.0, 79.0, 0.0], [2.0, 4.0, 20.0, 27.0]], dtype=float),
+                mask=mask,
+            ),
+            Column.END_TIME: np.ma.masked_array(
+                data=np.array([[5.0, 18.0, 83.0, 0.0], [3.0, 5.0, 20.0, 30.0]], dtype=float),
+                mask=mask,
+            ),
+        },
+    )
+
+
+def test_to_array_data_empty() -> None:
+    mask = None
+    assert objects_are_equal(
+        to_array_data(
+            pl.DataFrame(
+                {
+                    Column.VIDEO: [],
+                    Column.START_TIME: [],
+                    Column.END_TIME: [],
+                    Column.ACTION: [],
+                    Column.ACTION_ID: [],
+                    Column.SPLIT: [],
+                },
+                schema={
+                    Column.VIDEO: pl.String,
+                    Column.START_TIME: pl.Float32,
+                    Column.END_TIME: pl.Float32,
+                    Column.ACTION: pl.String,
+                    Column.ACTION_ID: pl.Int64,
+                    Column.SPLIT: pl.String,
+                },
+            )
+        ),
+        {
+            Column.SEQUENCE_LENGTH: np.array([], dtype=int),
+            Column.SPLIT: np.array([], dtype=str),
+            Column.ACTION_ID: np.ma.masked_array(data=np.zeros(shape=(0, 0), dtype=int), mask=mask),
+            Column.START_TIME: np.ma.masked_array(
+                data=np.zeros(shape=(0, 0), dtype=float), mask=mask
+            ),
+            Column.END_TIME: np.ma.masked_array(
+                data=np.zeros(shape=(0, 0), dtype=float), mask=mask
+            ),
+        },
     )
