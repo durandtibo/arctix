@@ -17,6 +17,9 @@ from __future__ import annotations
 __all__ = [
     "download_data",
     "fetch_data",
+    "filter_by_split",
+    "generate_split_column",
+    "group_by_sequence",
     "is_annotation_path_ready",
     "load_annotation_file",
     "load_data",
@@ -27,6 +30,7 @@ __all__ = [
 
 import logging
 import zipfile
+from functools import partial
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
@@ -263,11 +267,13 @@ def parse_annotation_lines(lines: Sequence[str]) -> dict:
     return {Column.VIDEO: videos, Column.START_TIME: start_time, Column.END_TIME: end_time}
 
 
-def prepare_data(frame: pl.DataFrame) -> tuple[pl.DataFrame, dict]:
+def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame, dict]:
     r"""Prepare the data.
 
     Args:
         frame: The raw DataFrame.
+        split: The dataset split. By default, the union of all the
+            dataset splits is used.
 
     Returns:
         A tuple containing the prepared data and the metadata.
@@ -318,6 +324,7 @@ def prepare_data(frame: pl.DataFrame) -> tuple[pl.DataFrame, dict]:
                 vocab=vocab_action, token_column=Column.ACTION, index_column=Column.ACTION_ID
             ),
             td.Function(generate_split_column),
+            td.Function(partial(filter_by_split, split=split)),
         ]
     )
     out = transformer.transform(frame)
@@ -364,6 +371,24 @@ def generate_split_column(frame: pl.DataFrame) -> pl.DataFrame:
     return frame.with_columns(
         pl.col(Column.VIDEO).str.split_exact(by="_", n=3).struct[1].alias(Column.SPLIT)
     )
+
+
+def filter_by_split(frame: pl.DataFrame, split: str = "all") -> pl.DataFrame:
+    r"""Filter the DataFrame to keep only the rows associated to a
+    dataset split.
+
+    Args:
+        frame: The DataFrame to filter.
+        split: The dataset split. By default, the union of all the
+            dataset splits is used.
+
+    Returns:
+        The filtered DataFrame.
+    """
+    splits = {split}
+    if split == "all":
+        splits = {"validation", "test"}
+    return frame.filter(pl.col(Column.SPLIT).is_in(splits))
 
 
 def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
@@ -478,8 +503,8 @@ def to_array_data(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     ...             "video_validation_2",
     ...             "video_validation_2",
     ...         ],
-    ...         Column.START_TIME: [1.50, 17.57, 79.30, 2.97, 4.54, 20.22, 27.42],
-    ...         Column.END_TIME: [5.40, 18.33, 83.90, 3.60, 5.07, 20.49, 30.23],
+    ...         Column.START_TIME: [1.0, 17.0, 79.0, 2.0, 4.0, 20.0, 27.0],
+    ...         Column.END_TIME: [5.0, 18.0, 83.0, 3.0, 5.0, 20.0, 30.0],
     ...         Column.ACTION: [
     ...             "dribble",
     ...             "guard",

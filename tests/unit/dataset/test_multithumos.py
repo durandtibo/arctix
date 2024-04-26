@@ -17,6 +17,7 @@ from arctix.dataset.multithumos import (
     Column,
     download_data,
     fetch_data,
+    filter_by_split,
     generate_split_column,
     group_by_sequence,
     is_annotation_path_ready,
@@ -556,6 +557,92 @@ def test_prepare_data_empty() -> None:
     assert objects_are_equal(metadata, {"vocab_action": Vocabulary(Counter({}))})
 
 
+def test_prepare_data_split_validation() -> None:
+    data, metadata = prepare_data(
+        pl.DataFrame(
+            {
+                Column.VIDEO: [
+                    "video_validation_0000266",
+                    "video_validation_0000681",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000902",
+                    "video_validation_0000902",
+                    "video_test_0000902",
+                ],
+                Column.START_TIME: [72.80, 44.00, 1.50, 17.57, 79.30, 2.97, 4.54, 20.22],
+                Column.END_TIME: [76.40, 50.90, 5.40, 18.33, 83.90, 3.60, 5.07, 20.49],
+                Column.ACTION: [
+                    "dribble",
+                    "dribble",
+                    "dribble",
+                    "guard",
+                    "dribble",
+                    "guard",
+                    "guard",
+                    "guard",
+                ],
+            },
+            schema={
+                Column.VIDEO: pl.String,
+                Column.START_TIME: pl.Float64,
+                Column.END_TIME: pl.Float64,
+                Column.ACTION: pl.String,
+            },
+        ),
+    )
+    assert_frame_equal(
+        data,
+        pl.DataFrame(
+            {
+                Column.VIDEO: [
+                    "video_validation_0000266",
+                    "video_validation_0000681",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000902",
+                    "video_validation_0000902",
+                ],
+                Column.START_TIME: [72.80, 44.00, 1.50, 17.57, 79.30, 2.97, 4.54],
+                Column.END_TIME: [76.40, 50.90, 5.40, 18.33, 83.90, 3.60, 5.07],
+                Column.ACTION: [
+                    "dribble",
+                    "dribble",
+                    "dribble",
+                    "guard",
+                    "dribble",
+                    "guard",
+                    "guard",
+                ],
+                Column.ACTION_ID: [1, 1, 1, 0, 1, 0, 0],
+                Column.SPLIT: [
+                    "validation",
+                    "validation",
+                    "validation",
+                    "validation",
+                    "validation",
+                    "validation",
+                    "validation",
+                ],
+            },
+            schema={
+                Column.VIDEO: pl.String,
+                Column.START_TIME: pl.Float32,
+                Column.END_TIME: pl.Float32,
+                Column.ACTION: pl.String,
+                Column.ACTION_ID: pl.Int64,
+                Column.SPLIT: pl.String,
+            },
+        ),
+    )
+    assert objects_are_equal(
+        metadata,
+        {"vocab_action": Vocabulary(Counter({"guard": 4, "dribble": 4}))},
+    )
+
+
 ###########################################
 #     Tests for generate_split_column     #
 ###########################################
@@ -619,6 +706,105 @@ def test_generate_split_column_empty() -> None:
                 Column.SPLIT: [],
             },
             schema={Column.VIDEO: pl.String, "col": pl.Int64, Column.SPLIT: pl.String},
+        ),
+    )
+
+
+#####################################
+#     Tests for filter_by_split     #
+#####################################
+
+
+def test_filter_by_split_all() -> None:
+    assert_frame_equal(
+        filter_by_split(
+            pl.DataFrame(
+                {
+                    Column.SPLIT: [
+                        "validation",
+                        "test",
+                        "test",
+                        "validation",
+                        "validation",
+                        "test",
+                        "test",
+                        "",
+                    ],
+                    "col": [1, 2, 3, 4, 5, 6, 7, 8],
+                }
+            ),
+        ),
+        pl.DataFrame(
+            {
+                Column.SPLIT: [
+                    "validation",
+                    "test",
+                    "test",
+                    "validation",
+                    "validation",
+                    "test",
+                    "test",
+                ],
+                "col": [1, 2, 3, 4, 5, 6, 7],
+            }
+        ),
+    )
+
+
+def test_filter_by_split_validation() -> None:
+    assert_frame_equal(
+        filter_by_split(
+            pl.DataFrame(
+                {
+                    Column.SPLIT: [
+                        "validation",
+                        "test",
+                        "test",
+                        "validation",
+                        "validation",
+                        "test",
+                        "test",
+                        "test",
+                    ],
+                    "col": [1, 2, 3, 4, 5, 6, 7, 8],
+                }
+            ),
+            split="validation",
+        ),
+        pl.DataFrame(
+            {
+                Column.SPLIT: ["validation", "validation", "validation"],
+                "col": [1, 4, 5],
+            }
+        ),
+    )
+
+
+def test_filter_by_split_test() -> None:
+    assert_frame_equal(
+        filter_by_split(
+            pl.DataFrame(
+                {
+                    Column.SPLIT: [
+                        "validation",
+                        "test",
+                        "test",
+                        "validation",
+                        "validation",
+                        "test",
+                        "test",
+                        "test",
+                    ],
+                    "col": [1, 2, 3, 4, 5, 6, 7, 8],
+                }
+            ),
+            split="test",
+        ),
+        pl.DataFrame(
+            {
+                Column.SPLIT: ["test", "test", "test", "test", "test"],
+                "col": [2, 3, 6, 7, 8],
+            }
         ),
     )
 
