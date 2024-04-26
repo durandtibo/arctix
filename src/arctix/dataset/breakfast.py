@@ -411,12 +411,14 @@ def to_array_data(frame: pl.DataFrame) -> dict[str, np.ndarray]:
             [0, 1, 4, 0, --, --]],
       mask=[[False, False, False, False, False, False],
             [False, False, False, False,  True,  True]],
-      fill_value=999999), 'start_time': masked_array(
+      fill_value=999999),
+     'start_time': masked_array(
       data=[[1.0, 31.0, 151.0, 429.0, 576.0, 706.0],
             [1.0, 48.0, 216.0, 566.0, --, --]],
       mask=[[False, False, False, False, False, False],
             [False, False, False, False,  True,  True]],
-      fill_value=1e+20), 'end_time': masked_array(
+      fill_value=1e+20),
+     'end_time': masked_array(
       data=[[30.0, 150.0, 428.0, 575.0, 705.0, 836.0],
             [47.0, 215.0, 565.0, 747.0, --, --]],
       mask=[[False, False, False, False, False, False],
