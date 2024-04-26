@@ -591,6 +591,7 @@ def test_prepare_data_split_validation() -> None:
                 Column.ACTION: pl.String,
             },
         ),
+        split="validation",
     )
     assert_frame_equal(
         data,
