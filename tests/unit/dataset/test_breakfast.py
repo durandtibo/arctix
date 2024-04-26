@@ -1106,5 +1106,39 @@ def test_to_array_data() -> None:
                 mask=mask,
             ),
         },
-        show_difference=True,
+    )
+
+
+def test_to_array_data_empty() -> None:
+    assert objects_are_equal(
+        to_array_data(
+            pl.DataFrame(
+                {
+                    Column.START_TIME: [],
+                    Column.END_TIME: [],
+                    Column.ACTION_ID: [],
+                    Column.PERSON_ID: [],
+                    Column.COOKING_ACTIVITY_ID: [],
+                },
+                schema={
+                    Column.START_TIME: pl.Float32,
+                    Column.END_TIME: pl.Float32,
+                    Column.ACTION_ID: pl.Int64,
+                    Column.PERSON_ID: pl.Int64,
+                    Column.COOKING_ACTIVITY_ID: pl.Int64,
+                },
+            )
+        ),
+        {
+            Column.SEQUENCE_LENGTH: np.array([], dtype=int),
+            Column.PERSON_ID: np.array([], dtype=int),
+            Column.COOKING_ACTIVITY_ID: np.array([], dtype=int),
+            Column.ACTION_ID: np.ma.masked_array(data=np.zeros(shape=(0, 0), dtype=int), mask=None),
+            Column.START_TIME: np.ma.masked_array(
+                data=np.zeros(shape=(0, 0), dtype=float), mask=None
+            ),
+            Column.END_TIME: np.ma.masked_array(
+                data=np.zeros(shape=(0, 0), dtype=float), mask=None
+            ),
+        },
     )
