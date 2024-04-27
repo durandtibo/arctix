@@ -29,7 +29,7 @@ jobs:
 
       - name: Install package
         run: |
-          pip install "coola[all]"
+          pip install "arctix[all]"
 
       - name: Run some checks
         run: |
@@ -57,7 +57,7 @@ jobs:
 
       - name: Install package
         run: |
-          pip install coola
+          pip install arctix
 
       - name: Run some checks
         run: |
@@ -85,7 +85,7 @@ jobs:
 
       - name: Install package
         run: |
-          pip install --pre "coola[all]"
+          pip install --pre "arctix[all]"
 
       - name: Run some checks
         run: |
@@ -113,7 +113,7 @@ jobs:
 
       - name: Install package
         run: |
-          pip install --pre coola
+          pip install --pre arctix
 
       - name: Run some checks
         run: |
@@ -147,7 +147,7 @@ jobs:
 
       - name: Install package
         run: |
-          pip install coola batcharray==${{ matrix.batcharray-version }}
+          pip install arctix batcharray==${{ matrix.batcharray-version }}
 
       - name: Run some checks
         run: |
@@ -176,7 +176,7 @@ jobs:
 
       - name: Install package
         run: |
-          pip install coola coola==${{ matrix.coola-version }}
+          pip install arctix coola==${{ matrix.coola-version }}
 
       - name: Run some checks
         run: |
@@ -205,7 +205,7 @@ jobs:
 
       - name: Install package
         run: |
-          pip install coola iden==${{ matrix.iden-version }}
+          pip install arctix iden==${{ matrix.iden-version }}
 
       - name: Run some checks
         run: |
@@ -249,7 +249,7 @@ jobs:
 
       - name: Install package
         run: |
-          pip install coola numpy==${{ matrix.numpy-version }}
+          pip install arctix numpy==${{ matrix.numpy-version }}
 
       - name: Run some checks
         run: |
@@ -278,7 +278,7 @@ jobs:
 
       - name: Install package
         run: |
-          pip install coola iden==${{ matrix.iden-version }}
+          pip install arctix iden==${{ matrix.iden-version }}
 
       - name: Run some checks
         run: |
