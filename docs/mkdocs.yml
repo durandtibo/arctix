@@ -24,12 +24,11 @@ theme:
 nav:
   - Home: index.md
   - get_started.md
-#  - User Guide:
-#      - quickstart.md
-#      - types.md
-#      - customization.md
+  - Datasets:
+      - datasets/breakfast.md
   - Reference:
       - arctix: refs/root.md
+      - arctix.dataset: refs/dataset.md
       - arctix.utils: refs/utils.md
   - GitHub: https://github.com/durandtibo/arctix
 
