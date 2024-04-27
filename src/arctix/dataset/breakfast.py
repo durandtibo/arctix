@@ -1,20 +1,7 @@
 r"""Contain code to download and prepare the Breakfast data.
 
-Information about the Breakfast dataset can be found in the following
-paper:
-
-The Language of Actions: Recovering the Syntax and Semantics of Goal-
-Directed Human Activities. Kuehne, Arslan, and Serre. CVPR 2014.
-
-Project page:
-
-https://serre-lab.clps.brown.edu/resource/breakfast-actions-dataset/
-
-Data can be downloaded at
-
-https://serre-lab.clps.brown.edu/resource/breakfast-actions-dataset/#Downloads
-
-The documentation assumes the data are downloaded in the directory `/path/to/data/breakfast/`.
+The following documentation assumes the data are downloaded in the
+directory `/path/to/data/breakfast/`.
 """
 
 from __future__ import annotations
@@ -50,7 +37,6 @@ from arctix.utils.masking import convert_sequences_to_array, generate_mask_from_
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-
 
 logger = logging.getLogger(__name__)
 
@@ -463,7 +449,7 @@ if __name__ == "__main__":  # pragma: no cover
     logging.basicConfig(level=logging.DEBUG)
 
     path = Path(os.environ["ARCTIX_DATA_PATH"]).joinpath("breakfast")
-    download_data(path)
     data_raw = fetch_data(path, name="segmentation_coarse")
-    data, metadata = prepare_data(data_raw)
+    logger.info(f"data_raw:\n{data_raw}")
+    data, metadata = prepare_data(data_raw, split="train1")
     logger.info(f"data:\n{data}")

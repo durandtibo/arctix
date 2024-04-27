@@ -5,9 +5,7 @@ paper:
 
 Every Moment Counts: Dense Detailed Labeling of Actions in Complex
 Videos. Yeung S., Russakovsky O., Jin N., Andriluka M., Mori G., Fei-Fei
-L. IJCV 2017 (
-
-http://arxiv.org/pdf/1507.05738)
+L. IJCV 2017 (http://arxiv.org/pdf/1507.05738)
 
 Project page: http://ai.stanford.edu/~syyeung/everymoment.html
 """
