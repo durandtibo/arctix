@@ -74,6 +74,8 @@ For each dataset, `arctix` provides 3 main functions:
   the metadata.
 - `to_array` to convert the prepared data to a dictionary of numpy arrays.
 
+For example, it is possible to use the following lines to download and prepare the MultiTHUMOS data.
+
 ```pycon
 
 >>> from pathlib import Path
