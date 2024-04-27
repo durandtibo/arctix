@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "arctix"
-version = "0.0.3a1"
+version = "0.0.3"
 description = ""
 readme = "README.md"
 authors = ["Thibaut Durand <durand.tibo+gh@gmail.com>"]
 homepage = "https://github.com/durandtibo/arctix"
 repository = "https://github.com/durandtibo/arctix"
-keywords = []
+keywords = ["asynchronous time-series", "dataset", "preprocessing"]
 license = "BSD-3-Clause"
 
 classifiers = [
