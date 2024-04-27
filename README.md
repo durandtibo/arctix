@@ -62,7 +62,17 @@
 
 ## Overview
 
-TODO
+The `arctix` package consists of functionalities to prepare dataset of asynchronous time series.
+It is design to make dataset preparation reusable and reproducible.
+For each dataset, `arctix` provides 3 main functions:
+
+- `fetch_data` to load the raw data are loaded in
+  a [`polars.DataFrame`](https://docs.pola.rs/py-polars/html/reference/dataframe/index.html). When
+  possible, it downloads automatically the data.
+- `prepare_data` to prepare the data. It outputs the prepared data
+  in [`polars.DataFrame`](https://docs.pola.rs/py-polars/html/reference/dataframe/index.html), and
+  the metadata.
+- `to_array` to convert the prepared data to a dictionary of numpy arrays.
 
 - [Motivation](#motivation)
 - [Documentation](https://durandtibo.github.io/arctix/)
@@ -70,10 +80,6 @@ TODO
 - [Contributing](#contributing)
 - [API stability](#api-stability)
 - [License](#license)
-
-## Motivation
-
-TODO
 
 ## Installation
 
@@ -95,6 +101,11 @@ pip install arctix[all]
 
 Please check the [get started page](https://durandtibo.github.io/arctix/get_started) to see how to
 install only some specific packages or other alternatives to install the library.
+The following is the corresponding `karbonn` versions and dependencies.
+
+| `batcharray` | `batcharray`   | `coola`      | `iden`           | `numpy`       | `polars`        | `python`      |
+|--------------|----------------|--------------|------------------|---------------|-----------------|---------------|
+| `main`       | `>=0.0.2,<0.1` | `>=0.3,<1.0` | `">=0.0.3,<1.0"` | `>=1.22,<2.0` | `>=0.20.0,<1.0` | `>=3.9,<3.13` |
 
 ## Contributing
 
