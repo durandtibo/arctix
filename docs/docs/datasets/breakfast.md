@@ -1,4 +1,4 @@
-# Breakfast Dataset
+# Breakfast
 
 This page contains information about the Breakfast dataset, which was published with the following
 paper:
@@ -40,7 +40,6 @@ shape: (3_585, 5)
 │ pour_sugar   ┆ 745.0      ┆ 884.0    ┆ P54    ┆ tea              │
 │ SIL          ┆ 885.0      ┆ 973.0    ┆ P54    ┆ tea              │
 └──────────────┴────────────┴──────────┴────────┴──────────────────┘
-
 
 ```
 

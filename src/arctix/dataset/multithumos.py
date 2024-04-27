@@ -1,13 +1,7 @@
 r"""Contain code to prepare/preprocess the MultiTHUMOS data.
 
-Information about the MultiTHUMOS dataset can be found in the following
-paper:
-
-Every Moment Counts: Dense Detailed Labeling of Actions in Complex
-Videos. Yeung S., Russakovsky O., Jin N., Andriluka M., Mori G., Fei-Fei
-L. IJCV 2017 (http://arxiv.org/pdf/1507.05738)
-
-Project page: http://ai.stanford.edu/~syyeung/everymoment.html
+The following documentation assumes the data are downloaded in the
+directory `/path/to/data/multithumos/`.
 """
 
 from __future__ import annotations
@@ -591,6 +585,7 @@ if __name__ == "__main__":  # pragma: no cover
 
     path = Path(os.environ["ARCTIX_DATA_PATH"]).joinpath("multithumos")
     raw_data = fetch_data(path)
-    data, metadata = prepare_data(raw_data)
+    logger.info(f"data_raw:\n{raw_data}")
+    data, metadata = prepare_data(raw_data, split="validation")
     logger.info(f"data:\n{data}")
     logger.info(f"metadata:\n{metadata}")
