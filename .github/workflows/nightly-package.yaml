@@ -278,7 +278,7 @@ jobs:
 
       - name: Install package
         run: |
-          pip install arctix iden==${{ matrix.iden-version }}
+          pip install arctix polars==${{ matrix.polars-version }}
 
       - name: Run some checks
         run: |
