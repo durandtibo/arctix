@@ -62,11 +62,17 @@
 
 ## Overview
 
-TODO
+The `arctix` package consists of functionalities to prepare dataset of asynchronous time series.
+It is design to make dataset preparation reusable and reproducible.
+For each dataset, `arctix` provides 3 main functions:
 
-## Motivation
-
-TODO
+- `fetch_data` to load the raw data are loaded in
+  a [`polars.DataFrame`](https://docs.pola.rs/py-polars/html/reference/dataframe/index.html). When
+  possible, it downloads automatically the data.
+- `prepare_data` to prepare the data. It outputs the prepared data
+  in [`polars.DataFrame`](https://docs.pola.rs/py-polars/html/reference/dataframe/index.html), and
+  the metadata.
+- `to_array` to convert the prepared data to a dictionary of numpy arrays.
 
 ## API stability
 
