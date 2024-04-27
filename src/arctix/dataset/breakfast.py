@@ -449,7 +449,8 @@ if __name__ == "__main__":  # pragma: no cover
     logging.basicConfig(level=logging.DEBUG)
 
     path = Path(os.environ["ARCTIX_DATA_PATH"]).joinpath("breakfast")
-    data_raw = fetch_data(path, name="segmentation_coarse")
-    logger.info(f"data_raw:\n{data_raw}")
-    data, metadata = prepare_data(data_raw, split="train1")
+    raw_data = fetch_data(path, name="segmentation_coarse")
+    logger.info(f"data_raw:\n{raw_data}")
+    data, metadata = prepare_data(raw_data)
     logger.info(f"data:\n{data}")
+    logger.info(f"metadata:\n{metadata}")

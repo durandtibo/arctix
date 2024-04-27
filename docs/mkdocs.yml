@@ -26,8 +26,8 @@ nav:
   - get_started.md
   - Datasets:
       - datasets/breakfast.md
+      - datasets/multithumos.md
   - Reference:
-      - arctix: refs/root.md
       - arctix.dataset: refs/dataset.md
       - arctix.utils: refs/utils.md
   - GitHub: https://github.com/durandtibo/arctix
