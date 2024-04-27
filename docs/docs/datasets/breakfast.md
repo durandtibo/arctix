@@ -142,13 +142,13 @@ shape: (2_692, 8)
 └─────────────┴────────────┴──────────┴────────┴─────────────┴───────────┴───────────┴─────────────┘
 ```
 
-`arctix` provides the function `arctix.dataset.breakfast.to_array_data` to convert
+`arctix` provides the function `arctix.dataset.breakfast.to_array` to convert
 the `polars.DataFrame` to a dictionary of numpy arrays.
 
 ```pycon
 
 >>> from arctix.dataset.breakfast import prepare_data
->>> arrays = to_array_data(data)  # doctest: +SKIP
+>>> arrays = to_array(data)  # doctest: +SKIP
 
 ```
 

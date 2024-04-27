@@ -22,7 +22,7 @@ from arctix.dataset.breakfast import (
     load_data,
     parse_annotation_lines,
     prepare_data,
-    to_array_data,
+    to_array,
 )
 from arctix.utils.vocab import Vocabulary
 
@@ -1033,16 +1033,16 @@ def test_group_by_sequence() -> None:
 
 
 ###################################
-#     Tests for to_array_data     #
+#     Tests for to_array     #
 ###################################
 
 
-def test_to_array_data() -> None:
+def test_to_array() -> None:
     mask = np.array(
         [[False, False, False, False, False, False], [False, False, False, False, True, True]]
     )
     assert objects_are_equal(
-        to_array_data(
+        to_array(
             pl.DataFrame(
                 {
                     Column.START_TIME: [
@@ -1109,9 +1109,9 @@ def test_to_array_data() -> None:
     )
 
 
-def test_to_array_data_empty() -> None:
+def test_to_array_empty() -> None:
     assert objects_are_equal(
-        to_array_data(
+        to_array(
             pl.DataFrame(
                 {
                     Column.START_TIME: [],

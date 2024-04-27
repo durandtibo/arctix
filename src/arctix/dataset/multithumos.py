@@ -23,7 +23,7 @@ __all__ = [
     "load_data",
     "parse_annotation_lines",
     "prepare_data",
-    "to_array_data",
+    "to_array",
 ]
 
 import logging
@@ -475,7 +475,7 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
     )
 
 
-def to_array_data(frame: pl.DataFrame) -> dict[str, np.ndarray]:
+def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     r"""Convert a DataFrame to a dictionary of arrays.
 
     Args:
@@ -489,7 +489,7 @@ def to_array_data(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     ```pycon
 
     >>> import polars as pl
-    >>> from arctix.dataset.multithumos import Column, to_array_data
+    >>> from arctix.dataset.multithumos import Column, to_array
     >>> frame = pl.DataFrame(
     ...     {
     ...         Column.VIDEO: [
@@ -532,7 +532,7 @@ def to_array_data(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     ...         Column.SPLIT: pl.String,
     ...     },
     ... )
-    >>> arrays = to_array_data(frame)
+    >>> arrays = to_array(frame)
     >>> arrays
     {'sequence_length': array([3, 4]),
      'split': array(['validation', 'validation'], dtype='<U10'),

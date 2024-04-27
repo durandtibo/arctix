@@ -15,7 +15,7 @@ __all__ = [
     "load_data",
     "parse_annotation_lines",
     "prepare_data",
-    "to_array_data",
+    "to_array",
 ]
 
 import logging
@@ -364,7 +364,7 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
     )
 
 
-def to_array_data(frame: pl.DataFrame) -> dict[str, np.ndarray]:
+def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     r"""Convert a DataFrame to a dictionary of arrays.
 
     Args:
@@ -378,7 +378,7 @@ def to_array_data(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     ```pycon
 
     >>> import polars as pl
-    >>> from arctix.dataset.breakfast import Column, to_array_data
+    >>> from arctix.dataset.breakfast import Column, to_array
     >>> frame = pl.DataFrame(
     ...     {
     ...         Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
@@ -388,7 +388,7 @@ def to_array_data(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     ...         Column.COOKING_ACTIVITY_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
     ...     }
     ... )
-    >>> arrays = to_array_data(frame)
+    >>> arrays = to_array(frame)
     >>> arrays
     {'sequence_length': array([6, 4]), 'person_id': array([0, 1]),
      'cooking_activity_id': array([0, 1]),
