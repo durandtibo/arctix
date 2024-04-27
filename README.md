@@ -74,12 +74,32 @@ For each dataset, `arctix` provides 3 main functions:
   the metadata.
 - `to_array` to convert the prepared data to a dictionary of numpy arrays.
 
-- [Motivation](#motivation)
+For example, it is possible to use the following lines to download and prepare the MultiTHUMOS data.
+
+```pycon
+
+>>> from pathlib import Path
+>>> from arctix.dataset.multithumos import fetch_data, prepare_data, to_array
+>>> dataset_path = Path("/path/to/dataset/multithumos")
+>>> data_raw = fetch_data(dataset_path)  # doctest: +SKIP
+>>> data, metadata = prepare_data(data_raw)  # doctest: +SKIP
+>>> arrays = to_array(data)  # doctest: +SKIP
+
+```
+
 - [Documentation](https://durandtibo.github.io/arctix/)
 - [Installation](#installation)
 - [Contributing](#contributing)
 - [API stability](#api-stability)
 - [License](#license)
+
+## Documentation
+
+- [latest (stable)](https://durandtibo.github.io/arctix/): documentation from the latest stable
+  release.
+- [main (unstable)](https://durandtibo.github.io/arctix/main/): documentation associated to the
+  main branch of the repo. This documentation may contain a lot of work-in-progress/outdated/missing
+  parts.
 
 ## Installation
 
@@ -106,6 +126,7 @@ The following is the corresponding `karbonn` versions and dependencies.
 | `batcharray` | `batcharray`   | `coola`      | `iden`           | `numpy`       | `polars`        | `python`      |
 |--------------|----------------|--------------|------------------|---------------|-----------------|---------------|
 | `main`       | `>=0.0.2,<0.1` | `>=0.3,<1.0` | `">=0.0.3,<1.0"` | `>=1.22,<2.0` | `>=0.20.0,<1.0` | `>=3.9,<3.13` |
+| `0.0.3`      | `>=0.0.2,<0.1` | `>=0.3,<1.0` | `">=0.0.3,<1.0"` | `>=1.22,<2.0` | `>=0.20.0,<1.0` | `>=3.9,<3.13` |
 
 ## Contributing
 
