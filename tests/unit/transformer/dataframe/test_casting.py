@@ -23,7 +23,8 @@ def test_cast_dataframe_transformer_transform_int32() -> None:
             "col2": ["1", "2", "3", "4", "5"],
             "col3": ["1", "2", "3", "4", "5"],
             "col4": ["a", "b", "c", "d", "e"],
-        }
+        },
+        schema={"col1": pl.Int64, "col2": pl.String, "col3": pl.String, "col4": pl.String},
     )
     transformer = Cast(columns=["col1", "col3"], dtype=pl.Int32)
     out = transformer.transform(frame)
@@ -48,7 +49,8 @@ def test_cast_dataframe_transformer_transform_float32() -> None:
             "col2": ["1", "2", "3", "4", "5"],
             "col3": ["1", "2", "3", "4", "5"],
             "col4": ["a", "b", "c", "d", "e"],
-        }
+        },
+        schema={"col1": pl.Int64, "col2": pl.String, "col3": pl.String, "col4": pl.String},
     )
     transformer = Cast(columns=["col1", "col2"], dtype=pl.Float32)
     out = transformer.transform(frame)
