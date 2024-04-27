@@ -25,7 +25,7 @@ from arctix.dataset.multithumos import (
     load_data,
     parse_annotation_lines,
     prepare_data,
-    to_array_data,
+    to_array,
 )
 from arctix.utils.vocab import Vocabulary
 
@@ -926,14 +926,14 @@ def test_group_by_sequence_empty() -> None:
 
 
 ###################################
-#     Tests for to_array_data     #
+#     Tests for to_array     #
 ###################################
 
 
-def test_to_array_data() -> None:
+def test_to_array() -> None:
     mask = np.array([[False, False, False, True], [False, False, False, False]])
     assert objects_are_equal(
-        to_array_data(
+        to_array(
             pl.DataFrame(
                 {
                     Column.VIDEO: [
@@ -995,10 +995,10 @@ def test_to_array_data() -> None:
     )
 
 
-def test_to_array_data_empty() -> None:
+def test_to_array_empty() -> None:
     mask = None
     assert objects_are_equal(
-        to_array_data(
+        to_array(
             pl.DataFrame(
                 {
                     Column.VIDEO: [],

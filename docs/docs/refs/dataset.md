@@ -3,11 +3,11 @@
         members:
             - fetch_data
             - prepare_data
-            - to_array_data
+            - to_array
 
 ::: arctix.dataset.multithumos
     options:
         members:
             - fetch_data
             - prepare_data
-            - to_array_data
+            - to_array
