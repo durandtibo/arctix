@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+from collections import Counter
 from typing import TYPE_CHECKING
 from unittest.mock import Mock, patch
 from zipfile import ZipFile
@@ -17,7 +18,9 @@ from arctix.dataset.epic_kitchen_100 import (
     download_data,
     is_annotation_path_ready,
     load_event_data,
+    load_noun_vocab,
 )
+from arctix.utils.vocab import Vocabulary
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -53,13 +56,29 @@ def data_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
 
 @pytest.fixture(scope="module")
 def empty_data_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    path = tmp_path_factory.mktemp("data").joinpath("event.csv")
+    path = tmp_path_factory.mktemp("empty").joinpath("event.csv")
     save_text(
         "narration_id,participant_id,video_id,narration_timestamp,start_timestamp,"
         "stop_timestamp,start_frame,stop_frame,narration,verb,verb_class,noun,noun_class,"
         "all_nouns,all_noun_classes\n",
         path,
     )
+    return path
+
+
+@pytest.fixture(scope="module")
+def noun_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    path = tmp_path_factory.mktemp("data").joinpath("EPIC_100_noun_classes.csv")
+    lines = [f"{i},{i}v{i}" for i in range(300)]
+    lines.insert(0, "id,key")
+    save_text("\n".join(lines), path)
+    return path
+
+
+@pytest.fixture(scope="module")
+def empty_noun_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    path = tmp_path_factory.mktemp("empty").joinpath("EPIC_100_noun_classes.csv")
+    save_text("id,key\n", path)
     return path
 
 
@@ -235,3 +254,19 @@ def test_load_data_empty(empty_data_file: Path) -> None:
             },
         ),
     )
+
+
+#####################################
+#     Tests for load_noun_vocab     #
+#####################################
+
+
+def test_load_noun_vocab(noun_file: Path) -> None:
+    assert load_noun_vocab(noun_file.parent).equal(
+        Vocabulary(Counter({f"{i}v{i}": 1 for i in range(300)}))
+    )
+
+
+def test_load_noun_vocab_incorrect(empty_noun_file: Path) -> None:
+    with pytest.raises(RuntimeError, match="Expected 300 actions but received 0"):
+        load_noun_vocab(empty_noun_file.parent)
