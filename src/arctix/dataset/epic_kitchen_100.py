@@ -6,15 +6,17 @@ directory `/path/to/data/epic_kitchen_100/`.
 
 from __future__ import annotations
 
-__all__ = ["download_data"]
+__all__ = ["download_data", "load_event_data", "is_annotation_path_ready"]
 
 import logging
 import zipfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+import polars as pl
 from iden.utils.path import sanitize_path
 
+from arctix.transformer import dataframe as td
 from arctix.utils.download import download_url_to_file
 
 logger = logging.getLogger(__name__)
@@ -43,6 +45,22 @@ class Column:
     END_TIME: str = "end_time"
     START_TIME: str = "start_time"
     SEQUENCE_LENGTH: str = "sequence_length"
+
+    ALL_NOUNS = "all_nouns"
+    ALL_NOUN_CLASSES = "all_noun_classes"
+    NARRATION = "narration"
+    NARRATION_ID = "narration_id"
+    NARRATION_TIMESTAMP = "narration_timestamp"
+    NOUN = "noun"
+    NOUN_CLASS = "noun_class"
+    PARTICIPANT_ID = "participant_id"
+    START_FRAME = "start_frame"
+    START_TIMESTAMP = "start_timestamp"
+    STOP_FRAME = "stop_frame"
+    STOP_TIMESTAMP = "stop_timestamp"
+    VERB = "verb"
+    VERB_CLASS = "verb_class"
+    VIDEO_ID = "video_id"
 
 
 def download_data(path: Path, force_download: bool = False) -> None:
@@ -113,6 +131,52 @@ def is_annotation_path_ready(path: Path) -> bool:
     return all(path.joinpath(filename).is_file() for filename in ANNOTATION_FILENAMES)
 
 
+def load_event_data(path: Path) -> pl.DataFrame:
+    r"""Load the event data from a CSV file.
+
+    Args:
+        path: The path to the CSV file.
+
+    Returns:
+        The event data in a ``polars.DataFrame``.
+    """
+    frame = pl.read_csv(
+        path,
+        dtypes={
+            Column.ALL_NOUNS: pl.String,
+            Column.ALL_NOUN_CLASSES: pl.String,
+            Column.NARRATION: pl.String,
+            Column.NARRATION_ID: pl.String,
+            Column.NARRATION_TIMESTAMP: pl.String,
+            Column.NOUN: pl.String,
+            Column.NOUN_CLASS: pl.Int64,
+            Column.PARTICIPANT_ID: pl.String,
+            Column.START_FRAME: pl.Int64,
+            Column.START_TIMESTAMP: pl.String,
+            Column.STOP_FRAME: pl.Int64,
+            Column.STOP_TIMESTAMP: pl.String,
+            Column.VERB: pl.String,
+            Column.VERB_CLASS: pl.Int64,
+            Column.VIDEO_ID: pl.String,
+        },
+    )
+    transformer = td.Sequential(
+        [
+            td.ToTime(
+                columns=[Column.START_TIMESTAMP, Column.NARRATION_TIMESTAMP, Column.STOP_TIMESTAMP],
+                format="%H:%M:%S%.3f",
+            ),
+            td.JsonDecode(columns=[Column.ALL_NOUN_CLASSES], dtype=pl.List(pl.Int64)),
+            td.JsonDecode(columns=[Column.ALL_NOUNS], dtype=pl.List(pl.String)),
+            td.SortColumns(),
+        ]
+    )
+    data = transformer.transform(frame)
+    if data.select(pl.len()).item():
+        data = data.sort(by=[Column.VIDEO_ID, Column.START_FRAME])
+    return data
+
+
 if __name__ == "__main__":  # pragma: no cover
     import os
 
@@ -120,3 +184,5 @@ if __name__ == "__main__":  # pragma: no cover
 
     path = Path(os.environ["ARCTIX_DATA_PATH"]).joinpath("epic_kitchen_100")
     download_data(path)
+    data = load_event_data(path.joinpath("EPIC_100_train.csv"))
+    logger.info(f"data:\n{data}")
