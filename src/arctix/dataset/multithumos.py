@@ -45,6 +45,76 @@ logger = logging.getLogger(__name__)
 
 ANNOTATION_URL = "http://ai.stanford.edu/~syyeung/resources/multithumos.zip"
 
+ANNOTATION_FILENAMES = [
+    "README",
+    "class_list.txt",
+    "annotations/Fall.txt",
+    "annotations/OneRaisedArmCelebrate.txt",
+    "annotations/VolleyballBlock.txt",
+    "annotations/OneHandedCatch.txt",
+    "annotations/LongJump.txt",
+    "annotations/Throw.txt",
+    "annotations/HighFive.txt",
+    "annotations/DiscusRelease.txt",
+    "annotations/TwoRaisedArmCelebrate.txt",
+    "annotations/PatPerson.txt",
+    "annotations/CricketBowling.txt",
+    "annotations/StandUp.txt",
+    "annotations/BasketballDunk.txt",
+    "annotations/Stand.txt",
+    "annotations/VolleyballBump.txt",
+    "annotations/HammerThrowRelease.txt",
+    "annotations/Diving.txt",
+    "annotations/BodyRoll.txt",
+    "annotations/ThrowDiscus.txt",
+    "annotations/BodyContract.txt",
+    "annotations/TalkToCamera.txt",
+    "annotations/ShotPutBend.txt",
+    "annotations/BaseballPitch.txt",
+    "annotations/VolleyballSet.txt",
+    "annotations/BodyTurn.txt",
+    "annotations/DiscusWindUp.txt",
+    "annotations/Jump.txt",
+    "annotations/FistPump.txt",
+    "annotations/Hug.txt",
+    "annotations/PickUp.txt",
+    "annotations/SoccerPenalty.txt",
+    "annotations/BasketballShot.txt",
+    "annotations/HammerThrowWindUp.txt",
+    "annotations/CloseUpTalkToCamera.txt",
+    "annotations/BasketballBlock.txt",
+    "annotations/CliffDiving.txt",
+    "annotations/BasketballGuard.txt",
+    "annotations/BodyBend.txt",
+    "annotations/VolleyballSpiking.txt",
+    "annotations/FrisbeeCatch.txt",
+    "annotations/PoleVault.txt",
+    "annotations/Squat.txt",
+    "annotations/HighJump.txt",
+    "annotations/Shotput.txt",
+    "annotations/BasketballDribble.txt",
+    "annotations/ClapHands.txt",
+    "annotations/CleanAndJerk.txt",
+    "annotations/BasketballPass.txt",
+    "annotations/Run.txt",
+    "annotations/GolfSwing.txt",
+    "annotations/JavelinThrow.txt",
+    "annotations/Walk.txt",
+    "annotations/Sit.txt",
+    "annotations/Drop.txt",
+    "annotations/NoHuman.txt",
+    "annotations/TwoHandedCatch.txt",
+    "annotations/CricketShot.txt",
+    "annotations/Billiards.txt",
+    "annotations/HammerThrow.txt",
+    "annotations/WeightliftingJerk.txt",
+    "annotations/VolleyballServe.txt",
+    "annotations/HammerThrowSpin.txt",
+    "annotations/WeightliftingClean.txt",
+    "annotations/TennisSwing.txt",
+    "annotations/PoleVaultPlantPole.txt",
+]
+
 
 class Column:
     ACTION: str = "action"
@@ -129,9 +199,10 @@ def download_data(path: Path, force_download: bool = False) -> None:
 
             logger.info(f"moving extracted files to {path}...")
             path.mkdir(parents=True, exist_ok=True)
-            tmp_path.joinpath("multithumos/README").rename(path.joinpath("README"))
-            tmp_path.joinpath("multithumos/class_list.txt").rename(path.joinpath("class_list.txt"))
-            tmp_path.joinpath("multithumos/annotations").rename(path.joinpath("annotations"))
+            for filename in ANNOTATION_FILENAMES:
+                dst = path.joinpath(filename)
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                tmp_path.joinpath(f"multithumos/{filename}").rename(dst)
 
     logger.info(f"MultiTHUMOS annotation data are available in {path}")
 
@@ -159,13 +230,7 @@ def is_annotation_path_ready(path: Path) -> bool:
     ```
     """
     path = sanitize_path(path)
-    if not path.joinpath("README").is_file():
-        return False
-    if not path.joinpath("class_list.txt").is_file():
-        return False
-    if not path.joinpath("annotations").is_dir():
-        return False
-    return len(tuple(path.joinpath("annotations").glob("*.txt"))) == 65
+    return all(path.joinpath(filename).is_file() for filename in ANNOTATION_FILENAMES)
 
 
 def load_data(path: Path, remove_duplicate: bool = True) -> pl.DataFrame:

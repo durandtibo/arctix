@@ -13,6 +13,7 @@ from iden.io import save_text
 from polars.testing import assert_frame_equal
 
 from arctix.dataset.multithumos import (
+    ANNOTATION_FILENAMES,
     ANNOTATION_URL,
     Column,
     download_data,
@@ -35,9 +36,8 @@ def data_zip_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
     path = tmp_path_factory.mktemp("data").joinpath("multithumos.zip.tmp")
     path.parent.mkdir(parents=True, exist_ok=True)
     with ZipFile(path, "w") as zfile:
-        zfile.writestr("multithumos/README", "")
-        zfile.writestr("multithumos/class_list.txt", "")
-        zfile.writestr("multithumos/annotations", "")
+        for filename in ANNOTATION_FILENAMES:
+            zfile.writestr(f"multithumos/{filename}", "")
     return path
 
 
@@ -187,6 +187,7 @@ def test_fetch_data_keep_duplicate_examples(data_dir: Path) -> None:
 
 @pytest.mark.parametrize("force_download", [True, False])
 def test_download_data(data_zip_file: Path, tmp_path: Path, force_download: bool) -> None:
+    data_path = tmp_path.joinpath("multithumos")
     with (
         patch("arctix.dataset.multithumos.download_url_to_file") as download_mock,
         patch(
@@ -194,13 +195,11 @@ def test_download_data(data_zip_file: Path, tmp_path: Path, force_download: bool
             Mock(return_value=data_zip_file.parent),
         ),
     ):
-        download_data(tmp_path.joinpath("multithumos"), force_download=force_download)
+        download_data(data_path, force_download=force_download)
         download_mock.assert_called_once_with(
             ANNOTATION_URL, data_zip_file.as_posix(), progress=True
         )
-        assert tmp_path.joinpath("multithumos/README").is_file()
-        assert tmp_path.joinpath("multithumos/class_list.txt").is_file()
-        assert tmp_path.joinpath("multithumos/annotations").is_file()
+        assert all(data_path.joinpath(filename).is_file() for filename in ANNOTATION_FILENAMES)
 
 
 def test_download_data_already_exists_force_download_false(tmp_path: Path) -> None:
@@ -210,12 +209,13 @@ def test_download_data_already_exists_force_download_false(tmp_path: Path) -> No
     ):
         download_data(tmp_path)
         # The file should not exist because the download step is skipped
-        assert not tmp_path.joinpath("multithumos/README").is_file()
+        assert not any(tmp_path.joinpath(filename).is_file() for filename in ANNOTATION_FILENAMES)
 
 
 def test_download_data_already_exists_force_download_true(
     data_zip_file: Path, tmp_path: Path
 ) -> None:
+    data_path = tmp_path.joinpath("multithumos")
     with (
         patch(
             "arctix.dataset.multithumos.is_annotation_path_ready",
@@ -227,13 +227,11 @@ def test_download_data_already_exists_force_download_true(
         ),
         patch("arctix.dataset.multithumos.download_url_to_file") as download_mock,
     ):
-        download_data(tmp_path.joinpath("multithumos"), force_download=True)
+        download_data(data_path, force_download=True)
         download_mock.assert_called_once_with(
             ANNOTATION_URL, data_zip_file.as_posix(), progress=True
         )
-        assert tmp_path.joinpath("multithumos/README").is_file()
-        assert tmp_path.joinpath("multithumos/class_list.txt").is_file()
-        assert tmp_path.joinpath("multithumos/annotations").is_file()
+        assert all(data_path.joinpath(filename).is_file() for filename in ANNOTATION_FILENAMES)
 
 
 ##############################################
@@ -242,33 +240,18 @@ def test_download_data_already_exists_force_download_true(
 
 
 def test_is_annotation_path_ready_true(tmp_path: Path) -> None:
-    save_text("", tmp_path.joinpath("README"))
-    save_text("", tmp_path.joinpath("class_list.txt"))
-    for i in range(65):
-        save_text("", tmp_path.joinpath(f"annotations/{i + 1}.txt"))
+    for filename in ANNOTATION_FILENAMES:
+        save_text("", tmp_path.joinpath(filename))
     assert is_annotation_path_ready(tmp_path)
 
 
-def test_is_annotation_path_ready_false_missing_readme(tmp_path: Path) -> None:
+def test_is_annotation_path_ready_false_missing_all(tmp_path: Path) -> None:
     assert not is_annotation_path_ready(tmp_path)
 
 
-def test_is_annotation_path_ready_false_missing_class_list(tmp_path: Path) -> None:
-    save_text("", tmp_path.joinpath("README.txt"))
-    assert not is_annotation_path_ready(tmp_path)
-
-
-def test_is_annotation_path_ready_false_missing_annotations(tmp_path: Path) -> None:
-    save_text("", tmp_path.joinpath("README"))
-    save_text("", tmp_path.joinpath("class_list.txt"))
-    assert not is_annotation_path_ready(tmp_path)
-
-
-def test_is_annotation_path_ready_false_missing_annotation_file(tmp_path: Path) -> None:
-    save_text("", tmp_path.joinpath("README"))
-    save_text("", tmp_path.joinpath("README.txt"))
-    for i in range(64):
-        save_text("", tmp_path.joinpath(f"annotations/{i + 1}.txt"))
+def test_is_annotation_path_ready_false_missing_partial(tmp_path: Path) -> None:
+    for filename in ANNOTATION_FILENAMES[::2]:
+        save_text("", tmp_path.joinpath(filename))
     assert not is_annotation_path_ready(tmp_path)
 
 
