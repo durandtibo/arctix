@@ -5,7 +5,7 @@ from __future__ import annotations
 
 __all__ = ["StripCharsDataFrameTransformer"]
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import polars as pl
 
@@ -13,14 +13,12 @@ from arctix.transformer.dataframe.base import BaseDataFrameTransformer
 from arctix.utils.imports import is_tqdm_available
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Sequence
+    from collections.abc import Sequence
 
 if is_tqdm_available():
     from tqdm import tqdm
 else:  # pragma: no cover
-
-    def tqdm(it: Iterable, *args: Any, **kwargs: Any) -> Iterable:  # noqa: ARG001
-        return it
+    from arctix.utils.noop import tqdm
 
 
 class StripCharsDataFrameTransformer(BaseDataFrameTransformer):

@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 def convert_to_dict_of_flat_lists(
-    seq_of_mappings: list[dict[Hashable, list]]
+    seq_of_mappings: list[dict[Hashable, list]],
 ) -> dict[Hashable, list]:
     r"""Convert a sequence of mappings to a dictionary of lists.
 

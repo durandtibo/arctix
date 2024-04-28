@@ -5,7 +5,7 @@ from __future__ import annotations
 __all__ = ["download_drive_file", "download_url_to_file"]
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from iden.io.utils import generate_unique_tmp_path
 from iden.utils.path import sanitize_path
@@ -17,9 +17,6 @@ from arctix.utils.imports import (
     is_requests_available,
     is_tqdm_available,
 )
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable
 
 if is_gdown_available():
     import gdown
@@ -34,9 +31,7 @@ else:  # pragma: no cover
 if is_tqdm_available():
     from tqdm import tqdm
 else:  # pragma: no cover
-
-    def tqdm(it: Iterable, *args: Any, **kwargs: Any) -> Iterable:  # noqa: ARG001
-        return it
+    from arctix.utils.noop import tqdm
 
 
 def download_drive_file(url: str, path: Path, *args: Any, **kwargs: Any) -> None:
