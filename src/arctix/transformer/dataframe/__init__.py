@@ -10,6 +10,8 @@ __all__ = [
     "FunctionDataFrameTransformer",
     "IndexToToken",
     "IndexToTokenDataFrameTransformer",
+    "JsonDecode",
+    "JsonDecodeDataFrameTransformer",
     "Replace",
     "ReplaceDataFrameTransformer",
     "Sequential",
@@ -38,6 +40,10 @@ from arctix.transformer.dataframe.casting import ToTimeDataFrameTransformer as T
 from arctix.transformer.dataframe.function import FunctionDataFrameTransformer
 from arctix.transformer.dataframe.function import (
     FunctionDataFrameTransformer as Function,
+)
+from arctix.transformer.dataframe.json import JsonDecodeDataFrameTransformer
+from arctix.transformer.dataframe.json import (
+    JsonDecodeDataFrameTransformer as JsonDecode,
 )
 from arctix.transformer.dataframe.replace import ReplaceDataFrameTransformer
 from arctix.transformer.dataframe.replace import ReplaceDataFrameTransformer as Replace
