@@ -6,7 +6,12 @@ directory `/path/to/data/epic_kitchen_100/`.
 
 from __future__ import annotations
 
-__all__ = ["download_data", "load_event_data", "is_annotation_path_ready"]
+__all__ = [
+    "download_data",
+    "is_annotation_path_ready",
+    "load_event_data",
+    "load_noun_vocab",
+]
 
 import logging
 import zipfile
@@ -18,6 +23,7 @@ from iden.utils.path import sanitize_path
 
 from arctix.transformer import dataframe as td
 from arctix.utils.download import download_url_to_file
+from arctix.utils.vocab import Vocabulary
 
 logger = logging.getLogger(__name__)
 
@@ -175,6 +181,39 @@ def load_event_data(path: Path) -> pl.DataFrame:
     if data.select(pl.len()).item():
         data = data.sort(by=[Column.VIDEO_ID, Column.START_FRAME])
     return data
+
+
+def load_noun_vocab(path: Path) -> Vocabulary:
+    r"""Load the vocabulary of nouns.
+
+    Args:
+        path: The directory with the annotation files.
+            The directory must contain the
+            ``EPIC_100_noun_classes.csv`` file.
+
+    Returns:
+        The vocabulary for nouns.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from pathlib import Path
+    >>> from arctix.dataset.epic_kitchen_100 import load_noun_vocab
+    >>> noun_vocab = load_noun_vocab(Path("/path/to/data/epic_kitchen_100/"))  # doctest: +SKIP
+
+    ```
+    """
+    path = path.joinpath("EPIC_100_noun_classes.csv")
+    logger.info(f"loading noun vocabulary from {path}...")
+    frame = pl.read_csv(path, columns=["id", "key"], dtypes={"id": pl.Int64, "key": pl.String})
+    vocab = Vocabulary.from_token_to_index(
+        {token: i for i, token in zip(frame["id"], frame["key"])}
+    )
+    if (count := len(vocab)) != 300:
+        msg = f"Expected 300 actions but received {count:,}"
+        raise RuntimeError(msg)
+    return vocab
 
 
 if __name__ == "__main__":  # pragma: no cover
