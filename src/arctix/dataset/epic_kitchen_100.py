@@ -184,6 +184,26 @@ def load_event_data(path: Path) -> pl.DataFrame:
 
 
 def load_noun_vocab(path: Path) -> Vocabulary:
+    r"""Load the vocabulary of nouns.
+
+    Args:
+        path: The directory with the annotation files.
+            The directory must contain the
+            ``EPIC_100_noun_classes.csv`` file.
+
+    Returns:
+        The vocabulary for nouns.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from pathlib import Path
+    >>> from arctix.dataset.epic_kitchen_100 import load_noun_vocab
+    >>> noun_vocab = load_noun_vocab(Path("/path/to/data/epic_kitchen_100/"))  # doctest: +SKIP
+
+    ```
+    """
     path = path.joinpath("EPIC_100_noun_classes.csv")
     logger.info(f"loading noun vocabulary from {path}...")
     frame = pl.read_csv(path, columns=["id", "key"], dtypes={"id": pl.Int64, "key": pl.String})
