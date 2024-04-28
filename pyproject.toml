@@ -257,6 +257,9 @@ src = ["src"]
     "PL", # Pylint
     "S101", # flake8-bandit
 ]
+"**.ipynb" = [
+    "T20", # flake8-print
+]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10
