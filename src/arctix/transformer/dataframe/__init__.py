@@ -18,6 +18,8 @@ __all__ = [
     "SortDataFrameTransformer",
     "StripChars",
     "StripCharsDataFrameTransformer",
+    "ToTime",
+    "ToTimeDataFrameTransformer",
     "TokenToIndex",
     "TokenToIndexDataFrameTransformer",
     "is_dataframe_transformer_config",
@@ -31,6 +33,8 @@ from arctix.transformer.dataframe.base import (
 )
 from arctix.transformer.dataframe.casting import CastDataFrameTransformer
 from arctix.transformer.dataframe.casting import CastDataFrameTransformer as Cast
+from arctix.transformer.dataframe.casting import ToTimeDataFrameTransformer
+from arctix.transformer.dataframe.casting import ToTimeDataFrameTransformer as ToTime
 from arctix.transformer.dataframe.function import FunctionDataFrameTransformer
 from arctix.transformer.dataframe.function import (
     FunctionDataFrameTransformer as Function,
