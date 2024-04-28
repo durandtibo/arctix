@@ -422,6 +422,46 @@ class Vocabulary(Generic[T]):
         """
         return Vocabulary(Counter(dict(self.counter.most_common(max_num_tokens))))
 
+    @classmethod
+    def from_token_to_index(cls, token_to_index: dict[str, int]) -> Vocabulary:
+        r"""Instantiate a ``Vocabulary`` from a token to index mapping.
+
+        The counter is initialized to 1 for each token.
+
+        Args:
+            token_to_index: The token to index mapping.
+
+        Returns:
+            The instantiated ``Vocabulary``.
+
+        Example usage:
+
+        ```pycon
+
+        >>> from collections import Counter
+        >>> from arctix.utils.vocab import Vocabulary
+        >>> vocab = Vocabulary.from_token_to_index({"grizz": 2, "polar": 0, "bear": 1})
+        >>> vocab
+        Vocabulary(
+          counter=Counter({'polar': 1, 'bear': 1, 'grizz': 1}),
+          index_to_token=('polar', 'bear', 'grizz'),
+          token_to_index={'polar': 0, 'bear': 1, 'grizz': 2},
+        )
+        >>> vocab.get_token_to_index()
+        {'polar': 0, 'bear': 1, 'grizz': 2}
+
+        ```
+        """
+        mapping = dict(sorted(token_to_index.items(), key=lambda item: item[1]))
+        vocab = Vocabulary(Counter({token: 1 for token in mapping}))
+        if not objects_are_equal(vocab.get_token_to_index(), token_to_index):
+            msg = (
+                "token_to_index and the vocabulary token to index mapping do not match:\n"
+                f"{token_to_index}\n{vocab.get_token_to_index()}"
+            )
+            raise RuntimeError(msg)
+        return vocab
+
 
 class VocabularyEqualityComparator(BaseEqualityComparator[Vocabulary]):
     r"""Implement an equality comparator for ``Vocabulary`` objects."""
