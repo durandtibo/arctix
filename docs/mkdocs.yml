@@ -29,6 +29,7 @@ nav:
       - datasets/multithumos.md
   - Reference:
       - arctix.dataset: refs/dataset.md
+      - arctix.transformer: refs/transformer.md
       - arctix.utils: refs/utils.md
   - GitHub: https://github.com/durandtibo/arctix
 
