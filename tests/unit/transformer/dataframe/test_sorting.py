@@ -3,7 +3,7 @@ from __future__ import annotations
 import polars as pl
 from polars.testing import assert_frame_equal
 
-from arctix.transformer.dataframe import Sort
+from arctix.transformer.dataframe import Sort, SortColumns
 
 ##############################################
 #     Tests for SortDataFrameTransformer     #
@@ -47,4 +47,33 @@ def test_sort_dataframe_transformer_transform_null_last() -> None:
                 "col3": ["a", "b", "c", None],
             }
         ),
+    )
+
+
+#####################################################
+#     Tests for SortColumnsDataFrameTransformer     #
+#####################################################
+
+
+def test_sort_columns_dataframe_transformer_str() -> None:
+    assert str(SortColumns()).startswith("SortColumnsDataFrameTransformer(")
+
+
+def test_sort_columns_dataframe_transformer_transform() -> None:
+    frame = pl.DataFrame({"col2": [1, 2, None], "col3": [6.0, 5.0, 4.0], "col1": ["a", "c", "b"]})
+    transformer = SortColumns()
+    out = transformer.transform(frame)
+    assert_frame_equal(
+        out,
+        pl.DataFrame({"col1": ["a", "c", "b"], "col2": [1, 2, None], "col3": [6.0, 5.0, 4.0]}),
+    )
+
+
+def test_sort_columns_dataframe_transformer_transform_reverse() -> None:
+    frame = pl.DataFrame({"col2": [1, 2, None], "col3": [6.0, 5.0, 4.0], "col1": ["a", "c", "b"]})
+    transformer = SortColumns(reverse=True)
+    out = transformer.transform(frame)
+    assert_frame_equal(
+        out,
+        pl.DataFrame({"col3": [6.0, 5.0, 4.0], "col2": [1, 2, None], "col1": ["a", "c", "b"]}),
     )
