@@ -8,12 +8,15 @@ __all__ = ["JsonDecodeDataFrameTransformer"]
 from typing import TYPE_CHECKING
 
 import polars as pl
+from polars import PolarsDataType
 
 from arctix.transformer.dataframe.base import BaseDataFrameTransformer
 from arctix.utils.imports import is_tqdm_available
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
+    from polars.type_aliases import PythonDataType
 
 if is_tqdm_available():
     from tqdm import tqdm
@@ -77,7 +80,9 @@ class JsonDecodeDataFrameTransformer(BaseDataFrameTransformer):
     ```
     """
 
-    def __init__(self, columns: Sequence[str], dtype: type[pl.DataType] | None = None) -> None:
+    def __init__(
+        self, columns: Sequence[str], dtype: PolarsDataType | PythonDataType | None = None
+    ) -> None:
         self._columns = tuple(columns)
         self._dtype = dtype
 
