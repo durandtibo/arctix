@@ -17,6 +17,8 @@ __all__ = [
     "Sequential",
     "SequentialDataFrameTransformer",
     "Sort",
+    "SortColumns",
+    "SortColumnsDataFrameTransformer",
     "SortDataFrameTransformer",
     "StripChars",
     "StripCharsDataFrameTransformer",
@@ -50,6 +52,10 @@ from arctix.transformer.dataframe.replace import ReplaceDataFrameTransformer as 
 from arctix.transformer.dataframe.sequential import SequentialDataFrameTransformer
 from arctix.transformer.dataframe.sequential import (
     SequentialDataFrameTransformer as Sequential,
+)
+from arctix.transformer.dataframe.sorting import SortColumnsDataFrameTransformer
+from arctix.transformer.dataframe.sorting import (
+    SortColumnsDataFrameTransformer as SortColumns,
 )
 from arctix.transformer.dataframe.sorting import SortDataFrameTransformer
 from arctix.transformer.dataframe.sorting import SortDataFrameTransformer as Sort
