@@ -49,7 +49,6 @@ def test_json_decode_dataframe_transformer_transform_one_col() -> None:
         out,
         pl.DataFrame(
             {
-                # "col1": [["1", "2"], ["2"], ["1", "2", "3"], ["4", "5"], ["5", "4"]],
                 "col1": [[1, 2], [2], [1, 2, 3], [4, 5], [5, 4]],
                 "col2": ["1", "2", "3", "4", "5"],
                 "col3": ["['1', '2']", "['2']", "['1', '2', '3']", "['4', '5']", "['5', '4']"],
@@ -91,6 +90,31 @@ def test_json_decode_dataframe_transformer_transform_two_cols() -> None:
                 "col2": pl.String,
                 "col3": pl.List(pl.String),
                 "col4": pl.String,
+            },
+        ),
+    )
+
+
+def test_json_decode_dataframe_transformer_transform_dtype() -> None:
+    frame = pl.DataFrame(
+        {
+            "col1": ["[1, 2]", "[2]", "[1, 2, 3]", "[4, 5]", "[5, 4]"],
+            "col2": ["1", "2", "3", "4", "5"],
+        },
+        schema={"col1": pl.String, "col2": pl.String},
+    )
+    transformer = JsonDecode(columns=["col1"], dtype=pl.List(pl.Int32))
+    out = transformer.transform(frame)
+    assert_frame_equal(
+        out,
+        pl.DataFrame(
+            {
+                "col1": [[1, 2], [2], [1, 2, 3], [4, 5], [5, 4]],
+                "col2": ["1", "2", "3", "4", "5"],
+            },
+            schema={
+                "col1": pl.List(pl.Int32),
+                "col2": pl.String,
             },
         ),
     )
