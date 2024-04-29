@@ -9,6 +9,7 @@ from __future__ import annotations
 __all__ = [
     "download_data",
     "is_annotation_path_ready",
+    "load_data",
     "load_event_data",
     "load_noun_vocab",
 ]
@@ -137,6 +138,31 @@ def is_annotation_path_ready(path: Path) -> bool:
     return all(path.joinpath(filename).is_file() for filename in ANNOTATION_FILENAMES)
 
 
+def load_data(path: Path, split: str) -> tuple[pl.DataFrame, dict]:
+    r"""Load all the annotations in a DataFrame.
+
+    Args:
+        path: The directory where the dataset annotations are stored.
+        split: The dataset split.
+
+    Returns:
+        The annotations in a DataFrame and the metadata.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from pathlib import Path
+    >>> from arctix.dataset.epic_kitchen_100 import load_data
+    >>> data, metadata = load_data(Path("/path/to/data/epic_kitchen_100/"))  # doctest: +SKIP
+
+    ```
+    """
+    data = load_event_data(path.joinpath(f"EPIC_100_{split}.csv"))
+    metadata = {"noun_vocab": load_noun_vocab(path)}
+    return data, metadata
+
+
 def load_event_data(path: Path) -> pl.DataFrame:
     r"""Load the event data from a CSV file.
 
@@ -145,6 +171,16 @@ def load_event_data(path: Path) -> pl.DataFrame:
 
     Returns:
         The event data in a ``polars.DataFrame``.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from pathlib import Path
+    >>> from arctix.dataset.epic_kitchen_100 import load_event_data
+    >>> data, metadata = load_event_data(Path("/path/to/data/epic_kitchen_100/EPIC_100_train.csv"))  # doctest: +SKIP
+
+    ```
     """
     frame = pl.read_csv(
         path,
@@ -187,7 +223,7 @@ def load_noun_vocab(path: Path) -> Vocabulary:
     r"""Load the vocabulary of nouns.
 
     Args:
-        path: The directory with the annotation files.
+        path: The directory where the dataset annotations are stored.
             The directory must contain the
             ``EPIC_100_noun_classes.csv`` file.
 
@@ -223,5 +259,6 @@ if __name__ == "__main__":  # pragma: no cover
 
     path = Path(os.environ["ARCTIX_DATA_PATH"]).joinpath("epic_kitchen_100")
     download_data(path)
-    data = load_event_data(path.joinpath("EPIC_100_train.csv"))
+    data, metadata = load_data(path, split="train")
     logger.info(f"data:\n{data}")
+    logger.info(f"metadata:\n{metadata}")

@@ -8,6 +8,7 @@ from zipfile import ZipFile
 
 import polars as pl
 import pytest
+from coola import objects_are_equal
 from iden.io import save_text
 from polars.testing import assert_frame_equal
 
@@ -17,6 +18,7 @@ from arctix.dataset.epic_kitchen_100 import (
     Column,
     download_data,
     is_annotation_path_ready,
+    load_data,
     load_event_data,
     load_noun_vocab,
 )
@@ -37,8 +39,13 @@ def data_zip_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
 
 
 @pytest.fixture(scope="module")
-def data_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    path = tmp_path_factory.mktemp("data").joinpath("event.csv")
+def data_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    return tmp_path_factory.mktemp("data")
+
+
+@pytest.fixture(scope="module")
+def data_file(data_dir: Path) -> Path:
+    path = data_dir.joinpath("EPIC_100_train.csv")
     save_text(
         "narration_id,participant_id,video_id,narration_timestamp,start_timestamp,"
         "stop_timestamp,start_frame,stop_frame,narration,verb,verb_class,noun,noun_class,"
@@ -56,7 +63,7 @@ def data_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
 
 @pytest.fixture(scope="module")
 def empty_data_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    path = tmp_path_factory.mktemp("empty").joinpath("event.csv")
+    path = tmp_path_factory.mktemp("empty").joinpath("EPIC_100_train.csv")
     save_text(
         "narration_id,participant_id,video_id,narration_timestamp,start_timestamp,"
         "stop_timestamp,start_frame,stop_frame,narration,verb,verb_class,noun,noun_class,"
@@ -67,8 +74,8 @@ def empty_data_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
 
 
 @pytest.fixture(scope="module")
-def noun_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    path = tmp_path_factory.mktemp("data").joinpath("EPIC_100_noun_classes.csv")
+def noun_file(data_dir: Path) -> Path:
+    path = data_dir.joinpath("EPIC_100_noun_classes.csv")
     lines = [f"{i},{i}v{i}" for i in range(300)]
     lines.insert(0, "id,key")
     save_text("\n".join(lines), path)
@@ -80,6 +87,63 @@ def empty_noun_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
     path = tmp_path_factory.mktemp("empty").joinpath("EPIC_100_noun_classes.csv")
     save_text("id,key\n", path)
     return path
+
+
+@pytest.fixture()
+def event_frame() -> pl.DataFrame:
+    return pl.DataFrame(
+        {
+            Column.ALL_NOUN_CLASSES: [[3], [114], [3]],
+            Column.ALL_NOUNS: [["door"], ["light"], ["door"]],
+            Column.NARRATION: ["open door", "turn on light", "close door"],
+            Column.NARRATION_ID: ["P01_01_0", "P01_01_1", "P01_01_2"],
+            Column.NARRATION_TIMESTAMP: [
+                datetime.time(0, 0, 1, 89000),
+                datetime.time(0, 0, 2, 629000),
+                datetime.time(0, 0, 5, 349000),
+            ],
+            Column.NOUN: ["door", "light", "door"],
+            Column.NOUN_CLASS: [3, 114, 3],
+            Column.PARTICIPANT_ID: ["P01", "P01", "P01"],
+            Column.START_FRAME: [8, 262, 418],
+            Column.START_TIMESTAMP: [
+                datetime.time(0, 0, 0, 140000),
+                datetime.time(0, 0, 4, 370000),
+                datetime.time(0, 0, 6, 980000),
+            ],
+            Column.STOP_FRAME: [202, 370, 569],
+            Column.STOP_TIMESTAMP: [
+                datetime.time(0, 0, 3, 370000),
+                datetime.time(0, 0, 6, 170000),
+                datetime.time(0, 0, 9, 490000),
+            ],
+            Column.VERB: ["open", "turn-on", "close"],
+            Column.VERB_CLASS: [3, 6, 4],
+            Column.VIDEO_ID: ["P01_01", "P01_01", "P01_01"],
+        },
+        schema={
+            Column.ALL_NOUN_CLASSES: pl.List(pl.Int64),
+            Column.ALL_NOUNS: pl.List(pl.String),
+            Column.NARRATION: pl.String,
+            Column.NARRATION_ID: pl.String,
+            Column.NARRATION_TIMESTAMP: pl.Time,
+            Column.NOUN: pl.String,
+            Column.NOUN_CLASS: pl.Int64,
+            Column.PARTICIPANT_ID: pl.String,
+            Column.START_FRAME: pl.Int64,
+            Column.START_TIMESTAMP: pl.Time,
+            Column.STOP_FRAME: pl.Int64,
+            Column.STOP_TIMESTAMP: pl.Time,
+            Column.VERB: pl.String,
+            Column.VERB_CLASS: pl.Int64,
+            Column.VIDEO_ID: pl.String,
+        },
+    )
+
+
+@pytest.fixture()
+def noun_vocab() -> Vocabulary:
+    return Vocabulary(Counter({f"{i}v{i}": 1 for i in range(300)}))
 
 
 ###################################
@@ -155,63 +219,32 @@ def test_is_annotation_path_ready_false_missing_partial(tmp_path: Path) -> None:
     assert not is_annotation_path_ready(tmp_path)
 
 
+###############################
+#     Tests for load_data     #
+###############################
+
+
+def test_load_data(
+    data_dir: Path,
+    data_file: Path,
+    noun_file: Path,
+    event_frame: pl.DataFrame,
+    noun_vocab: Vocabulary,
+) -> None:
+    assert data_file.is_file()  # call the fixtures to generate the data
+    assert noun_file.is_file()
+    data, metadata = load_data(data_dir, split="train")
+    assert_frame_equal(data, event_frame)
+    assert objects_are_equal(metadata, {"noun_vocab": noun_vocab})
+
+
 #####################################
 #     Tests for load_event_data     #
 #####################################
 
 
-def test_load_data(data_file: Path) -> None:
-    assert_frame_equal(
-        load_event_data(data_file),
-        pl.DataFrame(
-            {
-                Column.ALL_NOUN_CLASSES: [[3], [114], [3]],
-                Column.ALL_NOUNS: [["door"], ["light"], ["door"]],
-                Column.NARRATION: ["open door", "turn on light", "close door"],
-                Column.NARRATION_ID: ["P01_01_0", "P01_01_1", "P01_01_2"],
-                Column.NARRATION_TIMESTAMP: [
-                    datetime.time(0, 0, 1, 89000),
-                    datetime.time(0, 0, 2, 629000),
-                    datetime.time(0, 0, 5, 349000),
-                ],
-                Column.NOUN: ["door", "light", "door"],
-                Column.NOUN_CLASS: [3, 114, 3],
-                Column.PARTICIPANT_ID: ["P01", "P01", "P01"],
-                Column.START_FRAME: [8, 262, 418],
-                Column.START_TIMESTAMP: [
-                    datetime.time(0, 0, 0, 140000),
-                    datetime.time(0, 0, 4, 370000),
-                    datetime.time(0, 0, 6, 980000),
-                ],
-                Column.STOP_FRAME: [202, 370, 569],
-                Column.STOP_TIMESTAMP: [
-                    datetime.time(0, 0, 3, 370000),
-                    datetime.time(0, 0, 6, 170000),
-                    datetime.time(0, 0, 9, 490000),
-                ],
-                Column.VERB: ["open", "turn-on", "close"],
-                Column.VERB_CLASS: [3, 6, 4],
-                Column.VIDEO_ID: ["P01_01", "P01_01", "P01_01"],
-            },
-            schema={
-                Column.ALL_NOUN_CLASSES: pl.List(pl.Int64),
-                Column.ALL_NOUNS: pl.List(pl.String),
-                Column.NARRATION: pl.String,
-                Column.NARRATION_ID: pl.String,
-                Column.NARRATION_TIMESTAMP: pl.Time,
-                Column.NOUN: pl.String,
-                Column.NOUN_CLASS: pl.Int64,
-                Column.PARTICIPANT_ID: pl.String,
-                Column.START_FRAME: pl.Int64,
-                Column.START_TIMESTAMP: pl.Time,
-                Column.STOP_FRAME: pl.Int64,
-                Column.STOP_TIMESTAMP: pl.Time,
-                Column.VERB: pl.String,
-                Column.VERB_CLASS: pl.Int64,
-                Column.VIDEO_ID: pl.String,
-            },
-        ),
-    )
+def test_load_event_data(data_file: Path, event_frame: pl.DataFrame) -> None:
+    assert_frame_equal(load_event_data(data_file), event_frame)
 
 
 def test_load_data_empty(empty_data_file: Path) -> None:
@@ -261,10 +294,8 @@ def test_load_data_empty(empty_data_file: Path) -> None:
 #####################################
 
 
-def test_load_noun_vocab(noun_file: Path) -> None:
-    assert load_noun_vocab(noun_file.parent).equal(
-        Vocabulary(Counter({f"{i}v{i}": 1 for i in range(300)}))
-    )
+def test_load_noun_vocab(data_dir: Path, noun_vocab: Vocabulary) -> None:
+    assert load_noun_vocab(data_dir).equal(noun_vocab)
 
 
 def test_load_noun_vocab_incorrect(empty_noun_file: Path) -> None:
