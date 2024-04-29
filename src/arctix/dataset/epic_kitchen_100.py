@@ -8,6 +8,7 @@ from __future__ import annotations
 
 __all__ = [
     "download_data",
+    "fetch_data",
     "is_annotation_path_ready",
     "load_data",
     "load_event_data",
@@ -68,6 +69,35 @@ class Column:
     VERB = "verb"
     VERB_CLASS = "verb_class"
     VIDEO_ID = "video_id"
+
+
+def fetch_data(path: Path, split: str, force_download: bool = False) -> tuple[pl.DataFrame, dict]:
+    r"""Download and load the data for Breakfast dataset.
+
+    Args:
+        path: The path where to store the downloaded data.
+        split: The dataset split.
+        force_download: If ``True``, the annotations are downloaded
+            everytime this function is called. If ``False``,
+            the annotations are downloaded only if the
+            given path does not contain the annotation data.
+
+    Returns:
+        The annotations in a DataFrame and the metadata.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from pathlib import Path
+    >>> from arctix.dataset.multithumos import fetch_data
+    >>> data, metadata = fetch_data(Path("/path/to/data/epic_kitchen_100/"))  # doctest: +SKIP
+
+    ```
+    """
+    path = sanitize_path(path)
+    download_data(path, force_download)
+    return load_data(path, split)
 
 
 def download_data(path: Path, force_download: bool = False) -> None:
@@ -258,7 +288,6 @@ if __name__ == "__main__":  # pragma: no cover
     logging.basicConfig(level=logging.DEBUG)
 
     path = Path(os.environ["ARCTIX_DATA_PATH"]).joinpath("epic_kitchen_100")
-    download_data(path)
-    data, metadata = load_data(path, split="train")
-    logger.info(f"data:\n{data}")
+    raw_data, metadata = fetch_data(path, split="train")
+    logger.info(f"raw_data:\n{raw_data}")
     logger.info(f"metadata:\n{metadata}")
