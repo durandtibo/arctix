@@ -17,6 +17,7 @@ from arctix.dataset.epic_kitchen_100 import (
     ANNOTATION_URL,
     Column,
     download_data,
+    fetch_data,
     is_annotation_path_ready,
     load_data,
     load_event_data,
@@ -144,6 +145,27 @@ def event_frame() -> pl.DataFrame:
 @pytest.fixture()
 def noun_vocab() -> Vocabulary:
     return Vocabulary(Counter({f"{i}v{i}": 1 for i in range(300)}))
+
+
+################################
+#     Tests for fetch_data     #
+################################
+
+
+def test_fetch_data(
+    data_dir: Path,
+    data_file: Path,
+    noun_file: Path,
+    event_frame: pl.DataFrame,
+    noun_vocab: Vocabulary,
+) -> None:
+    assert data_file.is_file()  # call the fixtures to generate the data
+    assert noun_file.is_file()
+    with patch("arctix.dataset.epic_kitchen_100.download_data") as download_mock:
+        data, metadata = fetch_data(data_dir, split="train")
+        download_mock.assert_called_once_with(data_dir, False)
+        assert_frame_equal(data, event_frame)
+        assert objects_are_equal(metadata, {"noun_vocab": noun_vocab})
 
 
 ###################################
