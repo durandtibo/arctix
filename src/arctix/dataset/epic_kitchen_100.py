@@ -13,6 +13,7 @@ __all__ = [
     "load_data",
     "load_event_data",
     "load_noun_vocab",
+    "load_verb_vocab",
 ]
 
 import logging
@@ -45,6 +46,9 @@ ANNOTATION_FILENAMES = [
     "EPIC_100_verb_classes.csv",
     "EPIC_100_video_info.csv",
 ]
+
+NUM_NOUNS = 300
+NUM_VERBS = 97
 
 
 class Column:
@@ -189,7 +193,7 @@ def load_data(path: Path, split: str) -> tuple[pl.DataFrame, dict]:
     ```
     """
     data = load_event_data(path.joinpath(f"EPIC_100_{split}.csv"))
-    metadata = {"noun_vocab": load_noun_vocab(path)}
+    metadata = {"noun_vocab": load_noun_vocab(path), "verb_vocab": load_verb_vocab(path)}
     return data, metadata
 
 
@@ -276,8 +280,41 @@ def load_noun_vocab(path: Path) -> Vocabulary:
     vocab = Vocabulary.from_token_to_index(
         {token: i for i, token in zip(frame["id"], frame["key"])}
     )
-    if (count := len(vocab)) != 300:
-        msg = f"Expected 300 actions but received {count:,}"
+    if (count := len(vocab)) != NUM_NOUNS:
+        msg = f"Expected {NUM_NOUNS} nouns but received {count:,}"
+        raise RuntimeError(msg)
+    return vocab
+
+
+def load_verb_vocab(path: Path) -> Vocabulary:
+    r"""Load the vocabulary of verbs.
+
+    Args:
+        path: The directory where the dataset annotations are stored.
+            The directory must contain the
+            ``EPIC_100_verb_classes.csv`` file.
+
+    Returns:
+        The vocabulary for verbs.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from pathlib import Path
+    >>> from arctix.dataset.epic_kitchen_100 import load_verb_vocab
+    >>> verb_vocab = load_verb_vocab(Path("/path/to/data/epic_kitchen_100/"))  # doctest: +SKIP
+
+    ```
+    """
+    path = path.joinpath("EPIC_100_verb_classes.csv")
+    logger.info(f"loading verb vocabulary from {path}...")
+    frame = pl.read_csv(path, columns=["id", "key"], dtypes={"id": pl.Int64, "key": pl.String})
+    vocab = Vocabulary.from_token_to_index(
+        {token: i for i, token in zip(frame["id"], frame["key"])}
+    )
+    if (count := len(vocab)) != NUM_VERBS:
+        msg = f"Expected {NUM_VERBS} verbs but received {count:,}"
         raise RuntimeError(msg)
     return vocab
 

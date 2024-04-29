@@ -15,6 +15,8 @@ from polars.testing import assert_frame_equal
 from arctix.dataset.epic_kitchen_100 import (
     ANNOTATION_FILENAMES,
     ANNOTATION_URL,
+    NUM_NOUNS,
+    NUM_VERBS,
     Column,
     download_data,
     fetch_data,
@@ -22,6 +24,7 @@ from arctix.dataset.epic_kitchen_100 import (
     load_data,
     load_event_data,
     load_noun_vocab,
+    load_verb_vocab,
 )
 from arctix.utils.vocab import Vocabulary
 
@@ -44,7 +47,7 @@ def data_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
     return tmp_path_factory.mktemp("data")
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="module", autouse=True)
 def data_file(data_dir: Path) -> Path:
     path = data_dir.joinpath("EPIC_100_train.csv")
     save_text(
@@ -74,10 +77,10 @@ def empty_data_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
     return path
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="module", autouse=True)
 def noun_file(data_dir: Path) -> Path:
     path = data_dir.joinpath("EPIC_100_noun_classes.csv")
-    lines = [f"{i},{i}v{i}" for i in range(300)]
+    lines = [f"{i},{i}n{i}" for i in range(NUM_NOUNS)]
     lines.insert(0, "id,key")
     save_text("\n".join(lines), path)
     return path
@@ -86,6 +89,22 @@ def noun_file(data_dir: Path) -> Path:
 @pytest.fixture(scope="module")
 def empty_noun_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
     path = tmp_path_factory.mktemp("empty").joinpath("EPIC_100_noun_classes.csv")
+    save_text("id,key\n", path)
+    return path
+
+
+@pytest.fixture(scope="module", autouse=True)
+def verb_file(data_dir: Path) -> Path:
+    path = data_dir.joinpath("EPIC_100_verb_classes.csv")
+    lines = [f"{i},{i}v{i}" for i in range(NUM_VERBS)]
+    lines.insert(0, "id,key")
+    save_text("\n".join(lines), path)
+    return path
+
+
+@pytest.fixture(scope="module")
+def empty_verb_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    path = tmp_path_factory.mktemp("empty").joinpath("EPIC_100_verb_classes.csv")
     save_text("id,key\n", path)
     return path
 
@@ -144,7 +163,12 @@ def event_frame() -> pl.DataFrame:
 
 @pytest.fixture()
 def noun_vocab() -> Vocabulary:
-    return Vocabulary(Counter({f"{i}v{i}": 1 for i in range(300)}))
+    return Vocabulary(Counter({f"{i}n{i}": 1 for i in range(NUM_NOUNS)}))
+
+
+@pytest.fixture()
+def verb_vocab() -> Vocabulary:
+    return Vocabulary(Counter({f"{i}v{i}": 1 for i in range(NUM_VERBS)}))
 
 
 ################################
@@ -154,18 +178,15 @@ def noun_vocab() -> Vocabulary:
 
 def test_fetch_data(
     data_dir: Path,
-    data_file: Path,
-    noun_file: Path,
     event_frame: pl.DataFrame,
     noun_vocab: Vocabulary,
+    verb_vocab: Vocabulary,
 ) -> None:
-    assert data_file.is_file()  # call the fixtures to generate the data
-    assert noun_file.is_file()
     with patch("arctix.dataset.epic_kitchen_100.download_data") as download_mock:
         data, metadata = fetch_data(data_dir, split="train")
         download_mock.assert_called_once_with(data_dir, False)
         assert_frame_equal(data, event_frame)
-        assert objects_are_equal(metadata, {"noun_vocab": noun_vocab})
+        assert objects_are_equal(metadata, {"noun_vocab": noun_vocab, "verb_vocab": verb_vocab})
 
 
 ###################################
@@ -248,16 +269,13 @@ def test_is_annotation_path_ready_false_missing_partial(tmp_path: Path) -> None:
 
 def test_load_data(
     data_dir: Path,
-    data_file: Path,
-    noun_file: Path,
     event_frame: pl.DataFrame,
     noun_vocab: Vocabulary,
+    verb_vocab: Vocabulary,
 ) -> None:
-    assert data_file.is_file()  # call the fixtures to generate the data
-    assert noun_file.is_file()
     data, metadata = load_data(data_dir, split="train")
     assert_frame_equal(data, event_frame)
-    assert objects_are_equal(metadata, {"noun_vocab": noun_vocab})
+    assert objects_are_equal(metadata, {"noun_vocab": noun_vocab, "verb_vocab": verb_vocab})
 
 
 #####################################
@@ -321,5 +339,19 @@ def test_load_noun_vocab(data_dir: Path, noun_vocab: Vocabulary) -> None:
 
 
 def test_load_noun_vocab_incorrect(empty_noun_file: Path) -> None:
-    with pytest.raises(RuntimeError, match="Expected 300 actions but received 0"):
+    with pytest.raises(RuntimeError, match="Expected 300 nouns but received 0"):
         load_noun_vocab(empty_noun_file.parent)
+
+
+#####################################
+#     Tests for load_verb_vocab     #
+#####################################
+
+
+def test_load_verb_vocab(data_dir: Path, verb_vocab: Vocabulary) -> None:
+    assert load_verb_vocab(data_dir).equal(verb_vocab)
+
+
+def test_load_verb_vocab_incorrect(empty_verb_file: Path) -> None:
+    with pytest.raises(RuntimeError, match="Expected 97 verbs but received 0"):
+        load_verb_vocab(empty_verb_file.parent)
