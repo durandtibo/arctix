@@ -16,6 +16,7 @@ __all__ = [
     "parse_annotation_lines",
     "prepare_data",
     "to_array",
+    "to_list",
 ]
 
 import logging
@@ -510,23 +511,70 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     }
 
 
-# def to_list(frame: pl.DataFrame, return_str: bool = True) -> dict[str, list]:
-#     groups = group_by_sequence(frame)
-#     data = {
-#         Column.SEQUENCE_LENGTH: groups.get_column(Column.SEQUENCE_LENGTH).to_list(),
-#         Column.PERSON_ID: groups.get_column(Column.PERSON_ID).to_list(),
-#         Column.COOKING_ACTIVITY_ID: groups.get_column(Column.COOKING_ACTIVITY_ID).to_list(),
-#         Column.ACTION_ID: groups.get_column(Column.ACTION_ID).to_list(),
-#         Column.START_TIME: groups.get_column(Column.START_TIME).to_list(),
-#         Column.END_TIME: groups.get_column(Column.END_TIME).to_list(),
-#     }
-#     # if return_str:
-#     #     data |= {
-#     #         Column.ACTION: groups.get_column(Column.ACTION).to_list(),
-#     #         Column.PERSON: groups.get_column(Column.PERSON).to_list(),
-#     #         Column.COOKING_ACTIVITY: groups.get_column(Column.COOKING_ACTIVITY).to_list(),
-#     #     }
-#     return data
+def to_list(frame: pl.DataFrame) -> dict[str, list]:
+    r"""Convert a DataFrame to a dictionary of lists.
+
+    Args:
+        frame: The input DataFrame.
+
+    Returns:
+        The dictionary of lists.
+
+    Example usage:
+
+    ```pycon
+
+    >>> import polars as pl
+    >>> from arctix.dataset.breakfast import Column, to_list
+    >>> frame = pl.DataFrame(
+    ...     {
+    ...         Column.ACTION: [
+    ...             "SIL",
+    ...             "take_bowl",
+    ...             "pour_cereals",
+    ...             "pour_milk",
+    ...             "stir_cereals",
+    ...             "SIL",
+    ...             "SIL",
+    ...             "pour_milk",
+    ...             "spoon_powder",
+    ...             "SIL",
+    ...         ],
+    ...         Column.ACTION_ID: [0, 2, 5, 1, 3, 0, 0, 1, 4, 0],
+    ...         Column.COOKING_ACTIVITY: [
+    ...             "cereals",
+    ...             "cereals",
+    ...             "cereals",
+    ...             "cereals",
+    ...             "cereals",
+    ...             "cereals",
+    ...             "milk",
+    ...             "milk",
+    ...             "milk",
+    ...             "milk",
+    ...         ],
+    ...         Column.COOKING_ACTIVITY_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+    ...         Column.END_TIME: [30.0, 150.0, 428.0, 575.0, 705.0, 836.0, 47.0, 215.0, 565.0, 747.0],
+    ...         Column.PERSON: ["P03", "P03", "P03", "P03", "P03", "P03", "P54", "P54", "P54", "P54"],
+    ...         Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+    ...         Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
+    ...     }
+    ... )
+    >>> data_list = to_list(frame)
+    >>> data_list
+    {'action': [['SIL', 'take_bowl', 'pour_cereals', 'pour_milk', 'stir_cereals', 'SIL'], ['SIL', 'pour_milk', 'spoon_powder', 'SIL']],
+     'action_id': [[0, 2, 5, 1, 3, 0], [0, 1, 4, 0]],
+     'cooking_activity': ['cereals', 'milk'],
+     'cooking_activity_id': [0, 1],
+     'end_time': [[30.0, 150.0, 428.0, 575.0, 705.0, 836.0], [47.0, 215.0, 565.0, 747.0]],
+     'person': ['P03', 'P54'],
+     'person_id': [0, 1],
+     'sequence_length': [6, 4],
+     'start_time': [[1.0, 31.0, 151.0, 429.0, 576.0, 706.0], [1.0, 48.0, 216.0, 566.0]]}
+
+    ```
+    """
+    return group_by_sequence(frame).to_dict(as_series=False)
 
 
 if __name__ == "__main__":  # pragma: no cover
