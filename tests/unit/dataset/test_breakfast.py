@@ -938,24 +938,28 @@ def test_group_by_sequence_empty(data_prepared_empty: pl.DataFrame) -> None:
 
 def test_to_array(data_prepared: pl.DataFrame) -> None:
     mask = np.array(
-        [[False, False, False, False, False, False], [False, False, False, False, True, True]]
+        [[False, False, False, False, False, False], [False, False, False, False, True, True]],
+        dtype=bool,
     )
     assert objects_are_equal(
         to_array(data_prepared),
         {
-            Column.SEQUENCE_LENGTH: np.array([6, 4]),
-            Column.PERSON_ID: np.array([0, 1]),
-            Column.COOKING_ACTIVITY_ID: np.array([0, 1]),
+            Column.ACTION: np.ma.masked_array(
+                data=np.array(
+                    [
+                        ["SIL", "take_bowl", "pour_cereals", "pour_milk", "stir_cereals", "SIL"],
+                        ["SIL", "pour_milk", "spoon_powder", "SIL", "N/A", "N/A"],
+                    ],
+                    dtype=str,
+                ),
+                mask=mask,
+            ),
             Column.ACTION_ID: np.ma.masked_array(
                 data=np.array([[0, 2, 5, 1, 3, 0], [0, 1, 4, 0, 0, 0]]),
                 mask=mask,
             ),
-            Column.START_TIME: np.ma.masked_array(
-                data=np.array(
-                    [[1.0, 31.0, 151.0, 429.0, 576.0, 706.0], [1.0, 48.0, 216.0, 566.0, 0.0, 0.0]]
-                ),
-                mask=mask,
-            ),
+            Column.COOKING_ACTIVITY: np.array(["cereals", "milk"]),
+            Column.COOKING_ACTIVITY_ID: np.array([0, 1]),
             Column.END_TIME: np.ma.masked_array(
                 data=np.array(
                     [
@@ -965,6 +969,15 @@ def test_to_array(data_prepared: pl.DataFrame) -> None:
                 ),
                 mask=mask,
             ),
+            Column.PERSON: np.array(["P03", "P54"]),
+            Column.PERSON_ID: np.array([0, 1]),
+            Column.START_TIME: np.ma.masked_array(
+                data=np.array(
+                    [[1.0, 31.0, 151.0, 429.0, 576.0, 706.0], [1.0, 48.0, 216.0, 566.0, 0.0, 0.0]]
+                ),
+                mask=mask,
+            ),
+            Column.SEQUENCE_LENGTH: np.array([6, 4]),
         },
     )
 
@@ -973,14 +986,17 @@ def test_to_array_empty(data_prepared_empty: pl.DataFrame) -> None:
     assert objects_are_equal(
         to_array(data_prepared_empty),
         {
-            Column.SEQUENCE_LENGTH: np.array([], dtype=int),
-            Column.PERSON_ID: np.array([], dtype=int),
-            Column.COOKING_ACTIVITY_ID: np.array([], dtype=int),
+            Column.ACTION: np.ma.masked_array(data=np.zeros(shape=(0, 0), dtype=str), mask=None),
             Column.ACTION_ID: np.ma.masked_array(data=np.zeros(shape=(0, 0), dtype=int), mask=None),
-            Column.START_TIME: np.ma.masked_array(
+            Column.COOKING_ACTIVITY: np.array([], dtype=str),
+            Column.COOKING_ACTIVITY_ID: np.array([], dtype=int),
+            Column.END_TIME: np.ma.masked_array(
                 data=np.zeros(shape=(0, 0), dtype=float), mask=None
             ),
-            Column.END_TIME: np.ma.masked_array(
+            Column.PERSON: np.array([], dtype=str),
+            Column.PERSON_ID: np.array([], dtype=int),
+            Column.SEQUENCE_LENGTH: np.array([], dtype=int),
+            Column.START_TIME: np.ma.masked_array(
                 data=np.zeros(shape=(0, 0), dtype=float), mask=None
             ),
         },
