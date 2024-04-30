@@ -176,20 +176,35 @@ def data_prepared() -> pl.DataFrame:
                 565.0,
                 747.0,
             ],
-            Column.PERSON: [
-                "P03",
-                "P03",
-                "P03",
-                "P03",
-                "P03",
-                "P03",
-                "P54",
-                "P54",
-                "P54",
-                "P54",
-            ],
+            Column.PERSON: ["P03", "P03", "P03", "P03", "P03", "P03", "P54", "P54", "P54", "P54"],
             Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
             Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
+        },
+        schema={
+            Column.ACTION: pl.String,
+            Column.ACTION_ID: pl.Int64,
+            Column.COOKING_ACTIVITY: pl.String,
+            Column.COOKING_ACTIVITY_ID: pl.Int64,
+            Column.END_TIME: pl.Float32,
+            Column.PERSON: pl.String,
+            Column.PERSON_ID: pl.Int64,
+            Column.START_TIME: pl.Float32,
+        },
+    )
+
+
+@pytest.fixture()
+def data_prepared_empty() -> pl.DataFrame:
+    return pl.DataFrame(
+        {
+            Column.ACTION: [],
+            Column.ACTION_ID: [],
+            Column.COOKING_ACTIVITY: [],
+            Column.COOKING_ACTIVITY_ID: [],
+            Column.END_TIME: [],
+            Column.PERSON: [],
+            Column.PERSON_ID: [],
+            Column.START_TIME: [],
         },
         schema={
             Column.ACTION: pl.String,
@@ -811,7 +826,7 @@ def test_prepare_data_split_train1() -> None:
     )
 
 
-def test_prepare_data_empty() -> None:
+def test_prepare_data_empty(data_prepared_empty: pl.DataFrame) -> None:
     data, metadata = prepare_data(
         pl.DataFrame(
             {
@@ -830,31 +845,7 @@ def test_prepare_data_empty() -> None:
             },
         )
     )
-    assert_frame_equal(
-        data,
-        pl.DataFrame(
-            {
-                Column.ACTION: [],
-                Column.ACTION_ID: [],
-                Column.COOKING_ACTIVITY: [],
-                Column.COOKING_ACTIVITY_ID: [],
-                Column.END_TIME: [],
-                Column.PERSON: [],
-                Column.PERSON_ID: [],
-                Column.START_TIME: [],
-            },
-            schema={
-                Column.ACTION: pl.String,
-                Column.ACTION_ID: pl.Int64,
-                Column.COOKING_ACTIVITY: pl.String,
-                Column.COOKING_ACTIVITY_ID: pl.Int64,
-                Column.END_TIME: pl.Float32,
-                Column.PERSON: pl.String,
-                Column.PERSON_ID: pl.Int64,
-                Column.START_TIME: pl.Float32,
-            },
-        ),
-    )
+    assert_frame_equal(data, data_prepared_empty)
     assert objects_are_equal(
         metadata,
         {
@@ -875,26 +866,65 @@ def test_group_by_sequence(data_prepared: pl.DataFrame) -> None:
         group_by_sequence(data_prepared),
         pl.DataFrame(
             {
-                Column.PERSON_ID: [0, 1],
-                Column.COOKING_ACTIVITY_ID: [0, 1],
-                Column.ACTION_ID: [[0, 2, 5, 1, 3, 0], [0, 1, 4, 0]],
-                Column.START_TIME: [
-                    [1.0, 31.0, 151.0, 429.0, 576.0, 706.0],
-                    [1.0, 48.0, 216.0, 566.0],
+                Column.ACTION: [
+                    ["SIL", "take_bowl", "pour_cereals", "pour_milk", "stir_cereals", "SIL"],
+                    ["SIL", "pour_milk", "spoon_powder", "SIL"],
                 ],
+                Column.ACTION_ID: [[0, 2, 5, 1, 3, 0], [0, 1, 4, 0]],
+                Column.COOKING_ACTIVITY: ["cereals", "milk"],
+                Column.COOKING_ACTIVITY_ID: [0, 1],
                 Column.END_TIME: [
                     [30.0, 150.0, 428.0, 575.0, 705.0, 836.0],
                     [47.0, 215.0, 565.0, 747.0],
                 ],
+                Column.PERSON: ["P03", "P54"],
+                Column.PERSON_ID: [0, 1],
                 Column.SEQUENCE_LENGTH: [6, 4],
+                Column.START_TIME: [
+                    [1.0, 31.0, 151.0, 429.0, 576.0, 706.0],
+                    [1.0, 48.0, 216.0, 566.0],
+                ],
             },
             schema={
-                Column.PERSON_ID: pl.Int64,
-                Column.COOKING_ACTIVITY_ID: pl.Int64,
+                Column.ACTION: pl.List(pl.String),
                 Column.ACTION_ID: pl.List(pl.Int64),
-                Column.START_TIME: pl.List(pl.Float32),
+                Column.COOKING_ACTIVITY: pl.String,
+                Column.COOKING_ACTIVITY_ID: pl.Int64,
                 Column.END_TIME: pl.List(pl.Float32),
+                Column.PERSON: pl.String,
+                Column.PERSON_ID: pl.Int64,
                 Column.SEQUENCE_LENGTH: pl.UInt32,
+                Column.START_TIME: pl.List(pl.Float32),
+            },
+        ),
+    )
+
+
+def test_group_by_sequence_empty(data_prepared_empty: pl.DataFrame) -> None:
+    assert_frame_equal(
+        group_by_sequence(data_prepared_empty),
+        pl.DataFrame(
+            {
+                Column.ACTION: [],
+                Column.ACTION_ID: [],
+                Column.COOKING_ACTIVITY: [],
+                Column.COOKING_ACTIVITY_ID: [],
+                Column.END_TIME: [],
+                Column.PERSON: [],
+                Column.PERSON_ID: [],
+                Column.SEQUENCE_LENGTH: [],
+                Column.START_TIME: [],
+            },
+            schema={
+                Column.ACTION: pl.List(pl.String),
+                Column.ACTION_ID: pl.List(pl.Int64),
+                Column.COOKING_ACTIVITY: pl.String,
+                Column.COOKING_ACTIVITY_ID: pl.Int64,
+                Column.END_TIME: pl.List(pl.Float32),
+                Column.PERSON: pl.String,
+                Column.PERSON_ID: pl.Int64,
+                Column.SEQUENCE_LENGTH: pl.UInt32,
+                Column.START_TIME: pl.List(pl.Float32),
             },
         ),
     )
@@ -938,26 +968,9 @@ def test_to_array(data_prepared: pl.DataFrame) -> None:
     )
 
 
-def test_to_array_empty() -> None:
+def test_to_array_empty(data_prepared_empty: pl.DataFrame) -> None:
     assert objects_are_equal(
-        to_array(
-            pl.DataFrame(
-                {
-                    Column.ACTION_ID: [],
-                    Column.COOKING_ACTIVITY_ID: [],
-                    Column.END_TIME: [],
-                    Column.PERSON_ID: [],
-                    Column.START_TIME: [],
-                },
-                schema={
-                    Column.ACTION_ID: pl.Int64,
-                    Column.COOKING_ACTIVITY_ID: pl.Int64,
-                    Column.END_TIME: pl.Float32,
-                    Column.PERSON_ID: pl.Int64,
-                    Column.START_TIME: pl.Float32,
-                },
-            )
-        ),
+        to_array(data_prepared_empty),
         {
             Column.SEQUENCE_LENGTH: np.array([], dtype=int),
             Column.PERSON_ID: np.array([], dtype=int),
