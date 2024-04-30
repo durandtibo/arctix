@@ -333,40 +333,77 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
     >>> from arctix.dataset.breakfast import Column, group_by_sequence
     >>> frame = pl.DataFrame(
     ...     {
-    ...         Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
-    ...         Column.END_TIME: [30.0, 150.0, 428.0, 575.0, 705.0, 836.0, 47.0, 215.0, 565.0, 747.0],
+    ...         Column.ACTION: [
+    ...             "SIL",
+    ...             "take_bowl",
+    ...             "pour_cereals",
+    ...             "pour_milk",
+    ...             "stir_cereals",
+    ...             "SIL",
+    ...             "SIL",
+    ...             "pour_milk",
+    ...             "spoon_powder",
+    ...             "SIL",
+    ...         ],
     ...         Column.ACTION_ID: [0, 2, 5, 1, 3, 0, 0, 1, 4, 0],
-    ...         Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+    ...         Column.COOKING_ACTIVITY: [
+    ...             "cereals",
+    ...             "cereals",
+    ...             "cereals",
+    ...             "cereals",
+    ...             "cereals",
+    ...             "cereals",
+    ...             "milk",
+    ...             "milk",
+    ...             "milk",
+    ...             "milk",
+    ...         ],
     ...         Column.COOKING_ACTIVITY_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+    ...         Column.END_TIME: [30.0, 150.0, 428.0, 575.0, 705.0, 836.0, 47.0, 215.0, 565.0, 747.0],
+    ...         Column.PERSON: ["P03", "P03", "P03", "P03", "P03", "P03", "P54", "P54", "P54", "P54"],
+    ...         Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+    ...         Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
     ...     }
     ... )
     >>> groups = group_by_sequence(frame)
-    >>> groups
-    shape: (2, 6)
-    ┌───────────┬──────────────────┬─────────────┬─────────────────┬─────────────────┬─────────────────┐
-    │ person_id ┆ cooking_activity ┆ action_id   ┆ start_time      ┆ end_time        ┆ sequence_length │
-    │ ---       ┆ _id              ┆ ---         ┆ ---             ┆ ---             ┆ ---             │
-    │ i64       ┆ ---              ┆ list[i64]   ┆ list[f64]       ┆ list[f64]       ┆ u32             │
-    │           ┆ i64              ┆             ┆                 ┆                 ┆                 │
-    ╞═══════════╪══════════════════╪═════════════╪═════════════════╪═════════════════╪═════════════════╡
-    │ 0         ┆ 0                ┆ [0, 2, … 0] ┆ [1.0, 31.0, …   ┆ [30.0, 150.0, … ┆ 6               │
-    │           ┆                  ┆             ┆ 706.0]          ┆ 836.0]          ┆                 │
-    │ 1         ┆ 1                ┆ [0, 1, … 0] ┆ [1.0, 48.0, …   ┆ [47.0, 215.0, … ┆ 4               │
-    │           ┆                  ┆             ┆ 566.0]          ┆ 747.0]          ┆                 │
-    └───────────┴──────────────────┴─────────────┴─────────────────┴─────────────────┴─────────────────┘
+    >>> with pl.Config(tbl_cols=-1):
+    ...     groups
+    shape: (2, 9)
+    ┌───────────┬───────────┬──────────┬──────────┬──────────┬────────┬──────────┬──────────┬──────────┐
+    │ action    ┆ action_id ┆ cooking_ ┆ cooking_ ┆ end_time ┆ person ┆ person_i ┆ sequence ┆ start_ti │
+    │ ---       ┆ ---       ┆ activity ┆ activity ┆ ---      ┆ ---    ┆ d        ┆ _length  ┆ me       │
+    │ list[str] ┆ list[i64] ┆ ---      ┆ _id      ┆ list[f64 ┆ str    ┆ ---      ┆ ---      ┆ ---      │
+    │           ┆           ┆ str      ┆ ---      ┆ ]        ┆        ┆ i64      ┆ u32      ┆ list[f64 │
+    │           ┆           ┆          ┆ i64      ┆          ┆        ┆          ┆          ┆ ]        │
+    ╞═══════════╪═══════════╪══════════╪══════════╪══════════╪════════╪══════════╪══════════╪══════════╡
+    │ ["SIL",   ┆ [0, 2, …  ┆ cereals  ┆ 0        ┆ [30.0,   ┆ P03    ┆ 0        ┆ 6        ┆ [1.0,    │
+    │ "take_bow ┆ 0]        ┆          ┆          ┆ 150.0, … ┆        ┆          ┆          ┆ 31.0, …  │
+    │ l", …     ┆           ┆          ┆          ┆ 836.0]   ┆        ┆          ┆          ┆ 706.0]   │
+    │ "SIL"]    ┆           ┆          ┆          ┆          ┆        ┆          ┆          ┆          │
+    │ ["SIL",   ┆ [0, 1, …  ┆ milk     ┆ 1        ┆ [47.0,   ┆ P54    ┆ 1        ┆ 4        ┆ [1.0,    │
+    │ "pour_mil ┆ 0]        ┆          ┆          ┆ 215.0, … ┆        ┆          ┆          ┆ 48.0, …  │
+    │ k", …     ┆           ┆          ┆          ┆ 747.0]   ┆        ┆          ┆          ┆ 566.0]   │
+    │ "SIL"]    ┆           ┆          ┆          ┆          ┆        ┆          ┆          ┆          │
+    └───────────┴───────────┴──────────┴──────────┴──────────┴────────┴──────────┴──────────┴──────────┘
 
     ```
     """
-    return (
-        frame.group_by([Column.PERSON_ID, Column.COOKING_ACTIVITY_ID])
-        .agg(
-            pl.col(Column.ACTION_ID).alias(Column.ACTION_ID),
-            pl.col(Column.START_TIME).alias(Column.START_TIME),
-            pl.col(Column.END_TIME).alias(Column.END_TIME),
-            pl.len().alias(Column.SEQUENCE_LENGTH),
-        )
-        .sort(by=[Column.PERSON_ID, Column.COOKING_ACTIVITY_ID])
+    data = frame.group_by([Column.PERSON_ID, Column.COOKING_ACTIVITY_ID]).agg(
+        pl.first(Column.COOKING_ACTIVITY),
+        pl.first(Column.PERSON),
+        pl.col(Column.ACTION),
+        pl.col(Column.ACTION_ID),
+        pl.col(Column.START_TIME),
+        pl.col(Column.END_TIME),
+        pl.len().alias(Column.SEQUENCE_LENGTH),
     )
+    transformer = td.Sequential(
+        [
+            td.Sort(columns=[Column.PERSON_ID, Column.COOKING_ACTIVITY_ID]),
+            td.SortColumns(),
+        ]
+    )
+    return transformer.transform(data)
 
 
 def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
@@ -386,11 +423,36 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     >>> from arctix.dataset.breakfast import Column, to_array
     >>> frame = pl.DataFrame(
     ...     {
-    ...         Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
-    ...         Column.END_TIME: [30.0, 150.0, 428.0, 575.0, 705.0, 836.0, 47.0, 215.0, 565.0, 747.0],
+    ...         Column.ACTION: [
+    ...             "SIL",
+    ...             "take_bowl",
+    ...             "pour_cereals",
+    ...             "pour_milk",
+    ...             "stir_cereals",
+    ...             "SIL",
+    ...             "SIL",
+    ...             "pour_milk",
+    ...             "spoon_powder",
+    ...             "SIL",
+    ...         ],
     ...         Column.ACTION_ID: [0, 2, 5, 1, 3, 0, 0, 1, 4, 0],
-    ...         Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+    ...         Column.COOKING_ACTIVITY: [
+    ...             "cereals",
+    ...             "cereals",
+    ...             "cereals",
+    ...             "cereals",
+    ...             "cereals",
+    ...             "cereals",
+    ...             "milk",
+    ...             "milk",
+    ...             "milk",
+    ...             "milk",
+    ...         ],
     ...         Column.COOKING_ACTIVITY_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+    ...         Column.END_TIME: [30.0, 150.0, 428.0, 575.0, 705.0, 836.0, 47.0, 215.0, 565.0, 747.0],
+    ...         Column.PERSON: ["P03", "P03", "P03", "P03", "P03", "P03", "P54", "P54", "P54", "P54"],
+    ...         Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+    ...         Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
     ...     }
     ... )
     >>> arrays = to_array(frame)
