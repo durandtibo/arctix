@@ -44,6 +44,24 @@ def test_convert_sequences_to_array_padded_value() -> None:
     )
 
 
+def test_convert_sequences_to_array_str() -> None:
+    assert np.array_equal(
+        convert_sequences_to_array(
+            [["polar", "bear"], ["cat", "are", "awesome"], ["meow"]],
+            max_len=5,
+            dtype=np.object_,
+            padded_value="N/A",
+        ),
+        np.array(
+            [
+                ["polar", "bear", "N/A", "N/A", "N/A"],
+                ["cat", "are", "awesome", "N/A", "N/A"],
+                ["meow", "N/A", "N/A", "N/A", "N/A"],
+            ]
+        ),
+    )
+
+
 ################################################
 #     Tests for generate_mask_from_lengths     #
 ################################################
