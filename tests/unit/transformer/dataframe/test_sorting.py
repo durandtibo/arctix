@@ -50,6 +50,13 @@ def test_sort_dataframe_transformer_transform_null_last() -> None:
     )
 
 
+def test_sort_dataframe_transformer_transform_empty() -> None:
+    frame = pl.DataFrame({"col1": [], "col2": [], "col3": []})
+    transformer = Sort(columns=["col3", "col1"])
+    out = transformer.transform(frame)
+    assert_frame_equal(out, pl.DataFrame({"col1": [], "col2": [], "col3": []}))
+
+
 #####################################################
 #     Tests for SortColumnsDataFrameTransformer     #
 #####################################################
