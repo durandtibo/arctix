@@ -23,6 +23,7 @@ from arctix.dataset.breakfast import (
     parse_annotation_lines,
     prepare_data,
     to_array,
+    to_list,
 )
 from arctix.utils.vocab import Vocabulary
 
@@ -982,5 +983,53 @@ def test_to_array_empty(data_prepared_empty: pl.DataFrame) -> None:
             Column.END_TIME: np.ma.masked_array(
                 data=np.zeros(shape=(0, 0), dtype=float), mask=None
             ),
+        },
+    )
+
+
+#############################
+#     Tests for to_list     #
+#############################
+
+
+def test_to_list(data_prepared: pl.DataFrame) -> None:
+    assert objects_are_equal(
+        to_list(data_prepared),
+        {
+            Column.ACTION: [
+                ["SIL", "take_bowl", "pour_cereals", "pour_milk", "stir_cereals", "SIL"],
+                ["SIL", "pour_milk", "spoon_powder", "SIL"],
+            ],
+            Column.ACTION_ID: [[0, 2, 5, 1, 3, 0], [0, 1, 4, 0]],
+            Column.COOKING_ACTIVITY: ["cereals", "milk"],
+            Column.COOKING_ACTIVITY_ID: [0, 1],
+            Column.END_TIME: [
+                [30.0, 150.0, 428.0, 575.0, 705.0, 836.0],
+                [47.0, 215.0, 565.0, 747.0],
+            ],
+            Column.PERSON: ["P03", "P54"],
+            Column.PERSON_ID: [0, 1],
+            Column.SEQUENCE_LENGTH: [6, 4],
+            Column.START_TIME: [
+                [1.0, 31.0, 151.0, 429.0, 576.0, 706.0],
+                [1.0, 48.0, 216.0, 566.0],
+            ],
+        },
+    )
+
+
+def test_to_list_empty(data_prepared_empty: pl.DataFrame) -> None:
+    assert objects_are_equal(
+        to_list(data_prepared_empty),
+        {
+            Column.ACTION: [],
+            Column.ACTION_ID: [],
+            Column.COOKING_ACTIVITY: [],
+            Column.COOKING_ACTIVITY_ID: [],
+            Column.END_TIME: [],
+            Column.PERSON: [],
+            Column.PERSON_ID: [],
+            Column.SEQUENCE_LENGTH: [],
+            Column.START_TIME: [],
         },
     )
