@@ -195,9 +195,13 @@ def load_data(path: Path, remove_duplicate: bool = True) -> pl.DataFrame:
     data = pl.DataFrame(data)
     if remove_duplicate:
         data = drop_duplicates(data)
-    if data.select(pl.len()).item():
-        data = data.sort(by=[Column.COOKING_ACTIVITY, Column.PERSON, Column.START_TIME])
-    return data
+    transformer = td.Sequential(
+        [
+            td.Sort(columns=[Column.COOKING_ACTIVITY, Column.PERSON, Column.START_TIME]),
+            td.SortColumns(),
+        ]
+    )
+    return transformer.transform(data)
 
 
 def load_annotation_file(path: Path) -> dict[str, list]:
@@ -301,6 +305,7 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
                 token_column=Column.COOKING_ACTIVITY,
                 index_column=Column.COOKING_ACTIVITY_ID,
             ),
+            td.SortColumns(),
         ]
     )
     out = transformer.transform(frame)
@@ -441,6 +446,25 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
             mask=mask,
         ),
     }
+
+
+# def to_list(frame: pl.DataFrame, return_str: bool = True) -> dict[str, list]:
+#     groups = group_by_sequence(frame)
+#     data = {
+#         Column.SEQUENCE_LENGTH: groups.get_column(Column.SEQUENCE_LENGTH).to_list(),
+#         Column.PERSON_ID: groups.get_column(Column.PERSON_ID).to_list(),
+#         Column.COOKING_ACTIVITY_ID: groups.get_column(Column.COOKING_ACTIVITY_ID).to_list(),
+#         Column.ACTION_ID: groups.get_column(Column.ACTION_ID).to_list(),
+#         Column.START_TIME: groups.get_column(Column.START_TIME).to_list(),
+#         Column.END_TIME: groups.get_column(Column.END_TIME).to_list(),
+#     }
+#     # if return_str:
+#     #     data |= {
+#     #         Column.ACTION: groups.get_column(Column.ACTION).to_list(),
+#     #         Column.PERSON: groups.get_column(Column.PERSON).to_list(),
+#     #         Column.COOKING_ACTIVITY: groups.get_column(Column.COOKING_ACTIVITY).to_list(),
+#     #     }
+#     return data
 
 
 if __name__ == "__main__":  # pragma: no cover

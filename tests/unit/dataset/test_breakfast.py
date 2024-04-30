@@ -70,73 +70,150 @@ def data_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
     return path
 
 
+@pytest.fixture()
+def data_raw() -> pl.DataFrame:
+    return pl.DataFrame(
+        {
+            Column.ACTION: [
+                "SIL",
+                "take_bowl",
+                "pour_cereals",
+                "pour_milk",
+                "stir_cereals",
+                "SIL",
+                "SIL",
+                "pour_milk",
+                "spoon_powder",
+                "SIL",
+            ],
+            Column.COOKING_ACTIVITY: [
+                "cereals",
+                "cereals",
+                "cereals",
+                "cereals",
+                "cereals",
+                "cereals",
+                "milk",
+                "milk",
+                "milk",
+                "milk",
+            ],
+            Column.END_TIME: [
+                30.0,
+                150.0,
+                428.0,
+                575.0,
+                705.0,
+                836.0,
+                47.0,
+                215.0,
+                565.0,
+                747.0,
+            ],
+            Column.PERSON: [
+                "P03",
+                "P03",
+                "P03",
+                "P03",
+                "P03",
+                "P03",
+                "P54",
+                "P54",
+                "P54",
+                "P54",
+            ],
+            Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
+        },
+        schema={
+            Column.ACTION: pl.String,
+            Column.COOKING_ACTIVITY: pl.String,
+            Column.END_TIME: pl.Float64,
+            Column.PERSON: pl.String,
+            Column.START_TIME: pl.Float64,
+        },
+    )
+
+
+@pytest.fixture()
+def data_prepared() -> pl.DataFrame:
+    return pl.DataFrame(
+        {
+            Column.ACTION: [
+                "SIL",
+                "take_bowl",
+                "pour_cereals",
+                "pour_milk",
+                "stir_cereals",
+                "SIL",
+                "SIL",
+                "pour_milk",
+                "spoon_powder",
+                "SIL",
+            ],
+            Column.ACTION_ID: [0, 2, 5, 1, 3, 0, 0, 1, 4, 0],
+            Column.COOKING_ACTIVITY: [
+                "cereals",
+                "cereals",
+                "cereals",
+                "cereals",
+                "cereals",
+                "cereals",
+                "milk",
+                "milk",
+                "milk",
+                "milk",
+            ],
+            Column.COOKING_ACTIVITY_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+            Column.END_TIME: [
+                30.0,
+                150.0,
+                428.0,
+                575.0,
+                705.0,
+                836.0,
+                47.0,
+                215.0,
+                565.0,
+                747.0,
+            ],
+            Column.PERSON: [
+                "P03",
+                "P03",
+                "P03",
+                "P03",
+                "P03",
+                "P03",
+                "P54",
+                "P54",
+                "P54",
+                "P54",
+            ],
+            Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+            Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
+        },
+        schema={
+            Column.ACTION: pl.String,
+            Column.ACTION_ID: pl.Int64,
+            Column.COOKING_ACTIVITY: pl.String,
+            Column.COOKING_ACTIVITY_ID: pl.Int64,
+            Column.END_TIME: pl.Float32,
+            Column.PERSON: pl.String,
+            Column.PERSON_ID: pl.Int64,
+            Column.START_TIME: pl.Float32,
+        },
+    )
+
+
 ################################
 #     Tests for fetch_data     #
 ################################
 
 
-def test_fetch_data_remove_duplicate_examples(data_dir: Path) -> None:
+def test_fetch_data_remove_duplicate_examples(data_dir: Path, data_raw: pl.DataFrame) -> None:
     with patch("arctix.dataset.breakfast.download_data") as download_mock:
         data = fetch_data(data_dir, name="segmentation_coarse")
         download_mock.assert_called_once_with(data_dir, False)
-    assert_frame_equal(
-        data,
-        pl.DataFrame(
-            {
-                Column.ACTION: [
-                    "SIL",
-                    "take_bowl",
-                    "pour_cereals",
-                    "pour_milk",
-                    "stir_cereals",
-                    "SIL",
-                    "SIL",
-                    "pour_milk",
-                    "spoon_powder",
-                    "SIL",
-                ],
-                Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
-                Column.END_TIME: [
-                    30.0,
-                    150.0,
-                    428.0,
-                    575.0,
-                    705.0,
-                    836.0,
-                    47.0,
-                    215.0,
-                    565.0,
-                    747.0,
-                ],
-                Column.COOKING_ACTIVITY: [
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "milk",
-                    "milk",
-                    "milk",
-                    "milk",
-                ],
-                Column.PERSON: [
-                    "P03",
-                    "P03",
-                    "P03",
-                    "P03",
-                    "P03",
-                    "P03",
-                    "P54",
-                    "P54",
-                    "P54",
-                    "P54",
-                ],
-            }
-        ),
-        check_row_order=False,
-        check_column_order=False,
-    )
+    assert_frame_equal(data, data_raw)
 
 
 def test_fetch_data_keep_duplicate_examples(data_dir: Path) -> None:
@@ -324,69 +401,8 @@ def test_download_data_dir_exists_force_download(tmp_path: Path) -> None:
 ###############################
 
 
-def test_load_data_empty(tmp_path: Path) -> None:
-    assert_frame_equal(load_data(tmp_path), pl.DataFrame({}))
-
-
-def test_load_data(data_dir: Path) -> None:
-    assert_frame_equal(
-        load_data(data_dir),
-        pl.DataFrame(
-            {
-                Column.ACTION: [
-                    "SIL",
-                    "take_bowl",
-                    "pour_cereals",
-                    "pour_milk",
-                    "stir_cereals",
-                    "SIL",
-                    "SIL",
-                    "pour_milk",
-                    "spoon_powder",
-                    "SIL",
-                ],
-                Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
-                Column.END_TIME: [
-                    30.0,
-                    150.0,
-                    428.0,
-                    575.0,
-                    705.0,
-                    836.0,
-                    47.0,
-                    215.0,
-                    565.0,
-                    747.0,
-                ],
-                Column.COOKING_ACTIVITY: [
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "milk",
-                    "milk",
-                    "milk",
-                    "milk",
-                ],
-                Column.PERSON: [
-                    "P03",
-                    "P03",
-                    "P03",
-                    "P03",
-                    "P03",
-                    "P03",
-                    "P54",
-                    "P54",
-                    "P54",
-                    "P54",
-                ],
-            }
-        ),
-        check_row_order=False,
-        check_column_order=False,
-    )
+def test_load_data(data_dir: Path, data_raw: pl.DataFrame) -> None:
+    assert_frame_equal(load_data(data_dir), data_raw)
 
 
 def test_load_data_keep_duplicates(data_dir: Path) -> None:
@@ -412,23 +428,23 @@ def test_load_data_keep_duplicates(data_dir: Path) -> None:
                     "spoon_powder",
                     "SIL",
                 ],
-                Column.START_TIME: [
-                    1.0,
-                    1.0,
-                    31.0,
-                    31.0,
-                    151.0,
-                    151.0,
-                    429.0,
-                    429.0,
-                    576.0,
-                    576.0,
-                    706.0,
-                    706.0,
-                    1.0,
-                    48.0,
-                    216.0,
-                    566.0,
+                Column.COOKING_ACTIVITY: [
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "cereals",
+                    "milk",
+                    "milk",
+                    "milk",
+                    "milk",
                 ],
                 Column.END_TIME: [
                     30.0,
@@ -448,24 +464,6 @@ def test_load_data_keep_duplicates(data_dir: Path) -> None:
                     565.0,
                     747.0,
                 ],
-                Column.COOKING_ACTIVITY: [
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "milk",
-                    "milk",
-                    "milk",
-                    "milk",
-                ],
                 Column.PERSON: [
                     "P03",
                     "P03",
@@ -484,9 +482,33 @@ def test_load_data_keep_duplicates(data_dir: Path) -> None:
                     "P54",
                     "P54",
                 ],
-            }
+                Column.START_TIME: [
+                    1.0,
+                    1.0,
+                    31.0,
+                    31.0,
+                    151.0,
+                    151.0,
+                    429.0,
+                    429.0,
+                    576.0,
+                    576.0,
+                    706.0,
+                    706.0,
+                    1.0,
+                    48.0,
+                    216.0,
+                    566.0,
+                ],
+            },
+            schema={
+                Column.ACTION: pl.String,
+                Column.COOKING_ACTIVITY: pl.String,
+                Column.END_TIME: pl.Float64,
+                Column.PERSON: pl.String,
+                Column.START_TIME: pl.Float64,
+            },
         ),
-        check_column_order=False,
     )
 
 
@@ -655,131 +677,9 @@ def test_filter_by_split_empty() -> None:
 ##################################
 
 
-def test_prepare_data() -> None:
-    data, metadata = prepare_data(
-        pl.DataFrame(
-            {
-                Column.ACTION: [
-                    "SIL",
-                    "take_bowl",
-                    "pour_cereals",
-                    "pour_milk",
-                    "stir_cereals",
-                    "SIL",
-                    "SIL",
-                    "pour_milk",
-                    "spoon_powder",
-                    "SIL",
-                ],
-                Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
-                Column.END_TIME: [
-                    30.0,
-                    150.0,
-                    428.0,
-                    575.0,
-                    705.0,
-                    836.0,
-                    47.0,
-                    215.0,
-                    565.0,
-                    747.0,
-                ],
-                Column.COOKING_ACTIVITY: [
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "milk",
-                    "milk",
-                    "milk",
-                    "milk",
-                ],
-                Column.PERSON: [
-                    "P03",
-                    "P03",
-                    "P03",
-                    "P03",
-                    "P03",
-                    "P03",
-                    "P54",
-                    "P54",
-                    "P54",
-                    "P54",
-                ],
-            }
-        )
-    )
-    assert_frame_equal(
-        data,
-        pl.DataFrame(
-            {
-                Column.ACTION: [
-                    "SIL",
-                    "take_bowl",
-                    "pour_cereals",
-                    "pour_milk",
-                    "stir_cereals",
-                    "SIL",
-                    "SIL",
-                    "pour_milk",
-                    "spoon_powder",
-                    "SIL",
-                ],
-                Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
-                Column.END_TIME: [
-                    30.0,
-                    150.0,
-                    428.0,
-                    575.0,
-                    705.0,
-                    836.0,
-                    47.0,
-                    215.0,
-                    565.0,
-                    747.0,
-                ],
-                Column.COOKING_ACTIVITY: [
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "cereals",
-                    "milk",
-                    "milk",
-                    "milk",
-                    "milk",
-                ],
-                Column.PERSON: [
-                    "P03",
-                    "P03",
-                    "P03",
-                    "P03",
-                    "P03",
-                    "P03",
-                    "P54",
-                    "P54",
-                    "P54",
-                    "P54",
-                ],
-                Column.ACTION_ID: [0, 2, 5, 1, 3, 0, 0, 1, 4, 0],
-                Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-                Column.COOKING_ACTIVITY_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-            },
-            schema={
-                Column.ACTION: pl.String,
-                Column.START_TIME: pl.Float32,
-                Column.END_TIME: pl.Float32,
-                Column.COOKING_ACTIVITY: pl.String,
-                Column.PERSON: pl.String,
-                Column.ACTION_ID: pl.Int64,
-                Column.PERSON_ID: pl.Int64,
-                Column.COOKING_ACTIVITY_ID: pl.Int64,
-            },
-        ),
-    )
+def test_prepare_data(data_raw: pl.DataFrame, data_prepared: pl.DataFrame) -> None:
+    data, metadata = prepare_data(data_raw)
+    assert_frame_equal(data, data_prepared)
     assert objects_are_equal(
         metadata,
         {
@@ -854,7 +754,14 @@ def test_prepare_data_split_train1() -> None:
                     "P54",
                     "P54",
                 ],
-            }
+            },
+            schema={
+                Column.ACTION: pl.String,
+                Column.COOKING_ACTIVITY: pl.String,
+                Column.END_TIME: pl.Float64,
+                Column.PERSON: pl.String,
+                Column.START_TIME: pl.Float64,
+            },
         ),
         split="train1",
     )
@@ -863,23 +770,23 @@ def test_prepare_data_split_train1() -> None:
         pl.DataFrame(
             {
                 Column.ACTION: ["SIL", "pour_milk", "spoon_powder", "SIL"],
-                Column.START_TIME: [1.0, 48.0, 216.0, 566.0],
-                Column.END_TIME: [47.0, 215.0, 565.0, 747.0],
-                Column.COOKING_ACTIVITY: ["milk", "milk", "milk", "milk"],
-                Column.PERSON: ["P54", "P54", "P54", "P54"],
                 Column.ACTION_ID: [0, 1, 4, 0],
-                Column.PERSON_ID: [1, 1, 1, 1],
+                Column.COOKING_ACTIVITY: ["milk", "milk", "milk", "milk"],
                 Column.COOKING_ACTIVITY_ID: [1, 1, 1, 1],
+                Column.END_TIME: [47.0, 215.0, 565.0, 747.0],
+                Column.PERSON: ["P54", "P54", "P54", "P54"],
+                Column.PERSON_ID: [1, 1, 1, 1],
+                Column.START_TIME: [1.0, 48.0, 216.0, 566.0],
             },
             schema={
                 Column.ACTION: pl.String,
-                Column.START_TIME: pl.Float32,
-                Column.END_TIME: pl.Float32,
-                Column.COOKING_ACTIVITY: pl.String,
-                Column.PERSON: pl.String,
                 Column.ACTION_ID: pl.Int64,
-                Column.PERSON_ID: pl.Int64,
+                Column.COOKING_ACTIVITY: pl.String,
                 Column.COOKING_ACTIVITY_ID: pl.Int64,
+                Column.END_TIME: pl.Float32,
+                Column.PERSON: pl.String,
+                Column.PERSON_ID: pl.Int64,
+                Column.START_TIME: pl.Float32,
             },
         ),
     )
@@ -909,17 +816,17 @@ def test_prepare_data_empty() -> None:
         pl.DataFrame(
             {
                 Column.ACTION: [],
-                Column.START_TIME: [],
-                Column.END_TIME: [],
                 Column.COOKING_ACTIVITY: [],
+                Column.END_TIME: [],
                 Column.PERSON: [],
+                Column.START_TIME: [],
             },
             schema={
                 Column.ACTION: pl.String,
-                Column.START_TIME: pl.Float32,
-                Column.END_TIME: pl.Float32,
                 Column.COOKING_ACTIVITY: pl.String,
+                Column.END_TIME: pl.Float32,
                 Column.PERSON: pl.String,
+                Column.START_TIME: pl.Float32,
             },
         )
     )
@@ -928,23 +835,23 @@ def test_prepare_data_empty() -> None:
         pl.DataFrame(
             {
                 Column.ACTION: [],
-                Column.START_TIME: [],
-                Column.END_TIME: [],
-                Column.COOKING_ACTIVITY: [],
-                Column.PERSON: [],
                 Column.ACTION_ID: [],
-                Column.PERSON_ID: [],
+                Column.COOKING_ACTIVITY: [],
                 Column.COOKING_ACTIVITY_ID: [],
+                Column.END_TIME: [],
+                Column.PERSON: [],
+                Column.PERSON_ID: [],
+                Column.START_TIME: [],
             },
             schema={
                 Column.ACTION: pl.String,
-                Column.START_TIME: pl.Float32,
-                Column.END_TIME: pl.Float32,
-                Column.COOKING_ACTIVITY: pl.String,
-                Column.PERSON: pl.String,
                 Column.ACTION_ID: pl.Int64,
-                Column.PERSON_ID: pl.Int64,
+                Column.COOKING_ACTIVITY: pl.String,
                 Column.COOKING_ACTIVITY_ID: pl.Int64,
+                Column.END_TIME: pl.Float32,
+                Column.PERSON: pl.String,
+                Column.PERSON_ID: pl.Int64,
+                Column.START_TIME: pl.Float32,
             },
         ),
     )
@@ -963,48 +870,9 @@ def test_prepare_data_empty() -> None:
 #######################################
 
 
-def test_group_by_sequence() -> None:
+def test_group_by_sequence(data_prepared: pl.DataFrame) -> None:
     assert_frame_equal(
-        group_by_sequence(
-            pl.DataFrame(
-                {
-                    Column.START_TIME: [
-                        1.0,
-                        31.0,
-                        151.0,
-                        429.0,
-                        576.0,
-                        706.0,
-                        1.0,
-                        48.0,
-                        216.0,
-                        566.0,
-                    ],
-                    Column.END_TIME: [
-                        30.0,
-                        150.0,
-                        428.0,
-                        575.0,
-                        705.0,
-                        836.0,
-                        47.0,
-                        215.0,
-                        565.0,
-                        747.0,
-                    ],
-                    Column.ACTION_ID: [0, 2, 5, 1, 3, 0, 0, 1, 4, 0],
-                    Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-                    Column.COOKING_ACTIVITY_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-                },
-                schema={
-                    Column.START_TIME: pl.Float32,
-                    Column.END_TIME: pl.Float32,
-                    Column.ACTION_ID: pl.Int64,
-                    Column.PERSON_ID: pl.Int64,
-                    Column.COOKING_ACTIVITY_ID: pl.Int64,
-                },
-            ),
-        ),
+        group_by_sequence(data_prepared),
         pl.DataFrame(
             {
                 Column.PERSON_ID: [0, 1],
@@ -1032,56 +900,17 @@ def test_group_by_sequence() -> None:
     )
 
 
-###################################
+##############################
 #     Tests for to_array     #
-###################################
+##############################
 
 
-def test_to_array() -> None:
+def test_to_array(data_prepared: pl.DataFrame) -> None:
     mask = np.array(
         [[False, False, False, False, False, False], [False, False, False, False, True, True]]
     )
     assert objects_are_equal(
-        to_array(
-            pl.DataFrame(
-                {
-                    Column.START_TIME: [
-                        1.0,
-                        31.0,
-                        151.0,
-                        429.0,
-                        576.0,
-                        706.0,
-                        1.0,
-                        48.0,
-                        216.0,
-                        566.0,
-                    ],
-                    Column.END_TIME: [
-                        30.0,
-                        150.0,
-                        428.0,
-                        575.0,
-                        705.0,
-                        836.0,
-                        47.0,
-                        215.0,
-                        565.0,
-                        747.0,
-                    ],
-                    Column.ACTION_ID: [0, 2, 5, 1, 3, 0, 0, 1, 4, 0],
-                    Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-                    Column.COOKING_ACTIVITY_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-                },
-                schema={
-                    Column.START_TIME: pl.Float32,
-                    Column.END_TIME: pl.Float32,
-                    Column.ACTION_ID: pl.Int64,
-                    Column.PERSON_ID: pl.Int64,
-                    Column.COOKING_ACTIVITY_ID: pl.Int64,
-                },
-            )
-        ),
+        to_array(data_prepared),
         {
             Column.SEQUENCE_LENGTH: np.array([6, 4]),
             Column.PERSON_ID: np.array([0, 1]),
@@ -1114,18 +943,18 @@ def test_to_array_empty() -> None:
         to_array(
             pl.DataFrame(
                 {
-                    Column.START_TIME: [],
-                    Column.END_TIME: [],
                     Column.ACTION_ID: [],
-                    Column.PERSON_ID: [],
                     Column.COOKING_ACTIVITY_ID: [],
+                    Column.END_TIME: [],
+                    Column.PERSON_ID: [],
+                    Column.START_TIME: [],
                 },
                 schema={
-                    Column.START_TIME: pl.Float32,
-                    Column.END_TIME: pl.Float32,
                     Column.ACTION_ID: pl.Int64,
-                    Column.PERSON_ID: pl.Int64,
                     Column.COOKING_ACTIVITY_ID: pl.Int64,
+                    Column.END_TIME: pl.Float32,
+                    Column.PERSON_ID: pl.Int64,
+                    Column.START_TIME: pl.Float32,
                 },
             )
         ),
