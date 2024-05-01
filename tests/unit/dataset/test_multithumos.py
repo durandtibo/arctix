@@ -662,6 +662,12 @@ def test_group_by_sequence(data_prepared: pl.DataFrame) -> None:
         group_by_sequence(data_prepared),
         pl.DataFrame(
             {
+                Column.ACTION: [
+                    ["dribble"],
+                    ["dribble"],
+                    ["dribble", "guard", "guard", "dribble"],
+                    ["guard", "guard", "guard"],
+                ],
                 Column.ACTION_ID: [[1], [1], [1, 0, 0, 1], [0, 0, 0]],
                 Column.END_TIME: [
                     [76.0],
@@ -685,6 +691,7 @@ def test_group_by_sequence(data_prepared: pl.DataFrame) -> None:
                 ],
             },
             schema={
+                Column.ACTION: pl.List(pl.String),
                 Column.ACTION_ID: pl.List(pl.Int64),
                 Column.END_TIME: pl.List(pl.Float32),
                 Column.SEQUENCE_LENGTH: pl.UInt32,
@@ -720,6 +727,7 @@ def test_group_by_sequence_empty() -> None:
         ),
         pl.DataFrame(
             {
+                Column.ACTION: [],
                 Column.ACTION_ID: [],
                 Column.END_TIME: [],
                 Column.SEQUENCE_LENGTH: [],
@@ -728,6 +736,7 @@ def test_group_by_sequence_empty() -> None:
                 Column.VIDEO: [],
             },
             schema={
+                Column.ACTION: pl.List(pl.String),
                 Column.ACTION_ID: pl.List(pl.Int64),
                 Column.END_TIME: pl.List(pl.Float32),
                 Column.SEQUENCE_LENGTH: pl.UInt32,

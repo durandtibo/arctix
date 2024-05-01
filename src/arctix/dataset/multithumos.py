@@ -506,26 +506,29 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
     ... )
     >>> groups = group_by_sequence(frame)
     >>> groups
-    shape: (2, 6)
-    ┌─────────────┬─────────────────┬─────────────────┬────────────┬─────────────────┬─────────────────┐
-    │ action_id   ┆ end_time        ┆ sequence_length ┆ split      ┆ start_time      ┆ video           │
-    │ ---         ┆ ---             ┆ ---             ┆ ---        ┆ ---             ┆ ---             │
-    │ list[i64]   ┆ list[f32]       ┆ u32             ┆ str        ┆ list[f32]       ┆ str             │
-    ╞═════════════╪═════════════════╪═════════════════╪════════════╪═════════════════╪═════════════════╡
-    │ [1, 0, 1]   ┆ [5.4, 18.33,    ┆ 3               ┆ validation ┆ [1.5, 17.57,    ┆ video_validatio │
-    │             ┆ 83.900002]      ┆                 ┆            ┆ 79.300003]      ┆ n_1             │
-    │ [0, 0, … 2] ┆ [3.6, 5.07, …   ┆ 4               ┆ validation ┆ [2.97, 4.54, …  ┆ video_validatio │
-    │             ┆ 30.23]          ┆                 ┆            ┆ 27.42]          ┆ n_2             │
-    └─────────────┴─────────────────┴─────────────────┴────────────┴─────────────────┴─────────────────┘
-
+    shape: (2, 7)
+    ┌──────────────┬─────────────┬──────────────┬─────────────┬────────────┬─────────────┬─────────────┐
+    │ action       ┆ action_id   ┆ end_time     ┆ sequence_le ┆ split      ┆ start_time  ┆ video       │
+    │ ---          ┆ ---         ┆ ---          ┆ ngth        ┆ ---        ┆ ---         ┆ ---         │
+    │ list[str]    ┆ list[i64]   ┆ list[f32]    ┆ ---         ┆ str        ┆ list[f32]   ┆ str         │
+    │              ┆             ┆              ┆ u32         ┆            ┆             ┆             │
+    ╞══════════════╪═════════════╪══════════════╪═════════════╪════════════╪═════════════╪═════════════╡
+    │ ["dribble",  ┆ [1, 0, 1]   ┆ [5.4, 18.33, ┆ 3           ┆ validation ┆ [1.5,       ┆ video_valid │
+    │ "guard",     ┆             ┆ 83.900002]   ┆             ┆            ┆ 17.57,      ┆ ation_1     │
+    │ "dribble"…   ┆             ┆              ┆             ┆            ┆ 79.300003]  ┆             │
+    │ ["guard",    ┆ [0, 0, … 2] ┆ [3.6, 5.07,  ┆ 4           ┆ validation ┆ [2.97,      ┆ video_valid │
+    │ "guard", …   ┆             ┆ … 30.23]     ┆             ┆            ┆ 4.54, …     ┆ ation_2     │
+    │ "shoot"]     ┆             ┆              ┆             ┆            ┆ 27.42]      ┆             │
+    └──────────────┴─────────────┴──────────────┴─────────────┴────────────┴─────────────┴─────────────┘
 
     ```
     """
     data = frame.group_by([Column.VIDEO]).agg(
         pl.first(Column.SPLIT),
-        pl.col(Column.ACTION_ID).alias(Column.ACTION_ID),
-        pl.col(Column.START_TIME).alias(Column.START_TIME),
-        pl.col(Column.END_TIME).alias(Column.END_TIME),
+        pl.col(Column.ACTION),
+        pl.col(Column.ACTION_ID),
+        pl.col(Column.START_TIME),
+        pl.col(Column.END_TIME),
         pl.len().alias(Column.SEQUENCE_LENGTH),
     )
     transformer = td.Sequential(
