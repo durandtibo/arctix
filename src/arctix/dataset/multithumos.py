@@ -18,6 +18,7 @@ __all__ = [
     "parse_annotation_lines",
     "prepare_data",
     "to_array",
+    "to_list",
 ]
 
 import logging
@@ -663,6 +664,77 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
             mask=mask,
         ),
     }
+
+
+def to_list(frame: pl.DataFrame) -> dict[str, list]:
+    r"""Convert a DataFrame to a dictionary of lists.
+
+    Args:
+        frame: The input DataFrame.
+
+    Returns:
+        The dictionary of lists.
+
+    Example usage:
+
+    ```pycon
+
+    >>> import polars as pl
+    >>> from arctix.dataset.multithumos import Column, to_list
+    >>> frame = pl.DataFrame(
+    ...     {
+    ...         Column.VIDEO: [
+    ...             "video_validation_1",
+    ...             "video_validation_1",
+    ...             "video_validation_1",
+    ...             "video_validation_2",
+    ...             "video_validation_2",
+    ...             "video_validation_2",
+    ...             "video_validation_2",
+    ...         ],
+    ...         Column.START_TIME: [1.0, 17.0, 79.0, 2.0, 4.0, 20.0, 27.0],
+    ...         Column.END_TIME: [5.0, 18.0, 83.0, 3.0, 5.0, 20.0, 30.0],
+    ...         Column.ACTION: [
+    ...             "dribble",
+    ...             "guard",
+    ...             "dribble",
+    ...             "guard",
+    ...             "guard",
+    ...             "guard",
+    ...             "shoot",
+    ...         ],
+    ...         Column.ACTION_ID: [1, 0, 1, 0, 0, 0, 2],
+    ...         Column.SPLIT: [
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...         ],
+    ...     },
+    ...     schema={
+    ...         Column.VIDEO: pl.String,
+    ...         Column.START_TIME: pl.Float32,
+    ...         Column.END_TIME: pl.Float32,
+    ...         Column.ACTION: pl.String,
+    ...         Column.ACTION_ID: pl.Int64,
+    ...         Column.SPLIT: pl.String,
+    ...     },
+    ... )
+    >>> data_list = to_list(frame)
+    >>> data_list
+    {'action': [['dribble', 'guard', 'dribble'], ['guard', 'guard', 'guard', 'shoot']],
+     'action_id': [[1, 0, 1], [0, 0, 0, 2]],
+     'end_time': [[5.0, 18.0, 83.0], [3.0, 5.0, 20.0, 30.0]],
+     'sequence_length': [3, 4], 'split': ['validation', 'validation'],
+     'start_time': [[1.0, 17.0, 79.0], [2.0, 4.0, 20.0, 27.0]],
+     'video': ['video_validation_1', 'video_validation_2']}
+
+    ```
+    """
+    return group_by_sequence(frame).to_dict(as_series=False)
 
 
 if __name__ == "__main__":  # pragma: no cover

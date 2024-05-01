@@ -27,6 +27,7 @@ from arctix.dataset.multithumos import (
     parse_annotation_lines,
     prepare_data,
     to_array,
+    to_list,
 )
 from arctix.utils.vocab import Vocabulary
 
@@ -810,7 +811,6 @@ def test_to_array(data_prepared: pl.DataFrame) -> None:
                 mask=mask,
             ),
         },
-        show_difference=True,
     )
 
 
@@ -848,5 +848,79 @@ def test_to_array_empty() -> None:
             Column.START_TIME: np.ma.masked_array(
                 data=np.zeros(shape=(0, 0), dtype=float), mask=mask
             ),
+        },
+    )
+
+
+#############################
+#     Tests for to_list     #
+#############################
+
+
+def test_to_list(data_prepared: pl.DataFrame) -> None:
+    assert objects_are_equal(
+        to_list(data_prepared),
+        {
+            Column.ACTION: [
+                ["dribble"],
+                ["dribble"],
+                ["dribble", "guard", "guard", "dribble"],
+                ["guard", "guard", "guard"],
+            ],
+            Column.ACTION_ID: [[1], [1], [1, 0, 0, 1], [0, 0, 0]],
+            Column.END_TIME: [
+                [76.0],
+                [50.0],
+                [5.0, 18.0, 18.0, 83.0],
+                [3.0, 5.0, 20.0],
+            ],
+            Column.SEQUENCE_LENGTH: [1, 1, 4, 3],
+            Column.SPLIT: ["validation", "validation", "validation", "validation"],
+            Column.START_TIME: [
+                [72.0],
+                [44.0],
+                [1.0, 17.0, 17.0, 79.0],
+                [2.0, 4.0, 20.0],
+            ],
+            Column.VIDEO: [
+                "video_validation_0000266",
+                "video_validation_0000681",
+                "video_validation_0000682",
+                "video_validation_0000902",
+            ],
+        },
+    )
+
+
+def test_to_list_empty() -> None:
+    assert objects_are_equal(
+        to_list(
+            pl.DataFrame(
+                {
+                    Column.ACTION: [],
+                    Column.ACTION_ID: [],
+                    Column.END_TIME: [],
+                    Column.SPLIT: [],
+                    Column.START_TIME: [],
+                    Column.VIDEO: [],
+                },
+                schema={
+                    Column.ACTION: pl.String,
+                    Column.ACTION_ID: pl.Int64,
+                    Column.END_TIME: pl.Float32,
+                    Column.SPLIT: pl.String,
+                    Column.START_TIME: pl.Float32,
+                    Column.VIDEO: pl.String,
+                },
+            )
+        ),
+        {
+            Column.ACTION: [],
+            Column.ACTION_ID: [],
+            Column.END_TIME: [],
+            Column.SEQUENCE_LENGTH: [],
+            Column.SPLIT: [],
+            Column.START_TIME: [],
+            Column.VIDEO: [],
         },
     )
