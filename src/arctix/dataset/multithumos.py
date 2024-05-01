@@ -32,7 +32,7 @@ import polars as pl
 from iden.utils.path import sanitize_path
 
 from arctix.transformer import dataframe as td
-from arctix.utils.dataframe import drop_duplicates, generate_vocabulary
+from arctix.utils.dataframe import generate_vocabulary
 from arctix.utils.download import download_url_to_file
 from arctix.utils.iter import FileFilter, PathLister
 from arctix.utils.mapping import convert_to_dict_of_flat_lists
@@ -127,15 +127,11 @@ class Column:
     VIDEO_ID: str = "video_id"
 
 
-def fetch_data(
-    path: Path, remove_duplicate: bool = True, force_download: bool = False
-) -> pl.DataFrame:
+def fetch_data(path: Path, force_download: bool = False) -> pl.DataFrame:
     r"""Download and load the data for Breakfast dataset.
 
     Args:
         path: The path where to store the downloaded data.
-        remove_duplicate: If ``True``, the duplicate examples are
-            removed.
         force_download: If ``True``, the annotations are downloaded
             everytime this function is called. If ``False``,
             the annotations are downloaded only if the
@@ -156,7 +152,7 @@ def fetch_data(
     """
     path = sanitize_path(path)
     download_data(path, force_download)
-    return load_data(path, remove_duplicate)
+    return load_data(path)
 
 
 def download_data(path: Path, force_download: bool = False) -> None:
@@ -233,7 +229,7 @@ def is_annotation_path_ready(path: Path) -> bool:
     return all(path.joinpath(filename).is_file() for filename in ANNOTATION_FILENAMES)
 
 
-def load_data(path: Path, remove_duplicate: bool = True) -> pl.DataFrame:
+def load_data(path: Path) -> pl.DataFrame:
     r"""Load all the annotations in a DataFrame.
 
     Args:
@@ -247,11 +243,13 @@ def load_data(path: Path, remove_duplicate: bool = True) -> pl.DataFrame:
     annotations = list(map(load_annotation_file, paths))
     data = convert_to_dict_of_flat_lists(annotations)
     data = pl.DataFrame(data)
-    if remove_duplicate:
-        data = drop_duplicates(data)
-    if data.select(pl.len()).item():
-        data = data.sort(by=[Column.VIDEO, Column.START_TIME])
-    return data
+    transformer = td.Sequential(
+        [
+            td.Sort(columns=[Column.VIDEO, Column.START_TIME]),
+            td.SortColumns(),
+        ]
+    )
+    return transformer.transform(data)
 
 
 def load_annotation_file(path: Path) -> dict[str, list]:
@@ -382,6 +380,7 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
             ),
             td.Function(generate_split_column),
             td.Function(partial(filter_by_split, split=split)),
+            td.SortColumns(),
         ]
     )
     out = transformer.transform(frame)
@@ -521,17 +520,20 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
 
     ```
     """
-    return (
-        frame.group_by([Column.VIDEO])
-        .agg(
-            pl.first(Column.SPLIT),
-            pl.col(Column.ACTION_ID).alias(Column.ACTION_ID),
-            pl.col(Column.START_TIME).alias(Column.START_TIME),
-            pl.col(Column.END_TIME).alias(Column.END_TIME),
-            pl.len().alias(Column.SEQUENCE_LENGTH),
-        )
-        .sort(by=[Column.VIDEO])
+    data = frame.group_by([Column.VIDEO]).agg(
+        pl.first(Column.SPLIT),
+        pl.col(Column.ACTION_ID).alias(Column.ACTION_ID),
+        pl.col(Column.START_TIME).alias(Column.START_TIME),
+        pl.col(Column.END_TIME).alias(Column.END_TIME),
+        pl.len().alias(Column.SEQUENCE_LENGTH),
     )
+    transformer = td.Sequential(
+        [
+            td.Sort(columns=[Column.VIDEO]),
+            td.SortColumns(),
+        ]
+    )
+    return transformer.transform(data)
 
 
 def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
