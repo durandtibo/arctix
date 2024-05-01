@@ -458,21 +458,30 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     ... )
     >>> arrays = to_array(frame)
     >>> arrays
-    {'sequence_length': array([6, 4]), 'person_id': array([0, 1]),
-     'cooking_activity_id': array([0, 1]),
-     'action_id': masked_array(
+    {'action': masked_array(
+      data=[['SIL', 'take_bowl', 'pour_cereals', 'pour_milk', 'stir_cereals',
+             'SIL'],
+            ['SIL', 'pour_milk', 'spoon_powder', 'SIL', --, --]],
+      mask=[[False, False, False, False, False, False],
+            [False, False, False, False,  True,  True]],
+      fill_value='N/A',
+      dtype='<U12'), 'action_id': masked_array(
       data=[[0, 2, 5, 1, 3, 0],
             [0, 1, 4, 0, --, --]],
       mask=[[False, False, False, False, False, False],
             [False, False, False, False,  True,  True]],
       fill_value=999999),
-     'start_time': masked_array(
+      'cooking_activity': array(['cereals', 'milk'], dtype='<U7'),
+      'cooking_activity_id': array([0, 1]),
+      'person': array(['P03', 'P54'], dtype='<U3'),
+      'person_id': array([0, 1]),
+      'sequence_length': array([6, 4]),
+      'start_time': masked_array(
       data=[[1.0, 31.0, 151.0, 429.0, 576.0, 706.0],
             [1.0, 48.0, 216.0, 566.0, --, --]],
       mask=[[False, False, False, False, False, False],
             [False, False, False, False,  True,  True]],
-      fill_value=1e+20),
-     'end_time': masked_array(
+      fill_value=1e+20), 'end_time': masked_array(
       data=[[30.0, 150.0, 428.0, 575.0, 705.0, 836.0],
             [47.0, 215.0, 565.0, 747.0, --, --]],
       mask=[[False, False, False, False, False, False],
@@ -485,26 +494,37 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     lengths = groups.get_column(Column.SEQUENCE_LENGTH).to_numpy()
     mask = generate_mask_from_lengths(lengths)
     return {
-        Column.SEQUENCE_LENGTH: lengths.astype(int),
-        Column.PERSON_ID: groups.get_column(Column.PERSON_ID).to_numpy().astype(int),
-        Column.COOKING_ACTIVITY_ID: groups.get_column(Column.COOKING_ACTIVITY_ID)
-        .to_numpy()
-        .astype(int),
+        Column.ACTION: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.ACTION).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.object_,
+                padded_value="N/A",
+            ).astype(str),
+            mask=mask,
+        ),
         Column.ACTION_ID: np.ma.masked_array(
             data=convert_sequences_to_array(
-                groups.get_column(Column.ACTION_ID).to_list(), max_len=mask.shape[1]
+                groups.get_column(Column.ACTION_ID).to_list(), max_len=mask.shape[1], dtype=int
             ).astype(int),
             mask=mask,
         ),
+        Column.COOKING_ACTIVITY: groups.get_column(Column.COOKING_ACTIVITY).to_numpy().astype(str),
+        Column.COOKING_ACTIVITY_ID: groups.get_column(Column.COOKING_ACTIVITY_ID)
+        .to_numpy()
+        .astype(int),
+        Column.PERSON: groups.get_column(Column.PERSON).to_numpy().astype(str),
+        Column.PERSON_ID: groups.get_column(Column.PERSON_ID).to_numpy().astype(int),
+        Column.SEQUENCE_LENGTH: lengths.astype(int),
         Column.START_TIME: np.ma.masked_array(
             data=convert_sequences_to_array(
-                groups.get_column(Column.START_TIME).to_list(), max_len=mask.shape[1]
+                groups.get_column(Column.START_TIME).to_list(), max_len=mask.shape[1], dtype=float
             ).astype(float),
             mask=mask,
         ),
         Column.END_TIME: np.ma.masked_array(
             data=convert_sequences_to_array(
-                groups.get_column(Column.END_TIME).to_list(), max_len=mask.shape[1]
+                groups.get_column(Column.END_TIME).to_list(), max_len=mask.shape[1], dtype=float
             ).astype(float),
             mask=mask,
         ),

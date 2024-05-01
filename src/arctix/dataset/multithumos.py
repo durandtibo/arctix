@@ -18,6 +18,7 @@ __all__ = [
     "parse_annotation_lines",
     "prepare_data",
     "to_array",
+    "to_list",
 ]
 
 import logging
@@ -32,7 +33,7 @@ import polars as pl
 from iden.utils.path import sanitize_path
 
 from arctix.transformer import dataframe as td
-from arctix.utils.dataframe import drop_duplicates, generate_vocabulary
+from arctix.utils.dataframe import generate_vocabulary
 from arctix.utils.download import download_url_to_file
 from arctix.utils.iter import FileFilter, PathLister
 from arctix.utils.mapping import convert_to_dict_of_flat_lists
@@ -127,15 +128,11 @@ class Column:
     VIDEO_ID: str = "video_id"
 
 
-def fetch_data(
-    path: Path, remove_duplicate: bool = True, force_download: bool = False
-) -> pl.DataFrame:
+def fetch_data(path: Path, force_download: bool = False) -> pl.DataFrame:
     r"""Download and load the data for Breakfast dataset.
 
     Args:
         path: The path where to store the downloaded data.
-        remove_duplicate: If ``True``, the duplicate examples are
-            removed.
         force_download: If ``True``, the annotations are downloaded
             everytime this function is called. If ``False``,
             the annotations are downloaded only if the
@@ -156,7 +153,7 @@ def fetch_data(
     """
     path = sanitize_path(path)
     download_data(path, force_download)
-    return load_data(path, remove_duplicate)
+    return load_data(path)
 
 
 def download_data(path: Path, force_download: bool = False) -> None:
@@ -233,7 +230,7 @@ def is_annotation_path_ready(path: Path) -> bool:
     return all(path.joinpath(filename).is_file() for filename in ANNOTATION_FILENAMES)
 
 
-def load_data(path: Path, remove_duplicate: bool = True) -> pl.DataFrame:
+def load_data(path: Path) -> pl.DataFrame:
     r"""Load all the annotations in a DataFrame.
 
     Args:
@@ -247,11 +244,13 @@ def load_data(path: Path, remove_duplicate: bool = True) -> pl.DataFrame:
     annotations = list(map(load_annotation_file, paths))
     data = convert_to_dict_of_flat_lists(annotations)
     data = pl.DataFrame(data)
-    if remove_duplicate:
-        data = drop_duplicates(data)
-    if data.select(pl.len()).item():
-        data = data.sort(by=[Column.VIDEO, Column.START_TIME])
-    return data
+    transformer = td.Sequential(
+        [
+            td.Sort(columns=[Column.VIDEO, Column.START_TIME]),
+            td.SortColumns(),
+        ]
+    )
+    return transformer.transform(data)
 
 
 def load_annotation_file(path: Path) -> dict[str, list]:
@@ -352,16 +351,16 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
     >>> data, metadata = prepare_data(frame)
     >>> data
     shape: (4, 6)
-    ┌────────────────────┬────────────┬───────────┬─────────┬───────────┬────────────┐
-    │ video              ┆ start_time ┆ end_time  ┆ action  ┆ action_id ┆ split      │
-    │ ---                ┆ ---        ┆ ---       ┆ ---     ┆ ---       ┆ ---        │
-    │ str                ┆ f32        ┆ f32       ┆ str     ┆ i64       ┆ str        │
-    ╞════════════════════╪════════════╪═══════════╪═════════╪═══════════╪════════════╡
-    │ video_test_2       ┆ 44.0       ┆ 50.900002 ┆ dribble ┆ 0         ┆ test       │
-    │ video_test_4       ┆ 17.57      ┆ 18.33     ┆ guard   ┆ 1         ┆ test       │
-    │ video_validation_1 ┆ 72.800003  ┆ 76.400002 ┆ dribble ┆ 0         ┆ validation │
-    │ video_validation_3 ┆ 1.5        ┆ 5.4       ┆ dribble ┆ 0         ┆ validation │
-    └────────────────────┴────────────┴───────────┴─────────┴───────────┴────────────┘
+    ┌─────────┬───────────┬───────────┬────────────┬────────────┬────────────────────┐
+    │ action  ┆ action_id ┆ end_time  ┆ split      ┆ start_time ┆ video              │
+    │ ---     ┆ ---       ┆ ---       ┆ ---        ┆ ---        ┆ ---                │
+    │ str     ┆ i64       ┆ f32       ┆ str        ┆ f32        ┆ str                │
+    ╞═════════╪═══════════╪═══════════╪════════════╪════════════╪════════════════════╡
+    │ dribble ┆ 0         ┆ 50.900002 ┆ test       ┆ 44.0       ┆ video_test_2       │
+    │ guard   ┆ 1         ┆ 18.33     ┆ test       ┆ 17.57      ┆ video_test_4       │
+    │ dribble ┆ 0         ┆ 76.400002 ┆ validation ┆ 72.800003  ┆ video_validation_1 │
+    │ dribble ┆ 0         ┆ 5.4       ┆ validation ┆ 1.5        ┆ video_validation_3 │
+    └─────────┴───────────┴───────────┴────────────┴────────────┴────────────────────┘
     >>> metadata
     {'vocab_action': Vocabulary(
       counter=Counter({'dribble': 3, 'guard': 1}),
@@ -382,6 +381,7 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
             ),
             td.Function(generate_split_column),
             td.Function(partial(filter_by_split, split=split)),
+            td.SortColumns(),
         ]
     )
     out = transformer.transform(frame)
@@ -507,31 +507,38 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
     ... )
     >>> groups = group_by_sequence(frame)
     >>> groups
-    shape: (2, 6)
-    ┌─────────────────┬────────────┬─────────────┬─────────────────┬─────────────────┬─────────────────┐
-    │ video           ┆ split      ┆ action_id   ┆ start_time      ┆ end_time        ┆ sequence_length │
-    │ ---             ┆ ---        ┆ ---         ┆ ---             ┆ ---             ┆ ---             │
-    │ str             ┆ str        ┆ list[i64]   ┆ list[f32]       ┆ list[f32]       ┆ u32             │
-    ╞═════════════════╪════════════╪═════════════╪═════════════════╪═════════════════╪═════════════════╡
-    │ video_validatio ┆ validation ┆ [1, 0, 1]   ┆ [1.5, 17.57,    ┆ [5.4, 18.33,    ┆ 3               │
-    │ n_1             ┆            ┆             ┆ 79.300003]      ┆ 83.900002]      ┆                 │
-    │ video_validatio ┆ validation ┆ [0, 0, … 2] ┆ [2.97, 4.54, …  ┆ [3.6, 5.07, …   ┆ 4               │
-    │ n_2             ┆            ┆             ┆ 27.42]          ┆ 30.23]          ┆                 │
-    └─────────────────┴────────────┴─────────────┴─────────────────┴─────────────────┴─────────────────┘
+    shape: (2, 7)
+    ┌──────────────┬─────────────┬──────────────┬─────────────┬────────────┬─────────────┬─────────────┐
+    │ action       ┆ action_id   ┆ end_time     ┆ sequence_le ┆ split      ┆ start_time  ┆ video       │
+    │ ---          ┆ ---         ┆ ---          ┆ ngth        ┆ ---        ┆ ---         ┆ ---         │
+    │ list[str]    ┆ list[i64]   ┆ list[f32]    ┆ ---         ┆ str        ┆ list[f32]   ┆ str         │
+    │              ┆             ┆              ┆ u32         ┆            ┆             ┆             │
+    ╞══════════════╪═════════════╪══════════════╪═════════════╪════════════╪═════════════╪═════════════╡
+    │ ["dribble",  ┆ [1, 0, 1]   ┆ [5.4, 18.33, ┆ 3           ┆ validation ┆ [1.5,       ┆ video_valid │
+    │ "guard",     ┆             ┆ 83.900002]   ┆             ┆            ┆ 17.57,      ┆ ation_1     │
+    │ "dribble"…   ┆             ┆              ┆             ┆            ┆ 79.300003]  ┆             │
+    │ ["guard",    ┆ [0, 0, … 2] ┆ [3.6, 5.07,  ┆ 4           ┆ validation ┆ [2.97,      ┆ video_valid │
+    │ "guard", …   ┆             ┆ … 30.23]     ┆             ┆            ┆ 4.54, …     ┆ ation_2     │
+    │ "shoot"]     ┆             ┆              ┆             ┆            ┆ 27.42]      ┆             │
+    └──────────────┴─────────────┴──────────────┴─────────────┴────────────┴─────────────┴─────────────┘
 
     ```
     """
-    return (
-        frame.group_by([Column.VIDEO])
-        .agg(
-            pl.first(Column.SPLIT),
-            pl.col(Column.ACTION_ID).alias(Column.ACTION_ID),
-            pl.col(Column.START_TIME).alias(Column.START_TIME),
-            pl.col(Column.END_TIME).alias(Column.END_TIME),
-            pl.len().alias(Column.SEQUENCE_LENGTH),
-        )
-        .sort(by=[Column.VIDEO])
+    data = frame.group_by([Column.VIDEO]).agg(
+        pl.first(Column.SPLIT),
+        pl.col(Column.ACTION),
+        pl.col(Column.ACTION_ID),
+        pl.col(Column.START_TIME),
+        pl.col(Column.END_TIME),
+        pl.len().alias(Column.SEQUENCE_LENGTH),
     )
+    transformer = td.Sequential(
+        [
+            td.Sort(columns=[Column.VIDEO]),
+            td.SortColumns(),
+        ]
+    )
+    return transformer.transform(data)
 
 
 def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
@@ -593,23 +600,30 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     ... )
     >>> arrays = to_array(frame)
     >>> arrays
-    {'sequence_length': array([3, 4]),
-     'split': array(['validation', 'validation'], dtype='<U10'),
-     'action_id': masked_array(
+    {'action': masked_array(
+      data=[['dribble', 'guard', 'dribble', --],
+            ['guard', 'guard', 'guard', 'shoot']],
+      mask=[[False, False, False,  True],
+            [False, False, False, False]],
+      fill_value='N/A',
+      dtype='<U7'),
+      'action_id': masked_array(
       data=[[1, 0, 1, --],
             [0, 0, 0, 2]],
       mask=[[False, False, False,  True],
             [False, False, False, False]],
       fill_value=999999),
-     'start_time': masked_array(
-      data=[[1.0, 17.0, 79.0, --],
-            [2.0, 4.0, 20.0, 27.0]],
+      'end_time': masked_array(
+      data=[[5.0, 18.0, 83.0, --],
+            [3.0, 5.0, 20.0, 30.0]],
       mask=[[False, False, False,  True],
             [False, False, False, False]],
       fill_value=1e+20),
-     'end_time': masked_array(
-      data=[[5.0, 18.0, 83.0, --],
-            [3.0, 5.0, 20.0, 30.0]],
+      'sequence_length': array([3, 4]),
+      'split': array(['validation', 'validation'], dtype='<U10'),
+      'start_time': masked_array(
+      data=[[1.0, 17.0, 79.0, --],
+            [2.0, 4.0, 20.0, 27.0]],
       mask=[[False, False, False,  True],
             [False, False, False, False]],
       fill_value=1e+20)}
@@ -620,18 +634,19 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     lengths = groups.get_column(Column.SEQUENCE_LENGTH).to_numpy()
     mask = generate_mask_from_lengths(lengths)
     return {
-        Column.SEQUENCE_LENGTH: lengths.astype(int),
-        Column.SPLIT: groups.get_column(Column.SPLIT).to_numpy().astype(str),
+        Column.ACTION: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.ACTION).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.object_,
+                padded_value="N/A",
+            ).astype(str),
+            mask=mask,
+        ),
         Column.ACTION_ID: np.ma.masked_array(
             data=convert_sequences_to_array(
                 groups.get_column(Column.ACTION_ID).to_list(), dtype=int, max_len=mask.shape[1]
             ).astype(int),
-            mask=mask,
-        ),
-        Column.START_TIME: np.ma.masked_array(
-            data=convert_sequences_to_array(
-                groups.get_column(Column.START_TIME).to_list(), dtype=float, max_len=mask.shape[1]
-            ).astype(float),
             mask=mask,
         ),
         Column.END_TIME: np.ma.masked_array(
@@ -640,7 +655,86 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
             ).astype(float),
             mask=mask,
         ),
+        Column.SEQUENCE_LENGTH: lengths.astype(int),
+        Column.SPLIT: groups.get_column(Column.SPLIT).to_numpy().astype(str),
+        Column.START_TIME: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.START_TIME).to_list(), dtype=float, max_len=mask.shape[1]
+            ).astype(float),
+            mask=mask,
+        ),
     }
+
+
+def to_list(frame: pl.DataFrame) -> dict[str, list]:
+    r"""Convert a DataFrame to a dictionary of lists.
+
+    Args:
+        frame: The input DataFrame.
+
+    Returns:
+        The dictionary of lists.
+
+    Example usage:
+
+    ```pycon
+
+    >>> import polars as pl
+    >>> from arctix.dataset.multithumos import Column, to_list
+    >>> frame = pl.DataFrame(
+    ...     {
+    ...         Column.VIDEO: [
+    ...             "video_validation_1",
+    ...             "video_validation_1",
+    ...             "video_validation_1",
+    ...             "video_validation_2",
+    ...             "video_validation_2",
+    ...             "video_validation_2",
+    ...             "video_validation_2",
+    ...         ],
+    ...         Column.START_TIME: [1.0, 17.0, 79.0, 2.0, 4.0, 20.0, 27.0],
+    ...         Column.END_TIME: [5.0, 18.0, 83.0, 3.0, 5.0, 20.0, 30.0],
+    ...         Column.ACTION: [
+    ...             "dribble",
+    ...             "guard",
+    ...             "dribble",
+    ...             "guard",
+    ...             "guard",
+    ...             "guard",
+    ...             "shoot",
+    ...         ],
+    ...         Column.ACTION_ID: [1, 0, 1, 0, 0, 0, 2],
+    ...         Column.SPLIT: [
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...         ],
+    ...     },
+    ...     schema={
+    ...         Column.VIDEO: pl.String,
+    ...         Column.START_TIME: pl.Float32,
+    ...         Column.END_TIME: pl.Float32,
+    ...         Column.ACTION: pl.String,
+    ...         Column.ACTION_ID: pl.Int64,
+    ...         Column.SPLIT: pl.String,
+    ...     },
+    ... )
+    >>> data_list = to_list(frame)
+    >>> data_list
+    {'action': [['dribble', 'guard', 'dribble'], ['guard', 'guard', 'guard', 'shoot']],
+     'action_id': [[1, 0, 1], [0, 0, 0, 2]],
+     'end_time': [[5.0, 18.0, 83.0], [3.0, 5.0, 20.0, 30.0]],
+     'sequence_length': [3, 4], 'split': ['validation', 'validation'],
+     'start_time': [[1.0, 17.0, 79.0], [2.0, 4.0, 20.0, 27.0]],
+     'video': ['video_validation_1', 'video_validation_2']}
+
+    ```
+    """
+    return group_by_sequence(frame).to_dict(as_series=False)
 
 
 if __name__ == "__main__":  # pragma: no cover
