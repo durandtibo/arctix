@@ -48,11 +48,11 @@ def data_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
         "\n".join(
             [
                 "",
-                "  video_validation_0000266 72.80 76.40  ",
-                " video_validation_0000681 44.00 50.90 ",
-                "video_validation_0000682 1.50 5.40",
+                "  video_validation_0000266 72.00 76.00  ",
+                " video_validation_0000681 44.00 50.00 ",
+                "video_validation_0000682 1.00 5.00",
                 "   ",
-                "video_validation_0000682 79.30 83.90",
+                "video_validation_0000682 79.00 83.00",
             ]
         ),
         path,
@@ -67,11 +67,11 @@ def data_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
         "\n".join(
             [
                 "",
-                "  video_validation_0000266 72.80 76.40  ",
-                " video_validation_0000681 44.00 50.90 ",
-                "video_validation_0000682 1.50 5.40",
+                "  video_validation_0000266 72.00 76.00  ",
+                " video_validation_0000681 44.00 50.00 ",
+                "video_validation_0000682 1.00 5.00",
                 "   ",
-                "video_validation_0000682 79.30 83.90",
+                "video_validation_0000682 79.00 83.00",
             ]
         ),
         path.joinpath("annotations").joinpath("dribble.txt"),
@@ -79,11 +79,11 @@ def data_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
     save_text(
         "\n".join(
             [
-                "video_validation_0000682 17.57 18.33",
-                "video_validation_0000902 2.97 3.60",
-                "video_validation_0000902 4.54 5.07",
-                "video_validation_0000902 20.22 20.49",
-                "video_validation_0000682 17.57 18.33",
+                "video_validation_0000682 17.00 18.00",
+                "video_validation_0000902 2.00 3.00",
+                "video_validation_0000902 4.00 5.00",
+                "video_validation_0000902 20.00 20.00",
+                "video_validation_0000682 17.00 18.00",
             ]
         ),
         path.joinpath("annotations").joinpath("guard.txt"),
@@ -91,93 +91,111 @@ def data_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
     return path
 
 
+@pytest.fixture()
+def data_raw() -> pl.DataFrame:
+    return pl.DataFrame(
+        {
+            Column.ACTION: [
+                "dribble",
+                "dribble",
+                "dribble",
+                "guard",
+                "guard",
+                "dribble",
+                "guard",
+                "guard",
+                "guard",
+            ],
+            Column.END_TIME: [76.0, 50.0, 5.0, 18.0, 18.0, 83.0, 3.0, 5.0, 20.0],
+            Column.START_TIME: [72.0, 44.0, 1.0, 17.0, 17.0, 79.0, 2.0, 4.0, 20.0],
+            Column.VIDEO: [
+                "video_validation_0000266",
+                "video_validation_0000681",
+                "video_validation_0000682",
+                "video_validation_0000682",
+                "video_validation_0000682",
+                "video_validation_0000682",
+                "video_validation_0000902",
+                "video_validation_0000902",
+                "video_validation_0000902",
+            ],
+        },
+        schema={
+            Column.ACTION: pl.String,
+            Column.END_TIME: pl.Float64,
+            Column.START_TIME: pl.Float64,
+            Column.VIDEO: pl.String,
+        },
+    )
+
+
+@pytest.fixture()
+def data_prepared() -> pl.DataFrame:
+    return pl.DataFrame(
+        {
+            Column.ACTION: [
+                "dribble",
+                "dribble",
+                "dribble",
+                "guard",
+                "guard",
+                "dribble",
+                "guard",
+                "guard",
+                "guard",
+            ],
+            Column.ACTION_ID: [1, 1, 1, 0, 0, 1, 0, 0, 0],
+            Column.END_TIME: [76.0, 50.0, 5.0, 18.0, 18.0, 83.0, 3.0, 5.0, 20.0],
+            Column.SPLIT: [
+                "validation",
+                "validation",
+                "validation",
+                "validation",
+                "validation",
+                "validation",
+                "validation",
+                "validation",
+                "validation",
+            ],
+            Column.START_TIME: [72.0, 44.0, 1.0, 17.0, 17.0, 79.0, 2.0, 4.0, 20.0],
+            Column.VIDEO: [
+                "video_validation_0000266",
+                "video_validation_0000681",
+                "video_validation_0000682",
+                "video_validation_0000682",
+                "video_validation_0000682",
+                "video_validation_0000682",
+                "video_validation_0000902",
+                "video_validation_0000902",
+                "video_validation_0000902",
+            ],
+        },
+        schema={
+            Column.ACTION: pl.String,
+            Column.ACTION_ID: pl.Int64,
+            Column.END_TIME: pl.Float32,
+            Column.SPLIT: pl.String,
+            Column.START_TIME: pl.Float32,
+            Column.VIDEO: pl.String,
+        },
+    )
+
+
+@pytest.fixture()
+def vocab_action() -> Vocabulary:
+    return Vocabulary(Counter({"guard": 5, "dribble": 4}))
+
+
 ################################
 #     Tests for fetch_data     #
 ################################
 
 
-def test_fetch_data_remove_duplicate_examples(data_dir: Path) -> None:
+def test_fetch_data(data_dir: Path, data_raw: pl.DataFrame) -> None:
     with patch("arctix.dataset.multithumos.download_data") as download_mock:
         data = fetch_data(data_dir)
         download_mock.assert_called_once_with(data_dir, False)
-    assert_frame_equal(
-        data,
-        pl.DataFrame(
-            {
-                Column.VIDEO: [
-                    "video_validation_0000266",
-                    "video_validation_0000681",
-                    "video_validation_0000682",
-                    "video_validation_0000682",
-                    "video_validation_0000682",
-                    "video_validation_0000902",
-                    "video_validation_0000902",
-                    "video_validation_0000902",
-                ],
-                Column.START_TIME: [72.80, 44.00, 1.50, 17.57, 79.30, 2.97, 4.54, 20.22],
-                Column.END_TIME: [76.40, 50.90, 5.40, 18.33, 83.90, 3.60, 5.07, 20.49],
-                Column.ACTION: [
-                    "dribble",
-                    "dribble",
-                    "dribble",
-                    "guard",
-                    "dribble",
-                    "guard",
-                    "guard",
-                    "guard",
-                ],
-            },
-            schema={
-                Column.VIDEO: pl.String,
-                Column.START_TIME: pl.Float64,
-                Column.END_TIME: pl.Float64,
-                Column.ACTION: pl.String,
-            },
-        ),
-    )
-
-
-def test_fetch_data_keep_duplicate_examples(data_dir: Path) -> None:
-    with patch("arctix.dataset.multithumos.download_data") as download_mock:
-        data = fetch_data(data_dir, remove_duplicate=False, force_download=True)
-        download_mock.assert_called_once_with(data_dir, True)
-    assert_frame_equal(
-        data,
-        pl.DataFrame(
-            {
-                Column.VIDEO: [
-                    "video_validation_0000266",
-                    "video_validation_0000681",
-                    "video_validation_0000682",
-                    "video_validation_0000682",
-                    "video_validation_0000682",
-                    "video_validation_0000682",
-                    "video_validation_0000902",
-                    "video_validation_0000902",
-                    "video_validation_0000902",
-                ],
-                Column.START_TIME: [72.80, 44.00, 1.50, 17.57, 17.57, 79.30, 2.97, 4.54, 20.22],
-                Column.END_TIME: [76.40, 50.90, 5.40, 18.33, 18.33, 83.90, 3.60, 5.07, 20.49],
-                Column.ACTION: [
-                    "dribble",
-                    "dribble",
-                    "dribble",
-                    "guard",
-                    "guard",
-                    "dribble",
-                    "guard",
-                    "guard",
-                    "guard",
-                ],
-            },
-            schema={
-                Column.VIDEO: pl.String,
-                Column.START_TIME: pl.Float64,
-                Column.END_TIME: pl.Float64,
-                Column.ACTION: pl.String,
-            },
-        ),
-    )
+    assert_frame_equal(data, data_raw)
 
 
 ###################################
@@ -260,86 +278,8 @@ def test_is_annotation_path_ready_false_missing_partial(tmp_path: Path) -> None:
 ###############################
 
 
-def test_load_data_empty(tmp_path: Path) -> None:
-    assert_frame_equal(load_data(tmp_path), pl.DataFrame({}))
-
-
-def test_load_data(data_dir: Path) -> None:
-    assert_frame_equal(
-        load_data(data_dir),
-        pl.DataFrame(
-            {
-                Column.VIDEO: [
-                    "video_validation_0000266",
-                    "video_validation_0000681",
-                    "video_validation_0000682",
-                    "video_validation_0000682",
-                    "video_validation_0000682",
-                    "video_validation_0000902",
-                    "video_validation_0000902",
-                    "video_validation_0000902",
-                ],
-                Column.START_TIME: [72.80, 44.00, 1.50, 17.57, 79.30, 2.97, 4.54, 20.22],
-                Column.END_TIME: [76.40, 50.90, 5.40, 18.33, 83.90, 3.60, 5.07, 20.49],
-                Column.ACTION: [
-                    "dribble",
-                    "dribble",
-                    "dribble",
-                    "guard",
-                    "dribble",
-                    "guard",
-                    "guard",
-                    "guard",
-                ],
-            },
-            schema={
-                Column.VIDEO: pl.String,
-                Column.START_TIME: pl.Float64,
-                Column.END_TIME: pl.Float64,
-                Column.ACTION: pl.String,
-            },
-        ),
-    )
-
-
-def test_load_data_keep_duplicates(data_dir: Path) -> None:
-    assert_frame_equal(
-        load_data(data_dir, remove_duplicate=False),
-        pl.DataFrame(
-            {
-                Column.VIDEO: [
-                    "video_validation_0000266",
-                    "video_validation_0000681",
-                    "video_validation_0000682",
-                    "video_validation_0000682",
-                    "video_validation_0000682",
-                    "video_validation_0000682",
-                    "video_validation_0000902",
-                    "video_validation_0000902",
-                    "video_validation_0000902",
-                ],
-                Column.START_TIME: [72.80, 44.00, 1.50, 17.57, 17.57, 79.30, 2.97, 4.54, 20.22],
-                Column.END_TIME: [76.40, 50.90, 5.40, 18.33, 18.33, 83.90, 3.60, 5.07, 20.49],
-                Column.ACTION: [
-                    "dribble",
-                    "dribble",
-                    "dribble",
-                    "guard",
-                    "guard",
-                    "dribble",
-                    "guard",
-                    "guard",
-                    "guard",
-                ],
-            },
-            schema={
-                Column.VIDEO: pl.String,
-                Column.START_TIME: pl.Float64,
-                Column.END_TIME: pl.Float64,
-                Column.ACTION: pl.String,
-            },
-        ),
-    )
+def test_load_data(data_dir: Path, data_raw: pl.DataFrame) -> None:
+    assert_frame_equal(load_data(data_dir), data_raw)
 
 
 ##########################################
@@ -362,8 +302,8 @@ def test_load_annotation_file(data_file: Path) -> None:
                 "video_validation_0000682",
                 "video_validation_0000682",
             ],
-            Column.START_TIME: [72.80, 44.00, 1.50, 79.30],
-            Column.END_TIME: [76.40, 50.90, 5.40, 83.90],
+            Column.START_TIME: [72.0, 44.0, 1.0, 79.0],
+            Column.END_TIME: [76.0, 50.0, 5.0, 83.0],
             Column.ACTION: ["dribble", "dribble", "dribble", "dribble"],
         },
     )
@@ -410,109 +350,28 @@ def test_parse_annotation_lines_empty() -> None:
 ##################################
 
 
-def test_prepare_data() -> None:
-    data, metadata = prepare_data(
-        pl.DataFrame(
-            {
-                Column.VIDEO: [
-                    "video_validation_0000266",
-                    "video_validation_0000681",
-                    "video_validation_0000682",
-                    "video_validation_0000682",
-                    "video_validation_0000682",
-                    "video_validation_0000902",
-                    "video_validation_0000902",
-                    "video_validation_0000902",
-                ],
-                Column.START_TIME: [72.80, 44.00, 1.50, 17.57, 79.30, 2.97, 4.54, 20.22],
-                Column.END_TIME: [76.40, 50.90, 5.40, 18.33, 83.90, 3.60, 5.07, 20.49],
-                Column.ACTION: [
-                    "dribble",
-                    "dribble",
-                    "dribble",
-                    "guard",
-                    "dribble",
-                    "guard",
-                    "guard",
-                    "guard",
-                ],
-            },
-            schema={
-                Column.VIDEO: pl.String,
-                Column.START_TIME: pl.Float64,
-                Column.END_TIME: pl.Float64,
-                Column.ACTION: pl.String,
-            },
-        ),
-    )
-    assert_frame_equal(
-        data,
-        pl.DataFrame(
-            {
-                Column.VIDEO: [
-                    "video_validation_0000266",
-                    "video_validation_0000681",
-                    "video_validation_0000682",
-                    "video_validation_0000682",
-                    "video_validation_0000682",
-                    "video_validation_0000902",
-                    "video_validation_0000902",
-                    "video_validation_0000902",
-                ],
-                Column.START_TIME: [72.80, 44.00, 1.50, 17.57, 79.30, 2.97, 4.54, 20.22],
-                Column.END_TIME: [76.40, 50.90, 5.40, 18.33, 83.90, 3.60, 5.07, 20.49],
-                Column.ACTION: [
-                    "dribble",
-                    "dribble",
-                    "dribble",
-                    "guard",
-                    "dribble",
-                    "guard",
-                    "guard",
-                    "guard",
-                ],
-                Column.ACTION_ID: [1, 1, 1, 0, 1, 0, 0, 0],
-                Column.SPLIT: [
-                    "validation",
-                    "validation",
-                    "validation",
-                    "validation",
-                    "validation",
-                    "validation",
-                    "validation",
-                    "validation",
-                ],
-            },
-            schema={
-                Column.VIDEO: pl.String,
-                Column.START_TIME: pl.Float32,
-                Column.END_TIME: pl.Float32,
-                Column.ACTION: pl.String,
-                Column.ACTION_ID: pl.Int64,
-                Column.SPLIT: pl.String,
-            },
-        ),
-    )
-    assert objects_are_equal(
-        metadata,
-        {"vocab_action": Vocabulary(Counter({"guard": 4, "dribble": 4}))},
-    )
+def test_prepare_data(
+    data_raw: pl.DataFrame, data_prepared: pl.DataFrame, vocab_action: Vocabulary
+) -> None:
+    data, metadata = prepare_data(data_raw)
+    assert_frame_equal(data, data_prepared)
+    assert objects_are_equal(metadata, {"vocab_action": vocab_action})
 
 
 def test_prepare_data_empty() -> None:
     data, metadata = prepare_data(
         pl.DataFrame(
             {
-                Column.VIDEO: [],
-                Column.START_TIME: [],
-                Column.END_TIME: [],
                 Column.ACTION: [],
+                Column.END_TIME: [],
+                Column.START_TIME: [],
+                Column.VIDEO: [],
             },
             schema={
-                Column.VIDEO: pl.String,
-                Column.START_TIME: pl.Float64,
-                Column.END_TIME: pl.Float64,
                 Column.ACTION: pl.String,
+                Column.END_TIME: pl.Float64,
+                Column.START_TIME: pl.Float64,
+                Column.VIDEO: pl.String,
             },
         ),
     )
@@ -520,20 +379,20 @@ def test_prepare_data_empty() -> None:
         data,
         pl.DataFrame(
             {
-                Column.VIDEO: [],
-                Column.START_TIME: [],
-                Column.END_TIME: [],
                 Column.ACTION: [],
                 Column.ACTION_ID: [],
+                Column.END_TIME: [],
                 Column.SPLIT: [],
+                Column.START_TIME: [],
+                Column.VIDEO: [],
             },
             schema={
-                Column.VIDEO: pl.String,
-                Column.START_TIME: pl.Float32,
-                Column.END_TIME: pl.Float32,
                 Column.ACTION: pl.String,
                 Column.ACTION_ID: pl.Int64,
+                Column.END_TIME: pl.Float32,
                 Column.SPLIT: pl.String,
+                Column.START_TIME: pl.Float32,
+                Column.VIDEO: pl.String,
             },
         ),
     )
@@ -544,6 +403,18 @@ def test_prepare_data_split_validation() -> None:
     data, metadata = prepare_data(
         pl.DataFrame(
             {
+                Column.ACTION: [
+                    "dribble",
+                    "dribble",
+                    "dribble",
+                    "guard",
+                    "dribble",
+                    "guard",
+                    "guard",
+                    "guard",
+                ],
+                Column.END_TIME: [76.40, 50.90, 5.40, 18.33, 83.90, 3.60, 5.07, 20.49],
+                Column.START_TIME: [72.80, 44.00, 1.50, 17.57, 79.30, 2.97, 4.54, 20.22],
                 Column.VIDEO: [
                     "video_validation_0000266",
                     "video_validation_0000681",
@@ -554,24 +425,12 @@ def test_prepare_data_split_validation() -> None:
                     "video_validation_0000902",
                     "video_test_0000902",
                 ],
-                Column.START_TIME: [72.80, 44.00, 1.50, 17.57, 79.30, 2.97, 4.54, 20.22],
-                Column.END_TIME: [76.40, 50.90, 5.40, 18.33, 83.90, 3.60, 5.07, 20.49],
-                Column.ACTION: [
-                    "dribble",
-                    "dribble",
-                    "dribble",
-                    "guard",
-                    "dribble",
-                    "guard",
-                    "guard",
-                    "guard",
-                ],
             },
             schema={
-                Column.VIDEO: pl.String,
-                Column.START_TIME: pl.Float64,
-                Column.END_TIME: pl.Float64,
                 Column.ACTION: pl.String,
+                Column.END_TIME: pl.Float64,
+                Column.START_TIME: pl.Float64,
+                Column.VIDEO: pl.String,
             },
         ),
         split="validation",
@@ -580,17 +439,6 @@ def test_prepare_data_split_validation() -> None:
         data,
         pl.DataFrame(
             {
-                Column.VIDEO: [
-                    "video_validation_0000266",
-                    "video_validation_0000681",
-                    "video_validation_0000682",
-                    "video_validation_0000682",
-                    "video_validation_0000682",
-                    "video_validation_0000902",
-                    "video_validation_0000902",
-                ],
-                Column.START_TIME: [72.80, 44.00, 1.50, 17.57, 79.30, 2.97, 4.54],
-                Column.END_TIME: [76.40, 50.90, 5.40, 18.33, 83.90, 3.60, 5.07],
                 Column.ACTION: [
                     "dribble",
                     "dribble",
@@ -601,6 +449,7 @@ def test_prepare_data_split_validation() -> None:
                     "guard",
                 ],
                 Column.ACTION_ID: [1, 1, 1, 0, 1, 0, 0],
+                Column.END_TIME: [76.40, 50.90, 5.40, 18.33, 83.90, 3.60, 5.07],
                 Column.SPLIT: [
                     "validation",
                     "validation",
@@ -610,14 +459,24 @@ def test_prepare_data_split_validation() -> None:
                     "validation",
                     "validation",
                 ],
+                Column.START_TIME: [72.80, 44.00, 1.50, 17.57, 79.30, 2.97, 4.54],
+                Column.VIDEO: [
+                    "video_validation_0000266",
+                    "video_validation_0000681",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000682",
+                    "video_validation_0000902",
+                    "video_validation_0000902",
+                ],
             },
             schema={
-                Column.VIDEO: pl.String,
-                Column.START_TIME: pl.Float32,
-                Column.END_TIME: pl.Float32,
                 Column.ACTION: pl.String,
                 Column.ACTION_ID: pl.Int64,
+                Column.END_TIME: pl.Float32,
                 Column.SPLIT: pl.String,
+                Column.START_TIME: pl.Float32,
+                Column.VIDEO: pl.String,
             },
         ),
     )
@@ -798,68 +657,40 @@ def test_filter_by_split_test() -> None:
 #######################################
 
 
-def test_group_by_sequence() -> None:
+def test_group_by_sequence(data_prepared: pl.DataFrame) -> None:
     assert_frame_equal(
-        group_by_sequence(
-            pl.DataFrame(
-                {
-                    Column.VIDEO: [
-                        "video_validation_0000682",
-                        "video_validation_0000682",
-                        "video_validation_0000682",
-                        "video_validation_0000902",
-                        "video_validation_0000902",
-                        "video_validation_0000902",
-                        "video_validation_0000902",
-                    ],
-                    Column.START_TIME: [1.50, 17.57, 79.30, 2.97, 4.54, 20.22, 27.42],
-                    Column.END_TIME: [5.40, 18.33, 83.90, 3.60, 5.07, 20.49, 30.23],
-                    Column.ACTION: [
-                        "dribble",
-                        "guard",
-                        "dribble",
-                        "guard",
-                        "guard",
-                        "guard",
-                        "shoot",
-                    ],
-                    Column.ACTION_ID: [1, 0, 1, 0, 0, 0, 2],
-                    Column.SPLIT: [
-                        "validation",
-                        "validation",
-                        "validation",
-                        "validation",
-                        "validation",
-                        "validation",
-                        "validation",
-                    ],
-                },
-                schema={
-                    Column.VIDEO: pl.String,
-                    Column.START_TIME: pl.Float32,
-                    Column.END_TIME: pl.Float32,
-                    Column.ACTION: pl.String,
-                    Column.ACTION_ID: pl.Int64,
-                    Column.SPLIT: pl.String,
-                },
-            )
-        ),
+        group_by_sequence(data_prepared),
         pl.DataFrame(
             {
-                Column.VIDEO: ["video_validation_0000682", "video_validation_0000902"],
-                Column.SPLIT: ["validation", "validation"],
-                Column.ACTION_ID: [[1, 0, 1], [0, 0, 0, 2]],
-                Column.START_TIME: [[1.50, 17.57, 79.30], [2.97, 4.54, 20.22, 27.42]],
-                Column.END_TIME: [[5.40, 18.33, 83.90], [3.60, 5.07, 20.49, 30.23]],
-                Column.SEQUENCE_LENGTH: [3, 4],
+                Column.ACTION_ID: [[1], [1], [1, 0, 0, 1], [0, 0, 0]],
+                Column.END_TIME: [
+                    [76.0],
+                    [50.0],
+                    [5.0, 18.0, 18.0, 83.0],
+                    [3.0, 5.0, 20.0],
+                ],
+                Column.SEQUENCE_LENGTH: [1, 1, 4, 3],
+                Column.SPLIT: ["validation", "validation", "validation", "validation"],
+                Column.START_TIME: [
+                    [72.0],
+                    [44.0],
+                    [1.0, 17.0, 17.0, 79.0],
+                    [2.0, 4.0, 20.0],
+                ],
+                Column.VIDEO: [
+                    "video_validation_0000266",
+                    "video_validation_0000681",
+                    "video_validation_0000682",
+                    "video_validation_0000902",
+                ],
             },
             schema={
-                Column.VIDEO: pl.String,
-                Column.SPLIT: pl.String,
                 Column.ACTION_ID: pl.List(pl.Int64),
-                Column.START_TIME: pl.List(pl.Float32),
                 Column.END_TIME: pl.List(pl.Float32),
                 Column.SEQUENCE_LENGTH: pl.UInt32,
+                Column.SPLIT: pl.String,
+                Column.START_TIME: pl.List(pl.Float32),
+                Column.VIDEO: pl.String,
             },
         ),
     )
@@ -870,39 +701,39 @@ def test_group_by_sequence_empty() -> None:
         group_by_sequence(
             pl.DataFrame(
                 {
-                    Column.VIDEO: [],
-                    Column.START_TIME: [],
-                    Column.END_TIME: [],
                     Column.ACTION: [],
                     Column.ACTION_ID: [],
+                    Column.END_TIME: [],
                     Column.SPLIT: [],
+                    Column.START_TIME: [],
+                    Column.VIDEO: [],
                 },
                 schema={
-                    Column.VIDEO: pl.String,
-                    Column.START_TIME: pl.Float32,
-                    Column.END_TIME: pl.Float32,
                     Column.ACTION: pl.String,
                     Column.ACTION_ID: pl.Int64,
+                    Column.END_TIME: pl.Float32,
                     Column.SPLIT: pl.String,
+                    Column.START_TIME: pl.Float32,
+                    Column.VIDEO: pl.String,
                 },
             )
         ),
         pl.DataFrame(
             {
-                Column.VIDEO: [],
-                Column.SPLIT: [],
                 Column.ACTION_ID: [],
-                Column.START_TIME: [],
                 Column.END_TIME: [],
                 Column.SEQUENCE_LENGTH: [],
+                Column.SPLIT: [],
+                Column.START_TIME: [],
+                Column.VIDEO: [],
             },
             schema={
-                Column.VIDEO: pl.String,
-                Column.SPLIT: pl.String,
                 Column.ACTION_ID: pl.List(pl.Int64),
-                Column.START_TIME: pl.List(pl.Float32),
                 Column.END_TIME: pl.List(pl.Float32),
                 Column.SEQUENCE_LENGTH: pl.UInt32,
+                Column.SPLIT: pl.String,
+                Column.START_TIME: pl.List(pl.Float32),
+                Column.VIDEO: pl.String,
             },
         ),
     )
@@ -913,68 +744,52 @@ def test_group_by_sequence_empty() -> None:
 ##############################
 
 
-def test_to_array() -> None:
-    mask = np.array([[False, False, False, True], [False, False, False, False]])
+def test_to_array(data_prepared: pl.DataFrame) -> None:
+    mask = np.array(
+        [
+            [False, True, True, True],
+            [False, True, True, True],
+            [False, False, False, False],
+            [False, False, False, True],
+        ]
+    )
     assert objects_are_equal(
-        to_array(
-            pl.DataFrame(
-                {
-                    Column.VIDEO: [
-                        "video_validation_0000682",
-                        "video_validation_0000682",
-                        "video_validation_0000682",
-                        "video_validation_0000902",
-                        "video_validation_0000902",
-                        "video_validation_0000902",
-                        "video_validation_0000902",
-                    ],
-                    Column.START_TIME: [1.0, 17.0, 79.0, 2.0, 4.0, 20.0, 27.0],
-                    Column.END_TIME: [5.0, 18.0, 83.0, 3.0, 5.0, 20.0, 30.0],
-                    Column.ACTION: [
-                        "dribble",
-                        "guard",
-                        "dribble",
-                        "guard",
-                        "guard",
-                        "guard",
-                        "shoot",
-                    ],
-                    Column.ACTION_ID: [1, 0, 1, 0, 0, 0, 2],
-                    Column.SPLIT: [
-                        "validation",
-                        "validation",
-                        "validation",
-                        "validation",
-                        "validation",
-                        "validation",
-                        "validation",
-                    ],
-                },
-                schema={
-                    Column.VIDEO: pl.String,
-                    Column.START_TIME: pl.Float32,
-                    Column.END_TIME: pl.Float32,
-                    Column.ACTION: pl.String,
-                    Column.ACTION_ID: pl.Int64,
-                    Column.SPLIT: pl.String,
-                },
-            )
-        ),
+        to_array(data_prepared),
         {
-            Column.SEQUENCE_LENGTH: np.array([3, 4], dtype=int),
-            Column.SPLIT: np.array(["validation", "validation"], dtype=str),
             Column.ACTION_ID: np.ma.masked_array(
-                data=np.array([[1, 0, 1, 0], [0, 0, 0, 2]], dtype=int), mask=mask
-            ),
-            Column.START_TIME: np.ma.masked_array(
-                data=np.array([[1.0, 17.0, 79.0, 0.0], [2.0, 4.0, 20.0, 27.0]], dtype=float),
+                data=np.array([[1, 0, 0, 0], [1, 0, 0, 0], [1, 0, 0, 1], [0, 0, 0, 0]], dtype=int),
                 mask=mask,
             ),
             Column.END_TIME: np.ma.masked_array(
-                data=np.array([[5.0, 18.0, 83.0, 0.0], [3.0, 5.0, 20.0, 30.0]], dtype=float),
+                data=np.array(
+                    [
+                        [76.0, 0.0, 0.0, 0.0],
+                        [50.0, 0.0, 0.0, 0.0],
+                        [5.0, 18.0, 18.0, 83.0],
+                        [3.0, 5.0, 20.0, 0.0],
+                    ],
+                    dtype=float,
+                ),
+                mask=mask,
+            ),
+            Column.SEQUENCE_LENGTH: np.array([1, 1, 4, 3], dtype=int),
+            Column.SPLIT: np.array(
+                ["validation", "validation", "validation", "validation"], dtype=str
+            ),
+            Column.START_TIME: np.ma.masked_array(
+                data=np.array(
+                    [
+                        [72.0, 0.0, 0.0, 0.0],
+                        [44.0, 0.0, 0.0, 0.0],
+                        [1.0, 17.0, 17.0, 79.0],
+                        [2.0, 4.0, 20.0, 0.0],
+                    ],
+                    dtype=float,
+                ),
                 mask=mask,
             ),
         },
+        show_difference=True,
     )
 
 
@@ -984,20 +799,20 @@ def test_to_array_empty() -> None:
         to_array(
             pl.DataFrame(
                 {
-                    Column.VIDEO: [],
-                    Column.START_TIME: [],
-                    Column.END_TIME: [],
                     Column.ACTION: [],
                     Column.ACTION_ID: [],
+                    Column.END_TIME: [],
                     Column.SPLIT: [],
+                    Column.START_TIME: [],
+                    Column.VIDEO: [],
                 },
                 schema={
-                    Column.VIDEO: pl.String,
-                    Column.START_TIME: pl.Float32,
-                    Column.END_TIME: pl.Float32,
                     Column.ACTION: pl.String,
                     Column.ACTION_ID: pl.Int64,
+                    Column.END_TIME: pl.Float32,
                     Column.SPLIT: pl.String,
+                    Column.START_TIME: pl.Float32,
+                    Column.VIDEO: pl.String,
                 },
             )
         ),
