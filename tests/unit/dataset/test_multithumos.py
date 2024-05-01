@@ -765,6 +765,18 @@ def test_to_array(data_prepared: pl.DataFrame) -> None:
     assert objects_are_equal(
         to_array(data_prepared),
         {
+            Column.ACTION: np.ma.masked_array(
+                data=np.array(
+                    [
+                        ["dribble", "N/A", "N/A", "N/A"],
+                        ["dribble", "N/A", "N/A", "N/A"],
+                        ["dribble", "guard", "guard", "dribble"],
+                        ["guard", "guard", "guard", "N/A"],
+                    ],
+                    dtype=str,
+                ),
+                mask=mask,
+            ),
             Column.ACTION_ID: np.ma.masked_array(
                 data=np.array([[1, 0, 0, 0], [1, 0, 0, 0], [1, 0, 0, 1], [0, 0, 0, 0]], dtype=int),
                 mask=mask,
@@ -826,13 +838,14 @@ def test_to_array_empty() -> None:
             )
         ),
         {
-            Column.SEQUENCE_LENGTH: np.array([], dtype=int),
-            Column.SPLIT: np.array([], dtype=str),
+            Column.ACTION: np.ma.masked_array(data=np.zeros(shape=(0, 0), dtype=str), mask=mask),
             Column.ACTION_ID: np.ma.masked_array(data=np.zeros(shape=(0, 0), dtype=int), mask=mask),
-            Column.START_TIME: np.ma.masked_array(
+            Column.END_TIME: np.ma.masked_array(
                 data=np.zeros(shape=(0, 0), dtype=float), mask=mask
             ),
-            Column.END_TIME: np.ma.masked_array(
+            Column.SEQUENCE_LENGTH: np.array([], dtype=int),
+            Column.SPLIT: np.array([], dtype=str),
+            Column.START_TIME: np.ma.masked_array(
                 data=np.zeros(shape=(0, 0), dtype=float), mask=mask
             ),
         },

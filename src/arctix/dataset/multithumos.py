@@ -599,23 +599,30 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     ... )
     >>> arrays = to_array(frame)
     >>> arrays
-    {'sequence_length': array([3, 4]),
-     'split': array(['validation', 'validation'], dtype='<U10'),
-     'action_id': masked_array(
+    {'action': masked_array(
+      data=[['dribble', 'guard', 'dribble', --],
+            ['guard', 'guard', 'guard', 'shoot']],
+      mask=[[False, False, False,  True],
+            [False, False, False, False]],
+      fill_value='N/A',
+      dtype='<U7'),
+      'action_id': masked_array(
       data=[[1, 0, 1, --],
             [0, 0, 0, 2]],
       mask=[[False, False, False,  True],
             [False, False, False, False]],
       fill_value=999999),
-     'start_time': masked_array(
-      data=[[1.0, 17.0, 79.0, --],
-            [2.0, 4.0, 20.0, 27.0]],
+      'end_time': masked_array(
+      data=[[5.0, 18.0, 83.0, --],
+            [3.0, 5.0, 20.0, 30.0]],
       mask=[[False, False, False,  True],
             [False, False, False, False]],
       fill_value=1e+20),
-     'end_time': masked_array(
-      data=[[5.0, 18.0, 83.0, --],
-            [3.0, 5.0, 20.0, 30.0]],
+      'sequence_length': array([3, 4]),
+      'split': array(['validation', 'validation'], dtype='<U10'),
+      'start_time': masked_array(
+      data=[[1.0, 17.0, 79.0, --],
+            [2.0, 4.0, 20.0, 27.0]],
       mask=[[False, False, False,  True],
             [False, False, False, False]],
       fill_value=1e+20)}
@@ -626,23 +633,32 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     lengths = groups.get_column(Column.SEQUENCE_LENGTH).to_numpy()
     mask = generate_mask_from_lengths(lengths)
     return {
-        Column.SEQUENCE_LENGTH: lengths.astype(int),
-        Column.SPLIT: groups.get_column(Column.SPLIT).to_numpy().astype(str),
+        Column.ACTION: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.ACTION).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.object_,
+                padded_value="N/A",
+            ).astype(str),
+            mask=mask,
+        ),
         Column.ACTION_ID: np.ma.masked_array(
             data=convert_sequences_to_array(
                 groups.get_column(Column.ACTION_ID).to_list(), dtype=int, max_len=mask.shape[1]
             ).astype(int),
             mask=mask,
         ),
-        Column.START_TIME: np.ma.masked_array(
-            data=convert_sequences_to_array(
-                groups.get_column(Column.START_TIME).to_list(), dtype=float, max_len=mask.shape[1]
-            ).astype(float),
-            mask=mask,
-        ),
         Column.END_TIME: np.ma.masked_array(
             data=convert_sequences_to_array(
                 groups.get_column(Column.END_TIME).to_list(), dtype=float, max_len=mask.shape[1]
+            ).astype(float),
+            mask=mask,
+        ),
+        Column.SEQUENCE_LENGTH: lengths.astype(int),
+        Column.SPLIT: groups.get_column(Column.SPLIT).to_numpy().astype(str),
+        Column.START_TIME: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.START_TIME).to_list(), dtype=float, max_len=mask.shape[1]
             ).astype(float),
             mask=mask,
         ),
