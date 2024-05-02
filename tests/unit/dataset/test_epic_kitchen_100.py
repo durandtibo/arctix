@@ -164,6 +164,62 @@ def data_raw() -> pl.DataFrame:
 
 
 @pytest.fixture()
+def data_prepared() -> pl.DataFrame:
+    return pl.DataFrame(
+        {
+            Column.ALL_NOUN_IDS: [[3], [114], [3]],
+            Column.ALL_NOUNS: [["door"], ["light"], ["door"]],
+            Column.NARRATION: ["open door", "turn on light", "close door"],
+            Column.NARRATION_ID: ["P01_01_0", "P01_01_1", "P01_01_2"],
+            Column.NARRATION_TIMESTAMP: [
+                datetime.time(0, 0, 1, 89000),
+                datetime.time(0, 0, 2, 629000),
+                datetime.time(0, 0, 5, 349000),
+            ],
+            Column.NOUN: ["door", "light", "door"],
+            Column.NOUN_ID: [3, 114, 3],
+            Column.PARTICIPANT_ID: ["P01", "P01", "P01"],
+            Column.START_FRAME: [8, 262, 418],
+            Column.START_TIME_SECOND: [0.14, 4.37, 6.98],
+            Column.START_TIMESTAMP: [
+                datetime.time(0, 0, 0, 140000),
+                datetime.time(0, 0, 4, 370000),
+                datetime.time(0, 0, 6, 980000),
+            ],
+            Column.STOP_FRAME: [202, 370, 569],
+            Column.STOP_TIME_SECOND: [3.37, 6.17, 9.49],
+            Column.STOP_TIMESTAMP: [
+                datetime.time(0, 0, 3, 370000),
+                datetime.time(0, 0, 6, 170000),
+                datetime.time(0, 0, 9, 490000),
+            ],
+            Column.VERB: ["open", "turn-on", "close"],
+            Column.VERB_ID: [3, 6, 4],
+            Column.VIDEO_ID: ["P01_01", "P01_01", "P01_01"],
+        },
+        schema={
+            Column.ALL_NOUN_IDS: pl.List(pl.Int64),
+            Column.ALL_NOUNS: pl.List(pl.String),
+            Column.NARRATION: pl.String,
+            Column.NARRATION_ID: pl.String,
+            Column.NARRATION_TIMESTAMP: pl.Time,
+            Column.NOUN: pl.String,
+            Column.NOUN_ID: pl.Int64,
+            Column.PARTICIPANT_ID: pl.String,
+            Column.START_FRAME: pl.Int64,
+            Column.START_TIME_SECOND: pl.Float32,
+            Column.START_TIMESTAMP: pl.Time,
+            Column.STOP_FRAME: pl.Int64,
+            Column.STOP_TIME_SECOND: pl.Float32,
+            Column.STOP_TIMESTAMP: pl.Time,
+            Column.VERB: pl.String,
+            Column.VERB_ID: pl.Int64,
+            Column.VIDEO_ID: pl.String,
+        },
+    )
+
+
+@pytest.fixture()
 def data_prepared2() -> pl.DataFrame:
     return pl.DataFrame(
         {
@@ -263,7 +319,7 @@ def data_prepared2() -> pl.DataFrame:
                 "P01_05_3",
                 "P01_05_4",
             ],
-            "narration_timestamp": [
+            Column.NARRATION_TIMESTAMP: [
                 datetime.time(0, 0, 1, 89000),
                 datetime.time(0, 0, 2, 629000),
                 datetime.time(0, 0, 5, 349000),
@@ -575,62 +631,6 @@ def data_prepared2() -> pl.DataFrame:
                 "P01_05",
                 "P01_05",
             ],
-        },
-        schema={
-            Column.ALL_NOUN_IDS: pl.List(pl.Int64),
-            Column.ALL_NOUNS: pl.List(pl.String),
-            Column.NARRATION: pl.String,
-            Column.NARRATION_ID: pl.String,
-            Column.NARRATION_TIMESTAMP: pl.Time,
-            Column.NOUN: pl.String,
-            Column.NOUN_ID: pl.Int64,
-            Column.PARTICIPANT_ID: pl.String,
-            Column.START_FRAME: pl.Int64,
-            Column.START_TIME_SECOND: pl.Float32,
-            Column.START_TIMESTAMP: pl.Time,
-            Column.STOP_FRAME: pl.Int64,
-            Column.STOP_TIME_SECOND: pl.Float32,
-            Column.STOP_TIMESTAMP: pl.Time,
-            Column.VERB: pl.String,
-            Column.VERB_ID: pl.Int64,
-            Column.VIDEO_ID: pl.String,
-        },
-    )
-
-
-@pytest.fixture()
-def data_prepared() -> pl.DataFrame:
-    return pl.DataFrame(
-        {
-            Column.ALL_NOUN_IDS: [[3], [114], [3]],
-            Column.ALL_NOUNS: [["door"], ["light"], ["door"]],
-            Column.NARRATION: ["open door", "turn on light", "close door"],
-            Column.NARRATION_ID: ["P01_01_0", "P01_01_1", "P01_01_2"],
-            Column.NARRATION_TIMESTAMP: [
-                datetime.time(0, 0, 1, 89000),
-                datetime.time(0, 0, 2, 629000),
-                datetime.time(0, 0, 5, 349000),
-            ],
-            Column.NOUN: ["door", "light", "door"],
-            Column.NOUN_ID: [3, 114, 3],
-            Column.PARTICIPANT_ID: ["P01", "P01", "P01"],
-            Column.START_FRAME: [8, 262, 418],
-            Column.START_TIME_SECOND: [0.14, 4.37, 6.98],
-            Column.START_TIMESTAMP: [
-                datetime.time(0, 0, 0, 140000),
-                datetime.time(0, 0, 4, 370000),
-                datetime.time(0, 0, 6, 980000),
-            ],
-            Column.STOP_FRAME: [202, 370, 569],
-            Column.STOP_TIME_SECOND: [3.37, 6.17, 9.49],
-            Column.STOP_TIMESTAMP: [
-                datetime.time(0, 0, 3, 370000),
-                datetime.time(0, 0, 6, 170000),
-                datetime.time(0, 0, 9, 490000),
-            ],
-            Column.VERB: ["open", "turn-on", "close"],
-            Column.VERB_ID: [3, 6, 4],
-            Column.VIDEO_ID: ["P01_01", "P01_01", "P01_01"],
         },
         schema={
             Column.ALL_NOUN_IDS: pl.List(pl.Int64),
@@ -998,7 +998,7 @@ def test_group_by_sequence(data_prepared2: pl.DataFrame) -> None:
                     ["P01_04_0", "P01_04_1", "P01_04_2"],
                     ["P01_05_0", "P01_05_1", "P01_05_2", "P01_05_3", "P01_05_4"],
                 ],
-                "narration_timestamp": [
+                Column.NARRATION_TIMESTAMP: [
                     [
                         datetime.time(0, 0, 1, 89000),
                         datetime.time(0, 0, 2, 629000),
@@ -1159,6 +1159,95 @@ def test_group_by_sequence(data_prepared2: pl.DataFrame) -> None:
                     [3, 0, 11, 0, 5],
                 ],
                 Column.VIDEO_ID: ["P01_01", "P01_02", "P01_03", "P01_04", "P01_05"],
+            },
+            schema={
+                Column.ALL_NOUN_IDS: pl.List(pl.List(pl.Int64)),
+                Column.ALL_NOUNS: pl.List(pl.List(pl.String)),
+                Column.NARRATION: pl.List(pl.String),
+                Column.NARRATION_ID: pl.List(pl.String),
+                Column.NARRATION_TIMESTAMP: pl.List(pl.Time),
+                Column.NOUN: pl.List(pl.String),
+                Column.NOUN_ID: pl.List(pl.Int64),
+                Column.PARTICIPANT_ID: pl.String,
+                Column.SEQUENCE_LENGTH: pl.UInt32,
+                Column.START_FRAME: pl.List(pl.Int64),
+                Column.START_TIME_SECOND: pl.List(pl.Float32),
+                Column.START_TIMESTAMP: pl.List(pl.Time),
+                Column.STOP_FRAME: pl.List(pl.Int64),
+                Column.STOP_TIME_SECOND: pl.List(pl.Float32),
+                Column.STOP_TIMESTAMP: pl.List(pl.Time),
+                Column.VERB: pl.List(pl.String),
+                Column.VERB_ID: pl.List(pl.Int64),
+                Column.VIDEO_ID: pl.String,
+            },
+        ),
+    )
+
+
+def test_group_by_sequence_empty() -> None:
+    assert_frame_equal(
+        group_by_sequence(
+            pl.DataFrame(
+                {
+                    Column.ALL_NOUN_IDS: [],
+                    Column.ALL_NOUNS: [],
+                    Column.NARRATION: [],
+                    Column.NARRATION_ID: [],
+                    Column.NARRATION_TIMESTAMP: [],
+                    Column.NOUN: [],
+                    Column.NOUN_ID: [],
+                    Column.PARTICIPANT_ID: [],
+                    Column.START_FRAME: [],
+                    Column.START_TIME_SECOND: [],
+                    Column.START_TIMESTAMP: [],
+                    Column.STOP_FRAME: [],
+                    Column.STOP_TIME_SECOND: [],
+                    Column.STOP_TIMESTAMP: [],
+                    Column.VERB: [],
+                    Column.VERB_ID: [],
+                    Column.VIDEO_ID: [],
+                },
+                schema={
+                    Column.ALL_NOUN_IDS: pl.List(pl.Int64),
+                    Column.ALL_NOUNS: pl.List(pl.String),
+                    Column.NARRATION: pl.String,
+                    Column.NARRATION_ID: pl.String,
+                    Column.NARRATION_TIMESTAMP: pl.Time,
+                    Column.NOUN: pl.String,
+                    Column.NOUN_ID: pl.Int64,
+                    Column.PARTICIPANT_ID: pl.String,
+                    Column.START_FRAME: pl.Int64,
+                    Column.START_TIME_SECOND: pl.Float32,
+                    Column.START_TIMESTAMP: pl.Time,
+                    Column.STOP_FRAME: pl.Int64,
+                    Column.STOP_TIME_SECOND: pl.Float32,
+                    Column.STOP_TIMESTAMP: pl.Time,
+                    Column.VERB: pl.String,
+                    Column.VERB_ID: pl.Int64,
+                    Column.VIDEO_ID: pl.String,
+                },
+            ),
+        ),
+        pl.DataFrame(
+            {
+                Column.ALL_NOUN_IDS: [],
+                Column.ALL_NOUNS: [],
+                Column.NARRATION: [],
+                Column.NARRATION_ID: [],
+                Column.NARRATION_TIMESTAMP: [],
+                Column.NOUN: [],
+                Column.NOUN_ID: [],
+                Column.PARTICIPANT_ID: [],
+                Column.SEQUENCE_LENGTH: [],
+                Column.START_FRAME: [],
+                Column.START_TIME_SECOND: [],
+                Column.START_TIMESTAMP: [],
+                Column.STOP_FRAME: [],
+                Column.STOP_TIME_SECOND: [],
+                Column.STOP_TIMESTAMP: [],
+                Column.VERB: [],
+                Column.VERB_ID: [],
+                Column.VIDEO_ID: [],
             },
             schema={
                 Column.ALL_NOUN_IDS: pl.List(pl.List(pl.Int64)),
