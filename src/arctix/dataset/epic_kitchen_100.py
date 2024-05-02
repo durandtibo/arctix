@@ -52,26 +52,24 @@ NUM_VERBS = 97
 
 
 class Column:
-    ACTION: str = "action"
-    ACTION_ID: str = "action_id"
-    END_TIME: str = "end_time"
-    START_TIME: str = "start_time"
     SEQUENCE_LENGTH: str = "sequence_length"
 
     ALL_NOUNS = "all_nouns"
-    ALL_NOUN_CLASSES = "all_noun_classes"
+    ALL_NOUN_IDS = "all_noun_classes"
     NARRATION = "narration"
     NARRATION_ID = "narration_id"
     NARRATION_TIMESTAMP = "narration_timestamp"
     NOUN = "noun"
-    NOUN_CLASS = "noun_class"
+    NOUN_ID = "noun_class"
     PARTICIPANT_ID = "participant_id"
     START_FRAME = "start_frame"
     START_TIMESTAMP = "start_timestamp"
+    START_TIME_SECOND = "start_time_second"
     STOP_FRAME = "stop_frame"
     STOP_TIMESTAMP = "stop_timestamp"
+    STOP_TIME_SECOND = "stop_time_second"
     VERB = "verb"
-    VERB_CLASS = "verb_class"
+    VERB_ID = "verb_class"
     VIDEO_ID = "video_id"
 
 
@@ -220,19 +218,19 @@ def load_event_data(path: Path) -> pl.DataFrame:
         path,
         dtypes={
             Column.ALL_NOUNS: pl.String,
-            Column.ALL_NOUN_CLASSES: pl.String,
+            Column.ALL_NOUN_IDS: pl.String,
             Column.NARRATION: pl.String,
             Column.NARRATION_ID: pl.String,
             Column.NARRATION_TIMESTAMP: pl.String,
             Column.NOUN: pl.String,
-            Column.NOUN_CLASS: pl.Int64,
+            Column.NOUN_ID: pl.Int64,
             Column.PARTICIPANT_ID: pl.String,
             Column.START_FRAME: pl.Int64,
             Column.START_TIMESTAMP: pl.String,
             Column.STOP_FRAME: pl.Int64,
             Column.STOP_TIMESTAMP: pl.String,
             Column.VERB: pl.String,
-            Column.VERB_CLASS: pl.Int64,
+            Column.VERB_ID: pl.Int64,
             Column.VIDEO_ID: pl.String,
         },
     )
@@ -242,7 +240,7 @@ def load_event_data(path: Path) -> pl.DataFrame:
                 columns=[Column.START_TIMESTAMP, Column.NARRATION_TIMESTAMP, Column.STOP_TIMESTAMP],
                 format="%H:%M:%S%.3f",
             ),
-            td.JsonDecode(columns=[Column.ALL_NOUN_CLASSES], dtype=pl.List(pl.Int64)),
+            td.JsonDecode(columns=[Column.ALL_NOUN_IDS], dtype=pl.List(pl.Int64)),
             td.JsonDecode(columns=[Column.ALL_NOUNS], dtype=pl.List(pl.String)),
             td.SortColumns(),
         ]
@@ -317,6 +315,153 @@ def load_verb_vocab(path: Path) -> Vocabulary:
         msg = f"Expected {NUM_VERBS} verbs but received {count:,}"
         raise RuntimeError(msg)
     return vocab
+
+
+def prepare_data(frame: pl.DataFrame, metadata: dict) -> tuple[pl.DataFrame, dict]:
+    r"""Prepare the data.
+
+    Args:
+        frame: The raw DataFrame.
+        metadata: The metadata wich contains the vocabularies to
+            convert verbs and nouns to index.
+
+    Returns:
+        A tuple containing the prepared data and the metadata.
+
+    Example usage:
+
+    ```pycon
+
+    >>> import datetime
+    >>> import polars as pl
+    >>> from arctix.dataset.epic_kitchen_100 import Column, prepare_data
+    >>> frame = pl.DataFrame(
+    ...     {
+    ...         Column.ALL_NOUN_IDS: [[3], [114], [3]],
+    ...         Column.ALL_NOUNS: [["door"], ["light"], ["door"]],
+    ...         Column.NARRATION: ["open door", "turn on light", "close door"],
+    ...         Column.NARRATION_ID: ["P01_01_0", "P01_01_1", "P01_01_2"],
+    ...         Column.NARRATION_TIMESTAMP: [
+    ...             datetime.time(0, 0, 1, 89000),
+    ...             datetime.time(0, 0, 2, 629000),
+    ...             datetime.time(0, 0, 5, 349000),
+    ...         ],
+    ...         Column.NOUN: ["door", "light", "door"],
+    ...         Column.NOUN_ID: [3, 114, 3],
+    ...         Column.PARTICIPANT_ID: ["P01", "P01", "P01"],
+    ...         Column.START_FRAME: [8, 262, 418],
+    ...         Column.START_TIMESTAMP: [
+    ...             datetime.time(0, 0, 0, 140000),
+    ...             datetime.time(0, 0, 4, 370000),
+    ...             datetime.time(0, 0, 6, 980000),
+    ...         ],
+    ...         Column.STOP_FRAME: [202, 370, 569],
+    ...         Column.STOP_TIMESTAMP: [
+    ...             datetime.time(0, 0, 3, 370000),
+    ...             datetime.time(0, 0, 6, 170000),
+    ...             datetime.time(0, 0, 9, 490000),
+    ...         ],
+    ...         Column.VERB: ["open", "turn-on", "close"],
+    ...         Column.VERB_ID: [3, 6, 4],
+    ...         Column.VIDEO_ID: ["P01_01", "P01_01", "P01_01"],
+    ...     },
+    ...     schema={
+    ...         Column.ALL_NOUN_IDS: pl.List(pl.Int64),
+    ...         Column.ALL_NOUNS: pl.List(pl.String),
+    ...         Column.NARRATION: pl.String,
+    ...         Column.NARRATION_ID: pl.String,
+    ...         Column.NARRATION_TIMESTAMP: pl.Time,
+    ...         Column.NOUN: pl.String,
+    ...         Column.NOUN_ID: pl.Int64,
+    ...         Column.PARTICIPANT_ID: pl.String,
+    ...         Column.START_FRAME: pl.Int64,
+    ...         Column.START_TIMESTAMP: pl.Time,
+    ...         Column.STOP_FRAME: pl.Int64,
+    ...         Column.STOP_TIMESTAMP: pl.Time,
+    ...         Column.VERB: pl.String,
+    ...         Column.VERB_ID: pl.Int64,
+    ...         Column.VIDEO_ID: pl.String,
+    ...     },
+    ... )
+    >>> data, metadata = prepare_data(frame, metadata={})
+    >>> with pl.Config(tbl_cols=-1):
+    ...     data
+    shape: (3, 17)
+    ┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐
+    │ all ┆ all ┆ nar ┆ nar ┆ nar ┆ nou ┆ nou ┆ par ┆ sta ┆ sta ┆ sta ┆ sto ┆ sto ┆ sto ┆ ver ┆ ver ┆ vid │
+    │ _no ┆ _no ┆ rat ┆ rat ┆ rat ┆ n   ┆ n_c ┆ tic ┆ rt_ ┆ rt_ ┆ rt_ ┆ p_f ┆ p_t ┆ p_t ┆ b   ┆ b_c ┆ eo_ │
+    │ un_ ┆ uns ┆ ion ┆ ion ┆ ion ┆ --- ┆ las ┆ ipa ┆ fra ┆ tim ┆ tim ┆ ram ┆ ime ┆ ime ┆ --- ┆ las ┆ id  │
+    │ cla ┆ --- ┆ --- ┆ _id ┆ _ti ┆ str ┆ s   ┆ nt_ ┆ me  ┆ e_s ┆ est ┆ e   ┆ _se ┆ sta ┆ str ┆ s   ┆ --- │
+    │ sse ┆ lis ┆ str ┆ --- ┆ mes ┆     ┆ --- ┆ id  ┆ --- ┆ eco ┆ amp ┆ --- ┆ con ┆ mp  ┆     ┆ --- ┆ str │
+    │ s   ┆ t[s ┆     ┆ str ┆ tam ┆     ┆ i64 ┆ --- ┆ i64 ┆ nd  ┆ --- ┆ i64 ┆ d   ┆ --- ┆     ┆ i64 ┆     │
+    │ --- ┆ tr] ┆     ┆     ┆ p   ┆     ┆     ┆ str ┆     ┆ --- ┆ tim ┆     ┆ --- ┆ tim ┆     ┆     ┆     │
+    │ lis ┆     ┆     ┆     ┆ --- ┆     ┆     ┆     ┆     ┆ f32 ┆ e   ┆     ┆ f32 ┆ e   ┆     ┆     ┆     │
+    │ t[i ┆     ┆     ┆     ┆ tim ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     │
+    │ 64] ┆     ┆     ┆     ┆ e   ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     │
+    ╞═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╡
+    │ [3] ┆ ["d ┆ ope ┆ P01 ┆ 00: ┆ doo ┆ 3   ┆ P01 ┆ 8   ┆ 0.1 ┆ 00: ┆ 202 ┆ 3.3 ┆ 00: ┆ ope ┆ 3   ┆ P01 │
+    │     ┆ oor ┆ n   ┆ _01 ┆ 00: ┆ r   ┆     ┆     ┆     ┆ 4   ┆ 00: ┆     ┆ 7   ┆ 00: ┆ n   ┆     ┆ _01 │
+    │     ┆ "]  ┆ doo ┆ _0  ┆ 01. ┆     ┆     ┆     ┆     ┆     ┆ 00. ┆     ┆     ┆ 03. ┆     ┆     ┆     │
+    │     ┆     ┆ r   ┆     ┆ 089 ┆     ┆     ┆     ┆     ┆     ┆ 140 ┆     ┆     ┆ 370 ┆     ┆     ┆     │
+    │ [11 ┆ ["l ┆ tur ┆ P01 ┆ 00: ┆ lig ┆ 114 ┆ P01 ┆ 262 ┆ 4.3 ┆ 00: ┆ 370 ┆ 6.1 ┆ 00: ┆ tur ┆ 6   ┆ P01 │
+    │ 4]  ┆ igh ┆ n   ┆ _01 ┆ 00: ┆ ht  ┆     ┆     ┆     ┆ 7   ┆ 00: ┆     ┆ 7   ┆ 00: ┆ n-o ┆     ┆ _01 │
+    │     ┆ t"] ┆ on  ┆ _1  ┆ 02. ┆     ┆     ┆     ┆     ┆     ┆ 04. ┆     ┆     ┆ 06. ┆ n   ┆     ┆     │
+    │     ┆     ┆ lig ┆     ┆ 629 ┆     ┆     ┆     ┆     ┆     ┆ 370 ┆     ┆     ┆ 170 ┆     ┆     ┆     │
+    │     ┆     ┆ ht  ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     │
+    │ [3] ┆ ["d ┆ clo ┆ P01 ┆ 00: ┆ doo ┆ 3   ┆ P01 ┆ 418 ┆ 6.9 ┆ 00: ┆ 569 ┆ 9.4 ┆ 00: ┆ clo ┆ 4   ┆ P01 │
+    │     ┆ oor ┆ se  ┆ _01 ┆ 00: ┆ r   ┆     ┆     ┆     ┆ 8   ┆ 00: ┆     ┆ 9   ┆ 00: ┆ se  ┆     ┆ _01 │
+    │     ┆ "]  ┆ doo ┆ _2  ┆ 05. ┆     ┆     ┆     ┆     ┆     ┆ 06. ┆     ┆     ┆ 09. ┆     ┆     ┆     │
+    │     ┆     ┆ r   ┆     ┆ 349 ┆     ┆     ┆     ┆     ┆     ┆ 980 ┆     ┆     ┆ 490 ┆     ┆     ┆     │
+    └─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┘
+    >>> metadata
+    {}
+
+    ```
+    """
+    transformer = td.Sequential(
+        [
+            td.Sort(columns=[Column.VIDEO_ID, Column.START_FRAME]),
+            td.TimeToSecond(in_col=Column.START_TIMESTAMP, out_col=Column.START_TIME_SECOND),
+            td.TimeToSecond(in_col=Column.STOP_TIMESTAMP, out_col=Column.STOP_TIME_SECOND),
+            td.Cast(columns=[Column.START_TIME_SECOND, Column.STOP_TIME_SECOND], dtype=pl.Float32),
+            td.SortColumns(),
+        ]
+    )
+    out = transformer.transform(frame)
+    return out, metadata
+
+
+# def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
+#     r"""Group the DataFrame by sequences of actions.
+#
+#     Args:
+#         frame: The input DataFrame.
+#
+#     Returns:
+#         The DataFrame after the grouping.
+#     """
+#     data = (
+#         frame.sort(by=[Column.VIDEO_ID, Column.START_FRAME])
+#         .group_by([Column.VIDEO_ID])
+#         .agg(
+#             pl.col(Column.NARRATION),
+#             pl.col(Column.NARRATION_ID),
+#             pl.col(Column.NOUN),
+#             pl.col(Column.NOUN_CLASS),
+#             pl.col(Column.START_FRAME),
+#             pl.col(Column.START_TIMESTAMP),
+#             pl.col(Column.STOP_FRAME),
+#             pl.col(Column.STOP_TIMESTAMP),
+#             pl.len().alias(Column.SEQUENCE_LENGTH),
+#         )
+#     )
+#     transformer = td.Sequential(
+#         [
+#             td.Sort(columns=[Column.VIDEO_ID]),
+#             td.SortColumns(),
+#         ]
+#     )
+#     return transformer.transform(data)
 
 
 if __name__ == "__main__":  # pragma: no cover

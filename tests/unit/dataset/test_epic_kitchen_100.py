@@ -25,6 +25,7 @@ from arctix.dataset.epic_kitchen_100 import (
     load_event_data,
     load_noun_vocab,
     load_verb_vocab,
+    prepare_data,
 )
 from arctix.utils.vocab import Vocabulary
 
@@ -110,10 +111,10 @@ def empty_verb_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
 
 
 @pytest.fixture()
-def event_frame() -> pl.DataFrame:
+def data_raw() -> pl.DataFrame:
     return pl.DataFrame(
         {
-            Column.ALL_NOUN_CLASSES: [[3], [114], [3]],
+            Column.ALL_NOUN_IDS: [[3], [114], [3]],
             Column.ALL_NOUNS: [["door"], ["light"], ["door"]],
             Column.NARRATION: ["open door", "turn on light", "close door"],
             Column.NARRATION_ID: ["P01_01_0", "P01_01_1", "P01_01_2"],
@@ -123,7 +124,7 @@ def event_frame() -> pl.DataFrame:
                 datetime.time(0, 0, 5, 349000),
             ],
             Column.NOUN: ["door", "light", "door"],
-            Column.NOUN_CLASS: [3, 114, 3],
+            Column.NOUN_ID: [3, 114, 3],
             Column.PARTICIPANT_ID: ["P01", "P01", "P01"],
             Column.START_FRAME: [8, 262, 418],
             Column.START_TIMESTAMP: [
@@ -138,24 +139,80 @@ def event_frame() -> pl.DataFrame:
                 datetime.time(0, 0, 9, 490000),
             ],
             Column.VERB: ["open", "turn-on", "close"],
-            Column.VERB_CLASS: [3, 6, 4],
+            Column.VERB_ID: [3, 6, 4],
             Column.VIDEO_ID: ["P01_01", "P01_01", "P01_01"],
         },
         schema={
-            Column.ALL_NOUN_CLASSES: pl.List(pl.Int64),
+            Column.ALL_NOUN_IDS: pl.List(pl.Int64),
             Column.ALL_NOUNS: pl.List(pl.String),
             Column.NARRATION: pl.String,
             Column.NARRATION_ID: pl.String,
             Column.NARRATION_TIMESTAMP: pl.Time,
             Column.NOUN: pl.String,
-            Column.NOUN_CLASS: pl.Int64,
+            Column.NOUN_ID: pl.Int64,
             Column.PARTICIPANT_ID: pl.String,
             Column.START_FRAME: pl.Int64,
             Column.START_TIMESTAMP: pl.Time,
             Column.STOP_FRAME: pl.Int64,
             Column.STOP_TIMESTAMP: pl.Time,
             Column.VERB: pl.String,
-            Column.VERB_CLASS: pl.Int64,
+            Column.VERB_ID: pl.Int64,
+            Column.VIDEO_ID: pl.String,
+        },
+    )
+
+
+@pytest.fixture()
+def data_prepared() -> pl.DataFrame:
+    return pl.DataFrame(
+        {
+            Column.ALL_NOUN_IDS: [[3], [114], [3]],
+            Column.ALL_NOUNS: [["door"], ["light"], ["door"]],
+            Column.NARRATION: ["open door", "turn on light", "close door"],
+            Column.NARRATION_ID: ["P01_01_0", "P01_01_1", "P01_01_2"],
+            Column.NARRATION_TIMESTAMP: [
+                datetime.time(0, 0, 1, 89000),
+                datetime.time(0, 0, 2, 629000),
+                datetime.time(0, 0, 5, 349000),
+            ],
+            Column.NOUN: ["door", "light", "door"],
+            Column.NOUN_ID: [3, 114, 3],
+            Column.PARTICIPANT_ID: ["P01", "P01", "P01"],
+            Column.START_FRAME: [8, 262, 418],
+            Column.START_TIME_SECOND: [0.14, 4.37, 6.98],
+            Column.START_TIMESTAMP: [
+                datetime.time(0, 0, 0, 140000),
+                datetime.time(0, 0, 4, 370000),
+                datetime.time(0, 0, 6, 980000),
+            ],
+            Column.STOP_FRAME: [202, 370, 569],
+            Column.STOP_TIME_SECOND: [3.37, 6.17, 9.49],
+            Column.STOP_TIMESTAMP: [
+                datetime.time(0, 0, 3, 370000),
+                datetime.time(0, 0, 6, 170000),
+                datetime.time(0, 0, 9, 490000),
+            ],
+            Column.VERB: ["open", "turn-on", "close"],
+            Column.VERB_ID: [3, 6, 4],
+            Column.VIDEO_ID: ["P01_01", "P01_01", "P01_01"],
+        },
+        schema={
+            Column.ALL_NOUN_IDS: pl.List(pl.Int64),
+            Column.ALL_NOUNS: pl.List(pl.String),
+            Column.NARRATION: pl.String,
+            Column.NARRATION_ID: pl.String,
+            Column.NARRATION_TIMESTAMP: pl.Time,
+            Column.NOUN: pl.String,
+            Column.NOUN_ID: pl.Int64,
+            Column.PARTICIPANT_ID: pl.String,
+            Column.START_FRAME: pl.Int64,
+            Column.START_TIME_SECOND: pl.Float32,
+            Column.START_TIMESTAMP: pl.Time,
+            Column.STOP_FRAME: pl.Int64,
+            Column.STOP_TIME_SECOND: pl.Float32,
+            Column.STOP_TIMESTAMP: pl.Time,
+            Column.VERB: pl.String,
+            Column.VERB_ID: pl.Int64,
             Column.VIDEO_ID: pl.String,
         },
     )
@@ -178,14 +235,14 @@ def verb_vocab() -> Vocabulary:
 
 def test_fetch_data(
     data_dir: Path,
-    event_frame: pl.DataFrame,
+    data_raw: pl.DataFrame,
     noun_vocab: Vocabulary,
     verb_vocab: Vocabulary,
 ) -> None:
     with patch("arctix.dataset.epic_kitchen_100.download_data") as download_mock:
         data, metadata = fetch_data(data_dir, split="train")
         download_mock.assert_called_once_with(data_dir, False)
-        assert_frame_equal(data, event_frame)
+        assert_frame_equal(data, data_raw)
         assert objects_are_equal(metadata, {"noun_vocab": noun_vocab, "verb_vocab": verb_vocab})
 
 
@@ -269,12 +326,12 @@ def test_is_annotation_path_ready_false_missing_partial(tmp_path: Path) -> None:
 
 def test_load_data(
     data_dir: Path,
-    event_frame: pl.DataFrame,
+    data_raw: pl.DataFrame,
     noun_vocab: Vocabulary,
     verb_vocab: Vocabulary,
 ) -> None:
     data, metadata = load_data(data_dir, split="train")
-    assert_frame_equal(data, event_frame)
+    assert_frame_equal(data, data_raw)
     assert objects_are_equal(metadata, {"noun_vocab": noun_vocab, "verb_vocab": verb_vocab})
 
 
@@ -283,8 +340,8 @@ def test_load_data(
 #####################################
 
 
-def test_load_event_data(data_file: Path, event_frame: pl.DataFrame) -> None:
-    assert_frame_equal(load_event_data(data_file), event_frame)
+def test_load_event_data(data_file: Path, data_raw: pl.DataFrame) -> None:
+    assert_frame_equal(load_event_data(data_file), data_raw)
 
 
 def test_load_data_empty(empty_data_file: Path) -> None:
@@ -292,37 +349,37 @@ def test_load_data_empty(empty_data_file: Path) -> None:
         load_event_data(empty_data_file),
         pl.DataFrame(
             {
-                Column.ALL_NOUN_CLASSES: [],
+                Column.ALL_NOUN_IDS: [],
                 Column.ALL_NOUNS: [],
                 Column.NARRATION: [],
                 Column.NARRATION_ID: [],
                 Column.NARRATION_TIMESTAMP: [],
                 Column.NOUN: [],
-                Column.NOUN_CLASS: [],
+                Column.NOUN_ID: [],
                 Column.PARTICIPANT_ID: [],
                 Column.START_FRAME: [],
                 Column.START_TIMESTAMP: [],
                 Column.STOP_FRAME: [],
                 Column.STOP_TIMESTAMP: [],
                 Column.VERB: [],
-                Column.VERB_CLASS: [],
+                Column.VERB_ID: [],
                 Column.VIDEO_ID: [],
             },
             schema={
-                Column.ALL_NOUN_CLASSES: pl.List(pl.Int64),
+                Column.ALL_NOUN_IDS: pl.List(pl.Int64),
                 Column.ALL_NOUNS: pl.List(pl.String),
                 Column.NARRATION: pl.String,
                 Column.NARRATION_ID: pl.String,
                 Column.NARRATION_TIMESTAMP: pl.Time,
                 Column.NOUN: pl.String,
-                Column.NOUN_CLASS: pl.Int64,
+                Column.NOUN_ID: pl.Int64,
                 Column.PARTICIPANT_ID: pl.String,
                 Column.START_FRAME: pl.Int64,
                 Column.START_TIMESTAMP: pl.Time,
                 Column.STOP_FRAME: pl.Int64,
                 Column.STOP_TIMESTAMP: pl.Time,
                 Column.VERB: pl.String,
-                Column.VERB_CLASS: pl.Int64,
+                Column.VERB_ID: pl.Int64,
                 Column.VIDEO_ID: pl.String,
             },
         ),
@@ -355,3 +412,107 @@ def test_load_verb_vocab(data_dir: Path, verb_vocab: Vocabulary) -> None:
 def test_load_verb_vocab_incorrect(empty_verb_file: Path) -> None:
     with pytest.raises(RuntimeError, match="Expected 97 verbs but received 0"):
         load_verb_vocab(empty_verb_file.parent)
+
+
+##################################
+#     Tests for prepare_data     #
+##################################
+
+
+def test_prepare_data(
+    data_raw: pl.DataFrame,
+    data_prepared: pl.DataFrame,
+    noun_vocab: Vocabulary,
+    verb_vocab: Vocabulary,
+) -> None:
+    data, metadata = prepare_data(
+        data_raw, metadata={"noun_vocab": noun_vocab, "verb_vocab": verb_vocab}
+    )
+    assert_frame_equal(data, data_prepared)
+    assert objects_are_equal(metadata, {"noun_vocab": noun_vocab, "verb_vocab": verb_vocab})
+
+
+def test_prepare_data_empty() -> None:
+    data, metadata = prepare_data(
+        frame=pl.DataFrame(
+            {
+                Column.ALL_NOUN_IDS: [],
+                Column.ALL_NOUNS: [],
+                Column.NARRATION: [],
+                Column.NARRATION_ID: [],
+                Column.NARRATION_TIMESTAMP: [],
+                Column.NOUN: [],
+                Column.NOUN_ID: [],
+                Column.PARTICIPANT_ID: [],
+                Column.START_FRAME: [],
+                Column.START_TIMESTAMP: [],
+                Column.STOP_FRAME: [],
+                Column.STOP_TIMESTAMP: [],
+                Column.VERB: [],
+                Column.VERB_ID: [],
+                Column.VIDEO_ID: [],
+            },
+            schema={
+                Column.ALL_NOUN_IDS: pl.List(pl.Int64),
+                Column.ALL_NOUNS: pl.List(pl.String),
+                Column.NARRATION: pl.String,
+                Column.NARRATION_ID: pl.String,
+                Column.NARRATION_TIMESTAMP: pl.Time,
+                Column.NOUN: pl.String,
+                Column.NOUN_ID: pl.Int64,
+                Column.PARTICIPANT_ID: pl.String,
+                Column.START_FRAME: pl.Int64,
+                Column.START_TIMESTAMP: pl.Time,
+                Column.STOP_FRAME: pl.Int64,
+                Column.STOP_TIMESTAMP: pl.Time,
+                Column.VERB: pl.String,
+                Column.VERB_ID: pl.Int64,
+                Column.VIDEO_ID: pl.String,
+            },
+        ),
+        metadata={},
+    )
+    assert_frame_equal(
+        data,
+        pl.DataFrame(
+            {
+                Column.ALL_NOUN_IDS: [],
+                Column.ALL_NOUNS: [],
+                Column.NARRATION: [],
+                Column.NARRATION_ID: [],
+                Column.NARRATION_TIMESTAMP: [],
+                Column.NOUN: [],
+                Column.NOUN_ID: [],
+                Column.PARTICIPANT_ID: [],
+                Column.START_FRAME: [],
+                Column.START_TIME_SECOND: [],
+                Column.START_TIMESTAMP: [],
+                Column.STOP_FRAME: [],
+                Column.STOP_TIME_SECOND: [],
+                Column.STOP_TIMESTAMP: [],
+                Column.VERB: [],
+                Column.VERB_ID: [],
+                Column.VIDEO_ID: [],
+            },
+            schema={
+                Column.ALL_NOUN_IDS: pl.List(pl.Int64),
+                Column.ALL_NOUNS: pl.List(pl.String),
+                Column.NARRATION: pl.String,
+                Column.NARRATION_ID: pl.String,
+                Column.NARRATION_TIMESTAMP: pl.Time,
+                Column.NOUN: pl.String,
+                Column.NOUN_ID: pl.Int64,
+                Column.PARTICIPANT_ID: pl.String,
+                Column.START_FRAME: pl.Int64,
+                Column.START_TIME_SECOND: pl.Float32,
+                Column.START_TIMESTAMP: pl.Time,
+                Column.STOP_FRAME: pl.Int64,
+                Column.STOP_TIME_SECOND: pl.Float32,
+                Column.STOP_TIMESTAMP: pl.Time,
+                Column.VERB: pl.String,
+                Column.VERB_ID: pl.Int64,
+                Column.VIDEO_ID: pl.String,
+            },
+        ),
+    )
+    assert objects_are_equal(metadata, {})
