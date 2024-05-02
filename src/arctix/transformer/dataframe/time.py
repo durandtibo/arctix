@@ -73,7 +73,7 @@ class TimeToSecondDataFrameTransformer(BaseDataFrameTransformer):
     ```
     """
 
-    def __init__(self, in_col: str, out_col) -> None:
+    def __init__(self, in_col: str, out_col: str) -> None:
         self._in_col = in_col
         self._out_col = out_col
 
