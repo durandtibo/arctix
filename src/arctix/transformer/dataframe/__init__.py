@@ -22,6 +22,8 @@ __all__ = [
     "SortDataFrameTransformer",
     "StripChars",
     "StripCharsDataFrameTransformer",
+    "TimeToSecond",
+    "TimeToSecondDataFrameTransformer",
     "ToTime",
     "ToTimeDataFrameTransformer",
     "TokenToIndex",
@@ -62,6 +64,10 @@ from arctix.transformer.dataframe.sorting import SortDataFrameTransformer as Sor
 from arctix.transformer.dataframe.string import StripCharsDataFrameTransformer
 from arctix.transformer.dataframe.string import (
     StripCharsDataFrameTransformer as StripChars,
+)
+from arctix.transformer.dataframe.time import TimeToSecondDataFrameTransformer
+from arctix.transformer.dataframe.time import (
+    TimeToSecondDataFrameTransformer as TimeToSecond,
 )
 from arctix.transformer.dataframe.vocab import IndexToTokenDataFrameTransformer
 from arctix.transformer.dataframe.vocab import (
