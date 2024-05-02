@@ -431,37 +431,45 @@ def prepare_data(frame: pl.DataFrame, metadata: dict) -> tuple[pl.DataFrame, dic
     return out, metadata
 
 
-# def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
-#     r"""Group the DataFrame by sequences of actions.
-#
-#     Args:
-#         frame: The input DataFrame.
-#
-#     Returns:
-#         The DataFrame after the grouping.
-#     """
-#     data = (
-#         frame.sort(by=[Column.VIDEO_ID, Column.START_FRAME])
-#         .group_by([Column.VIDEO_ID])
-#         .agg(
-#             pl.col(Column.NARRATION),
-#             pl.col(Column.NARRATION_ID),
-#             pl.col(Column.NOUN),
-#             pl.col(Column.NOUN_CLASS),
-#             pl.col(Column.START_FRAME),
-#             pl.col(Column.START_TIMESTAMP),
-#             pl.col(Column.STOP_FRAME),
-#             pl.col(Column.STOP_TIMESTAMP),
-#             pl.len().alias(Column.SEQUENCE_LENGTH),
-#         )
-#     )
-#     transformer = td.Sequential(
-#         [
-#             td.Sort(columns=[Column.VIDEO_ID]),
-#             td.SortColumns(),
-#         ]
-#     )
-#     return transformer.transform(data)
+def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
+    r"""Group the DataFrame by sequences of actions.
+
+    Args:
+        frame: The input DataFrame.
+
+    Returns:
+        The DataFrame after the grouping.
+    """
+    data = (
+        frame.sort(by=[Column.VIDEO_ID, Column.START_FRAME])
+        .group_by([Column.VIDEO_ID])
+        .agg(
+            pl.first(Column.PARTICIPANT_ID),
+            pl.col(Column.ALL_NOUNS),
+            pl.col(Column.ALL_NOUN_IDS),
+            pl.col(Column.NARRATION),
+            pl.col(Column.NARRATION_ID),
+            pl.col(Column.NARRATION_TIMESTAMP),
+            pl.col(Column.NOUN),
+            pl.col(Column.NOUN_ID),
+            pl.col(Column.START_FRAME),
+            pl.col(Column.START_TIMESTAMP),
+            pl.col(Column.START_TIME_SECOND),
+            pl.col(Column.STOP_FRAME),
+            pl.col(Column.STOP_TIMESTAMP),
+            pl.col(Column.STOP_TIME_SECOND),
+            pl.col(Column.VERB),
+            pl.col(Column.VERB_ID),
+            pl.len().alias(Column.SEQUENCE_LENGTH),
+        )
+    )
+    transformer = td.Sequential(
+        [
+            td.Sort(columns=[Column.VIDEO_ID]),
+            td.SortColumns(),
+        ]
+    )
+    return transformer.transform(data)
 
 
 if __name__ == "__main__":  # pragma: no cover
