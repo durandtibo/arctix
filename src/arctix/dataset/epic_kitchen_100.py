@@ -54,8 +54,6 @@ NUM_VERBS = 97
 
 
 class Column:
-    SEQUENCE_LENGTH: str = "sequence_length"
-
     ALL_NOUNS = "all_nouns"
     ALL_NOUN_IDS = "all_noun_classes"
     NARRATION = "narration"
@@ -64,6 +62,7 @@ class Column:
     NOUN = "noun"
     NOUN_ID = "noun_class"
     PARTICIPANT_ID = "participant_id"
+    SEQUENCE_LENGTH: str = "sequence_length"
     START_FRAME = "start_frame"
     START_TIMESTAMP = "start_timestamp"
     START_TIME_SECOND = "start_time_second"
@@ -603,6 +602,9 @@ if __name__ == "__main__":  # pragma: no cover
     logging.basicConfig(level=logging.DEBUG)
 
     path = Path(os.environ["ARCTIX_DATA_PATH"]).joinpath("epic_kitchen_100")
-    raw_data, metadata = fetch_data(path, split="train")
-    logger.info(f"raw_data:\n{raw_data}")
+    data_raw, metadata_raw = fetch_data(path, split="train")
+    logger.info(f"data_raw:\n{data_raw}")
+    logger.info(f"metadata_raw:\n{metadata_raw}")
+    data, metadata = prepare_data(data_raw, metadata_raw)
+    logger.info(f"data:\n{data}")
     logger.info(f"metadata:\n{metadata}")
