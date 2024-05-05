@@ -603,6 +603,9 @@ if __name__ == "__main__":  # pragma: no cover
     logging.basicConfig(level=logging.DEBUG)
 
     path = Path(os.environ["ARCTIX_DATA_PATH"]).joinpath("epic_kitchen_100")
-    raw_data, metadata = fetch_data(path, split="train")
-    logger.info(f"raw_data:\n{raw_data}")
+    data_raw, metadata_raw = fetch_data(path, split="train")
+    logger.info(f"data_raw:\n{data_raw}")
+    logger.info(f"metadata_raw:\n{metadata_raw}")
+    data, metadata = prepare_data(data_raw, metadata_raw)
+    logger.info(f"data:\n{data}")
     logger.info(f"metadata:\n{metadata}")
