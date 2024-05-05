@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from unittest.mock import Mock, patch
 from zipfile import ZipFile
 
+import numpy as np
 import polars as pl
 import pytest
 from coola import objects_are_equal
@@ -27,6 +28,7 @@ from arctix.dataset.epic_kitchen_100 import (
     load_noun_vocab,
     load_verb_vocab,
     prepare_data,
+    to_array,
     to_list,
 )
 from arctix.utils.vocab import Vocabulary
@@ -1271,6 +1273,252 @@ def test_group_by_sequence_empty() -> None:
                 Column.VIDEO_ID: pl.String,
             },
         ),
+    )
+
+
+##############################
+#     Tests for to_array     #
+##############################
+
+
+def test_to_array(data_prepared2: pl.DataFrame) -> None:
+    mask = np.array(
+        [
+            [False, False, False, False, False],
+            [False, False, False, False, True],
+            [False, False, False, False, False],
+            [False, False, False, True, True],
+            [False, False, False, False, False],
+        ],
+        dtype=bool,
+    )
+    assert objects_are_equal(
+        to_array(data_prepared2),
+        {
+            Column.NARRATION: np.ma.masked_array(
+                data=np.array(
+                    [
+                        ["open door", "turn on light", "close door", "open fridge", "take celery"],
+                        ["take plate", "open bin", "throw leftovers into bin", "close bin", "N/A"],
+                        [
+                            "open door",
+                            "close door",
+                            "switch on lights",
+                            "adjust lights",
+                            "open fridge",
+                        ],
+                        ["take cup", "put down cup", "take cereal bag", "N/A", "N/A"],
+                        [
+                            "open fridge",
+                            "take mushrooms",
+                            "move container",
+                            "take sausages",
+                            "put mushrooms into fridge",
+                        ],
+                    ],
+                    dtype=str,
+                ),
+                mask=mask,
+            ),
+            Column.NARRATION_ID: np.ma.masked_array(
+                data=np.array(
+                    [
+                        ["P01_01_0", "P01_01_1", "P01_01_2", "P01_01_3", "P01_01_4"],
+                        ["P01_02_0", "P01_02_1", "P01_02_2", "P01_02_3", "N/A"],
+                        ["P01_03_0", "P01_03_1", "P01_03_2", "P01_03_3", "P01_03_4"],
+                        ["P01_04_0", "P01_04_1", "P01_04_2", "N/A", "N/A"],
+                        ["P01_05_0", "P01_05_1", "P01_05_2", "P01_05_3", "P01_05_4"],
+                    ],
+                    dtype=str,
+                ),
+                mask=mask,
+            ),
+            Column.NOUN: np.ma.masked_array(
+                data=np.array(
+                    [
+                        ["door", "light", "door", "fridge", "celery"],
+                        ["plate", "bin", "leftover", "bin", "N/A"],
+                        ["door", "door", "light", "light", "fridge"],
+                        ["cup", "cup", "bag:cereal", "N/A", "N/A"],
+                        ["fridge", "mushroom", "container", "sausage", "mushroom"],
+                    ],
+                    dtype=str,
+                ),
+                mask=mask,
+            ),
+            Column.NOUN_ID: np.ma.masked_array(
+                data=np.array(
+                    [
+                        [3, 114, 3, 12, 223],
+                        [2, 36, 34, 36, -1],
+                        [3, 3, 114, 114, 12],
+                        [13, 13, 19, -1, -1],
+                        [12, 56, 21, 86, 56],
+                    ],
+                    dtype=np.int64,
+                ),
+                mask=mask,
+            ),
+            Column.PARTICIPANT_ID: np.array(["P01", "P01", "P01", "P01", "P01"], dtype=str),
+            Column.SEQUENCE_LENGTH: np.array([5, 4, 5, 3, 5], dtype=np.int64),
+            Column.START_FRAME: np.ma.masked_array(
+                data=np.array(
+                    [
+                        [8, 262, 418, 766, 915],
+                        [304, 516, 607, 1102, -1],
+                        [16, 195, 292, 394, 696],
+                        [6, 172, 369, -1, -1],
+                        [248, 390, 481, 524, 849],
+                    ],
+                    dtype=np.int64,
+                ),
+                mask=mask,
+            ),
+            Column.START_TIME_SECOND: np.ma.masked_array(
+                data=np.array(
+                    [
+                        [0.14, 4.37, 6.98, 12.77, 15.25],
+                        [5.07, 8.61, 10.13, 18.38, -1],
+                        [0.27, 3.25, 4.88, 6.57, 11.61],
+                        [0.11, 2.87, 6.15, -1, -1],
+                        [4.14, 6.51, 8.03, 8.74, 14.15],
+                    ],
+                    dtype=np.float32,
+                ),
+                mask=mask,
+            ),
+            Column.STOP_FRAME: np.ma.masked_array(
+                data=np.array(
+                    [
+                        [202, 370, 569, 839, 983],
+                        [410, 556, 1087, 1147, -1],
+                        [126, 352, 362, 505, 787],
+                        [182, 306, 406, -1, -1],
+                        [355, 484, 522, 853, 973],
+                    ],
+                    dtype=np.int64,
+                ),
+                mask=mask,
+            ),
+            Column.STOP_TIME_SECOND: np.ma.masked_array(
+                data=np.array(
+                    [
+                        [3.37, 6.17, 9.49, 13.99, 16.40],
+                        [6.84, 9.28, 18.13, 19.13, -1.0],
+                        [2.11, 5.88, 6.04, 8.42, 13.12],
+                        [3.04, 5.10, 6.77, -1.0, -1.0],
+                        [5.93, 8.08, 8.70, 14.23, 16.23],
+                    ],
+                    dtype=np.float32,
+                ),
+                mask=mask,
+            ),
+            Column.VERB: np.ma.masked_array(
+                data=np.array(
+                    [
+                        ["open", "turn-on", "close", "open", "take"],
+                        ["take", "open", "throw-into", "close", "N/A"],
+                        ["open", "close", "switch-on", "adjust", "open"],
+                        ["take", "put-down", "take", "N/A", "N/A"],
+                        ["open", "take", "move", "take", "put-into"],
+                    ],
+                    dtype=str,
+                ),
+                mask=mask,
+            ),
+            Column.VERB_ID: np.ma.masked_array(
+                data=np.array(
+                    [
+                        [3, 6, 4, 3, 0],
+                        [0, 3, 13, 4, -1],
+                        [3, 4, 6, 17, 3],
+                        [0, 1, 0, -1, -1],
+                        [3, 0, 11, 0, 5],
+                    ],
+                    dtype=np.int64,
+                ),
+                mask=mask,
+            ),
+            Column.VIDEO_ID: np.array(
+                ["P01_01", "P01_02", "P01_03", "P01_04", "P01_05"], dtype=str
+            ),
+        },
+    )
+
+
+def test_to_array_empty() -> None:
+    assert objects_are_equal(
+        to_array(
+            pl.DataFrame(
+                {
+                    Column.ALL_NOUN_IDS: [],
+                    Column.ALL_NOUNS: [],
+                    Column.NARRATION: [],
+                    Column.NARRATION_ID: [],
+                    Column.NARRATION_TIMESTAMP: [],
+                    Column.NOUN: [],
+                    Column.NOUN_ID: [],
+                    Column.PARTICIPANT_ID: [],
+                    Column.START_FRAME: [],
+                    Column.START_TIME_SECOND: [],
+                    Column.START_TIMESTAMP: [],
+                    Column.STOP_FRAME: [],
+                    Column.STOP_TIME_SECOND: [],
+                    Column.STOP_TIMESTAMP: [],
+                    Column.VERB: [],
+                    Column.VERB_ID: [],
+                    Column.VIDEO_ID: [],
+                },
+                schema={
+                    Column.ALL_NOUN_IDS: pl.List(pl.Int64),
+                    Column.ALL_NOUNS: pl.List(pl.String),
+                    Column.NARRATION: pl.String,
+                    Column.NARRATION_ID: pl.String,
+                    Column.NARRATION_TIMESTAMP: pl.Time,
+                    Column.NOUN: pl.String,
+                    Column.NOUN_ID: pl.Int64,
+                    Column.PARTICIPANT_ID: pl.String,
+                    Column.START_FRAME: pl.Int64,
+                    Column.START_TIME_SECOND: pl.Float32,
+                    Column.START_TIMESTAMP: pl.Time,
+                    Column.STOP_FRAME: pl.Int64,
+                    Column.STOP_TIME_SECOND: pl.Float32,
+                    Column.STOP_TIMESTAMP: pl.Time,
+                    Column.VERB: pl.String,
+                    Column.VERB_ID: pl.Int64,
+                    Column.VIDEO_ID: pl.String,
+                },
+            ),
+        ),
+        {
+            Column.NARRATION: np.ma.masked_array(data=np.zeros(shape=(0, 0), dtype=str), mask=None),
+            Column.NARRATION_ID: np.ma.masked_array(
+                data=np.zeros(shape=(0, 0), dtype=str), mask=None
+            ),
+            Column.NOUN: np.ma.masked_array(data=np.zeros(shape=(0, 0), dtype=str), mask=None),
+            Column.NOUN_ID: np.ma.masked_array(
+                data=np.zeros(shape=(0, 0), dtype=np.int64), mask=None
+            ),
+            Column.PARTICIPANT_ID: np.zeros(shape=(0,), dtype=str),
+            Column.SEQUENCE_LENGTH: np.zeros(shape=(0,), dtype=np.int64),
+            Column.START_FRAME: np.ma.masked_array(
+                data=np.zeros(shape=(0, 0), dtype=np.int64), mask=None
+            ),
+            Column.START_TIME_SECOND: np.ma.masked_array(
+                data=np.zeros(shape=(0, 0), dtype=np.float32), mask=None
+            ),
+            Column.STOP_FRAME: np.ma.masked_array(
+                data=np.zeros(shape=(0, 0), dtype=np.int64), mask=None
+            ),
+            Column.STOP_TIME_SECOND: np.ma.masked_array(
+                data=np.zeros(shape=(0, 0), dtype=np.float32), mask=None
+            ),
+            Column.VERB: np.ma.masked_array(data=np.zeros(shape=(0, 0), dtype=str), mask=None),
+            Column.VERB_ID: np.ma.masked_array(
+                data=np.zeros(shape=(0, 0), dtype=np.int64), mask=None
+            ),
+            Column.VIDEO_ID: np.zeros(shape=(0,), dtype=str),
+        },
     )
 
 
