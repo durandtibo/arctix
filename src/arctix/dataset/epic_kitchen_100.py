@@ -472,6 +472,18 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
     return transformer.transform(data)
 
 
+def to_list(frame: pl.DataFrame) -> dict[str, list]:
+    r"""Convert a DataFrame to a dictionary of lists.
+
+    Args:
+        frame: The input DataFrame.
+
+    Returns:
+        The dictionary of lists.
+    """
+    return group_by_sequence(frame).to_dict(as_series=False)
+
+
 if __name__ == "__main__":  # pragma: no cover
     import os
 
