@@ -21,11 +21,13 @@ import zipfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+import numpy as np
 import polars as pl
 from iden.utils.path import sanitize_path
 
 from arctix.transformer import dataframe as td
 from arctix.utils.download import download_url_to_file
+from arctix.utils.masking import convert_sequences_to_array, generate_mask_from_lengths
 from arctix.utils.vocab import Vocabulary
 
 logger = logging.getLogger(__name__)
@@ -470,6 +472,117 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
         ]
     )
     return transformer.transform(data)
+
+
+def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
+    r"""Convert a DataFrame to a dictionary of arrays.
+
+    Args:
+        frame: The input DataFrame.
+
+    Returns:
+        The dictionary of arrays.
+    """
+    groups = group_by_sequence(frame)
+    lengths = groups.get_column(Column.SEQUENCE_LENGTH).to_numpy()
+    mask = generate_mask_from_lengths(lengths)
+    return {
+        Column.NARRATION: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.NARRATION).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.object_,
+                padded_value="N/A",
+            ).astype(str),
+            mask=mask,
+        ),
+        Column.NARRATION_ID: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.NARRATION_ID).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.object_,
+                padded_value="N/A",
+            ).astype(str),
+            mask=mask,
+        ),
+        Column.NOUN: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.NOUN).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.object_,
+                padded_value="N/A",
+            ).astype(str),
+            mask=mask,
+        ),
+        Column.NOUN_ID: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.NOUN_ID).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.int64,
+                padded_value=-1,
+            ),
+            mask=mask,
+        ),
+        Column.PARTICIPANT_ID: groups.get_column(Column.PARTICIPANT_ID).to_numpy().astype(str),
+        Column.SEQUENCE_LENGTH: groups.get_column(Column.SEQUENCE_LENGTH)
+        .to_numpy()
+        .astype(np.int64),
+        Column.START_FRAME: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.START_FRAME).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.int64,
+                padded_value=-1,
+            ),
+            mask=mask,
+        ),
+        Column.START_TIME_SECOND: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.START_TIME_SECOND).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.float32,
+                padded_value=-1.0,
+            ),
+            mask=mask,
+        ),
+        Column.STOP_FRAME: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.STOP_FRAME).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.int64,
+                padded_value=-1,
+            ),
+            mask=mask,
+        ),
+        Column.STOP_TIME_SECOND: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.STOP_TIME_SECOND).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.float32,
+                padded_value=-1.0,
+            ),
+            mask=mask,
+        ),
+        Column.VERB: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.VERB).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.object_,
+                padded_value="N/A",
+            ).astype(str),
+            mask=mask,
+        ),
+        Column.VERB_ID: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.VERB_ID).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.int64,
+                padded_value=-1,
+            ),
+            mask=mask,
+        ),
+        Column.VIDEO_ID: groups.get_column(Column.VIDEO_ID).to_numpy().astype(str),
+    }
 
 
 def to_list(frame: pl.DataFrame) -> dict[str, list]:
