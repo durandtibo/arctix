@@ -9,7 +9,7 @@ from zipfile import ZipFile
 import numpy as np
 import polars as pl
 import pytest
-from coola import objects_are_equal
+from coola import objects_are_allclose, objects_are_equal
 from iden.io import save_text
 from polars.testing import assert_frame_equal
 
@@ -1292,7 +1292,7 @@ def test_to_array(data_prepared2: pl.DataFrame) -> None:
         ],
         dtype=bool,
     )
-    assert objects_are_equal(
+    assert objects_are_allclose(
         to_array(data_prepared2),
         {
             Column.NARRATION: np.ma.masked_array(
@@ -1383,7 +1383,7 @@ def test_to_array(data_prepared2: pl.DataFrame) -> None:
                         [0.11, 2.87, 6.15, -1, -1],
                         [4.14, 6.51, 8.03, 8.74, 14.15],
                     ],
-                    dtype=np.float32,
+                    dtype=np.float64,
                 ),
                 mask=mask,
             ),
@@ -1409,7 +1409,7 @@ def test_to_array(data_prepared2: pl.DataFrame) -> None:
                         [3.04, 5.10, 6.77, -1.0, -1.0],
                         [5.93, 8.08, 8.70, 14.23, 16.23],
                     ],
-                    dtype=np.float32,
+                    dtype=np.float64,
                 ),
                 mask=mask,
             ),
@@ -1443,6 +1443,7 @@ def test_to_array(data_prepared2: pl.DataFrame) -> None:
                 ["P01_01", "P01_02", "P01_03", "P01_04", "P01_05"], dtype=str
             ),
         },
+        show_difference=True,
     )
 
 
@@ -1505,13 +1506,13 @@ def test_to_array_empty() -> None:
                 data=np.zeros(shape=(0, 0), dtype=np.int64), mask=None
             ),
             Column.START_TIME_SECOND: np.ma.masked_array(
-                data=np.zeros(shape=(0, 0), dtype=np.float32), mask=None
+                data=np.zeros(shape=(0, 0), dtype=np.float64), mask=None
             ),
             Column.STOP_FRAME: np.ma.masked_array(
                 data=np.zeros(shape=(0, 0), dtype=np.int64), mask=None
             ),
             Column.STOP_TIME_SECOND: np.ma.masked_array(
-                data=np.zeros(shape=(0, 0), dtype=np.float32), mask=None
+                data=np.zeros(shape=(0, 0), dtype=np.float64), mask=None
             ),
             Column.VERB: np.ma.masked_array(data=np.zeros(shape=(0, 0), dtype=str), mask=None),
             Column.VERB_ID: np.ma.masked_array(

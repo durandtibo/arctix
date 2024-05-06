@@ -539,7 +539,7 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
             data=convert_sequences_to_array(
                 groups.get_column(Column.START_TIME_SECOND).to_list(),
                 max_len=mask.shape[1],
-                dtype=np.float32,
+                dtype=np.float64,
                 padded_value=-1.0,
             ),
             mask=mask,
@@ -557,7 +557,7 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
             data=convert_sequences_to_array(
                 groups.get_column(Column.STOP_TIME_SECOND).to_list(),
                 max_len=mask.shape[1],
-                dtype=np.float32,
+                dtype=np.float64,
                 padded_value=-1.0,
             ),
             mask=mask,
