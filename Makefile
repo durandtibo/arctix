@@ -4,6 +4,7 @@ SOURCE=src/$(NAME)
 TESTS=tests
 UNIT_TESTS=tests/unit
 INTEGRATION_TESTS=tests/integration
+DATASET_TESTS=tests/dataset
 
 LAST_GIT_TAG := $(shell git tag --sort=taggerdate | grep -o 'v.*' | tail -1)
 DOC_TAG := $(shell echo $(LAST_GIT_TAG) | cut -c 2- | awk -F \. {'print $$1"."$$2'})
@@ -59,6 +60,10 @@ unit-test :
 .PHONY : integration-test
 integration-test :
 	python -m pytest --xdoctest $(INTEGRATION_TESTS)
+
+.PHONY : dataset-test
+dataset-test :
+	python -m pytest $(DATASET_TESTS)
 
 .PHONY : unit-test-cov
 unit-test-cov :
