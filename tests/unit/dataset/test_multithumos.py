@@ -779,16 +779,18 @@ def test_to_array(data_prepared: pl.DataFrame) -> None:
                 mask=mask,
             ),
             Column.ACTION_ID: np.ma.masked_array(
-                data=np.array([[1, 0, 0, 0], [1, 0, 0, 0], [1, 0, 0, 1], [0, 0, 0, 0]], dtype=int),
+                data=np.array(
+                    [[1, -1, -1, -1], [1, -1, -1, -1], [1, 0, 0, 1], [0, 0, 0, -1]], dtype=int
+                ),
                 mask=mask,
             ),
             Column.END_TIME: np.ma.masked_array(
                 data=np.array(
                     [
-                        [76.0, 0.0, 0.0, 0.0],
-                        [50.0, 0.0, 0.0, 0.0],
+                        [76.0, -1.0, -1.0, -1.0],
+                        [50.0, -1.0, -1.0, -1.0],
                         [5.0, 18.0, 18.0, 83.0],
-                        [3.0, 5.0, 20.0, 0.0],
+                        [3.0, 5.0, 20.0, -1.0],
                     ],
                     dtype=float,
                 ),
@@ -801,10 +803,10 @@ def test_to_array(data_prepared: pl.DataFrame) -> None:
             Column.START_TIME: np.ma.masked_array(
                 data=np.array(
                     [
-                        [72.0, 0.0, 0.0, 0.0],
-                        [44.0, 0.0, 0.0, 0.0],
+                        [72.0, -1.0, -1.0, -1.0],
+                        [44.0, -1.0, -1.0, -1.0],
                         [1.0, 17.0, 17.0, 79.0],
-                        [2.0, 4.0, 20.0, 0.0],
+                        [2.0, 4.0, 20.0, -1.0],
                     ],
                     dtype=float,
                 ),
