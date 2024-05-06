@@ -518,7 +518,7 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
         .astype(np.int64),
         Column.PERSON: groups.get_column(Column.PERSON).to_numpy().astype(str),
         Column.PERSON_ID: groups.get_column(Column.PERSON_ID).to_numpy().astype(np.int64),
-        Column.SEQUENCE_LENGTH: lengths.astype(int),
+        Column.SEQUENCE_LENGTH: lengths.astype(np.int64),
         Column.START_TIME: np.ma.masked_array(
             data=convert_sequences_to_array(
                 groups.get_column(Column.START_TIME).to_list(),
