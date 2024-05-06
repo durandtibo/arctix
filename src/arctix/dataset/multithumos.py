@@ -645,13 +645,19 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
         ),
         Column.ACTION_ID: np.ma.masked_array(
             data=convert_sequences_to_array(
-                groups.get_column(Column.ACTION_ID).to_list(), dtype=int, max_len=mask.shape[1]
+                groups.get_column(Column.ACTION_ID).to_list(),
+                dtype=int,
+                max_len=mask.shape[1],
+                padded_value=-1,
             ).astype(int),
             mask=mask,
         ),
         Column.END_TIME: np.ma.masked_array(
             data=convert_sequences_to_array(
-                groups.get_column(Column.END_TIME).to_list(), dtype=float, max_len=mask.shape[1]
+                groups.get_column(Column.END_TIME).to_list(),
+                dtype=float,
+                max_len=mask.shape[1],
+                padded_value=-1.0,
             ).astype(float),
             mask=mask,
         ),
@@ -659,7 +665,10 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
         Column.SPLIT: groups.get_column(Column.SPLIT).to_numpy().astype(str),
         Column.START_TIME: np.ma.masked_array(
             data=convert_sequences_to_array(
-                groups.get_column(Column.START_TIME).to_list(), dtype=float, max_len=mask.shape[1]
+                groups.get_column(Column.START_TIME).to_list(),
+                dtype=float,
+                max_len=mask.shape[1],
+                padded_value=-1.0,
             ).astype(float),
             mask=mask,
         ),

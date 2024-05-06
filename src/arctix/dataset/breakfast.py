@@ -505,27 +505,36 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
         ),
         Column.ACTION_ID: np.ma.masked_array(
             data=convert_sequences_to_array(
-                groups.get_column(Column.ACTION_ID).to_list(), max_len=mask.shape[1], dtype=int
-            ).astype(int),
+                groups.get_column(Column.ACTION_ID).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.int64,
+                padded_value=-1,
+            ),
             mask=mask,
         ),
         Column.COOKING_ACTIVITY: groups.get_column(Column.COOKING_ACTIVITY).to_numpy().astype(str),
         Column.COOKING_ACTIVITY_ID: groups.get_column(Column.COOKING_ACTIVITY_ID)
         .to_numpy()
-        .astype(int),
+        .astype(np.int64),
         Column.PERSON: groups.get_column(Column.PERSON).to_numpy().astype(str),
-        Column.PERSON_ID: groups.get_column(Column.PERSON_ID).to_numpy().astype(int),
+        Column.PERSON_ID: groups.get_column(Column.PERSON_ID).to_numpy().astype(np.int64),
         Column.SEQUENCE_LENGTH: lengths.astype(int),
         Column.START_TIME: np.ma.masked_array(
             data=convert_sequences_to_array(
-                groups.get_column(Column.START_TIME).to_list(), max_len=mask.shape[1], dtype=float
-            ).astype(float),
+                groups.get_column(Column.START_TIME).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.float64,
+                padded_value=-1.0,
+            ),
             mask=mask,
         ),
         Column.END_TIME: np.ma.masked_array(
             data=convert_sequences_to_array(
-                groups.get_column(Column.END_TIME).to_list(), max_len=mask.shape[1], dtype=float
-            ).astype(float),
+                groups.get_column(Column.END_TIME).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.float64,
+                padded_value=-1.0,
+            ),
             mask=mask,
         ),
     }

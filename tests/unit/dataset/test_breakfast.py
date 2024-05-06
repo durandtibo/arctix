@@ -955,7 +955,7 @@ def test_to_array(data_prepared: pl.DataFrame) -> None:
                 mask=mask,
             ),
             Column.ACTION_ID: np.ma.masked_array(
-                data=np.array([[0, 2, 5, 1, 3, 0], [0, 1, 4, 0, 0, 0]]),
+                data=np.array([[0, 2, 5, 1, 3, 0], [0, 1, 4, 0, -1, -1]]),
                 mask=mask,
             ),
             Column.COOKING_ACTIVITY: np.array(["cereals", "milk"]),
@@ -964,7 +964,7 @@ def test_to_array(data_prepared: pl.DataFrame) -> None:
                 data=np.array(
                     [
                         [30.0, 150.0, 428.0, 575.0, 705.0, 836.0],
-                        [47.0, 215.0, 565.0, 747.0, 0.0, 0.0],
+                        [47.0, 215.0, 565.0, 747.0, -1.0, -1.0],
                     ]
                 ),
                 mask=mask,
@@ -973,7 +973,7 @@ def test_to_array(data_prepared: pl.DataFrame) -> None:
             Column.PERSON_ID: np.array([0, 1]),
             Column.START_TIME: np.ma.masked_array(
                 data=np.array(
-                    [[1.0, 31.0, 151.0, 429.0, 576.0, 706.0], [1.0, 48.0, 216.0, 566.0, 0.0, 0.0]]
+                    [[1.0, 31.0, 151.0, 429.0, 576.0, 706.0], [1.0, 48.0, 216.0, 566.0, -1.0, -1.0]]
                 ),
                 mask=mask,
             ),
