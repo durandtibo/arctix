@@ -24,6 +24,7 @@ def test_breakfast_dataset_coarse(data_path: Path) -> None:
 
     data, metadata = prepare_data(data_raw)
     check_data_coarse(data)
+    check_metadata_coarse(metadata)
 
     arrays = to_array(data)
     check_arrays_coarse(arrays)
@@ -125,6 +126,7 @@ def test_breakfast_dataset_fine(data_path: Path) -> None:
 
     data, metadata = prepare_data(data_raw)
     check_data_fine(data)
+    check_metadata_fine(metadata)
 
     arrays = to_array(data)
     check_arrays_fine(arrays)
