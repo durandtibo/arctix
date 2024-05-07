@@ -351,16 +351,16 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
     >>> data, metadata = prepare_data(frame)
     >>> data
     shape: (4, 6)
-    ┌─────────┬───────────┬───────────┬────────────┬────────────┬────────────────────┐
-    │ action  ┆ action_id ┆ end_time  ┆ split      ┆ start_time ┆ video              │
-    │ ---     ┆ ---       ┆ ---       ┆ ---        ┆ ---        ┆ ---                │
-    │ str     ┆ i64       ┆ f32       ┆ str        ┆ f32        ┆ str                │
-    ╞═════════╪═══════════╪═══════════╪════════════╪════════════╪════════════════════╡
-    │ dribble ┆ 0         ┆ 50.900002 ┆ test       ┆ 44.0       ┆ video_test_2       │
-    │ guard   ┆ 1         ┆ 18.33     ┆ test       ┆ 17.57      ┆ video_test_4       │
-    │ dribble ┆ 0         ┆ 76.400002 ┆ validation ┆ 72.800003  ┆ video_validation_1 │
-    │ dribble ┆ 0         ┆ 5.4       ┆ validation ┆ 1.5        ┆ video_validation_3 │
-    └─────────┴───────────┴───────────┴────────────┴────────────┴────────────────────┘
+    ┌─────────┬───────────┬──────────┬────────────┬────────────┬────────────────────┐
+    │ action  ┆ action_id ┆ end_time ┆ split      ┆ start_time ┆ video              │
+    │ ---     ┆ ---       ┆ ---      ┆ ---        ┆ ---        ┆ ---                │
+    │ str     ┆ i64       ┆ f64      ┆ str        ┆ f64        ┆ str                │
+    ╞═════════╪═══════════╪══════════╪════════════╪════════════╪════════════════════╡
+    │ dribble ┆ 0         ┆ 50.9     ┆ test       ┆ 44.0       ┆ video_test_2       │
+    │ guard   ┆ 1         ┆ 18.33    ┆ test       ┆ 17.57      ┆ video_test_4       │
+    │ dribble ┆ 0         ┆ 76.4     ┆ validation ┆ 72.8       ┆ video_validation_1 │
+    │ dribble ┆ 0         ┆ 5.4      ┆ validation ┆ 1.5        ┆ video_validation_3 │
+    └─────────┴───────────┴──────────┴────────────┴────────────┴────────────────────┘
     >>> metadata
     {'vocab_action': Vocabulary(
       counter=Counter({'dribble': 3, 'guard': 1}),
@@ -374,7 +374,7 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
     transformer = td.Sequential(
         [
             td.Sort(columns=[Column.VIDEO, Column.START_TIME]),
-            td.Cast(columns=[Column.START_TIME, Column.END_TIME], dtype=pl.Float32),
+            td.Cast(columns=[Column.START_TIME, Column.END_TIME], dtype=pl.Float64),
             td.StripChars(columns=[Column.ACTION, Column.VIDEO]),
             td.TokenToIndex(
                 vocab=vocab_action, token_column=Column.ACTION, index_column=Column.ACTION_ID
@@ -498,8 +498,8 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
     ...     },
     ...     schema={
     ...         Column.VIDEO: pl.String,
-    ...         Column.START_TIME: pl.Float32,
-    ...         Column.END_TIME: pl.Float32,
+    ...         Column.START_TIME: pl.Float64,
+    ...         Column.END_TIME: pl.Float64,
     ...         Column.ACTION: pl.String,
     ...         Column.ACTION_ID: pl.Int64,
     ...         Column.SPLIT: pl.String,
@@ -511,16 +511,17 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
     ┌──────────────┬─────────────┬──────────────┬─────────────┬────────────┬─────────────┬─────────────┐
     │ action       ┆ action_id   ┆ end_time     ┆ sequence_le ┆ split      ┆ start_time  ┆ video       │
     │ ---          ┆ ---         ┆ ---          ┆ ngth        ┆ ---        ┆ ---         ┆ ---         │
-    │ list[str]    ┆ list[i64]   ┆ list[f32]    ┆ ---         ┆ str        ┆ list[f32]   ┆ str         │
+    │ list[str]    ┆ list[i64]   ┆ list[f64]    ┆ ---         ┆ str        ┆ list[f64]   ┆ str         │
     │              ┆             ┆              ┆ u32         ┆            ┆             ┆             │
     ╞══════════════╪═════════════╪══════════════╪═════════════╪════════════╪═════════════╪═════════════╡
     │ ["dribble",  ┆ [1, 0, 1]   ┆ [5.4, 18.33, ┆ 3           ┆ validation ┆ [1.5,       ┆ video_valid │
-    │ "guard",     ┆             ┆ 83.900002]   ┆             ┆            ┆ 17.57,      ┆ ation_1     │
-    │ "dribble"…   ┆             ┆              ┆             ┆            ┆ 79.300003]  ┆             │
+    │ "guard",     ┆             ┆ 83.9]        ┆             ┆            ┆ 17.57,      ┆ ation_1     │
+    │ "dribble"…   ┆             ┆              ┆             ┆            ┆ 79.3]       ┆             │
     │ ["guard",    ┆ [0, 0, … 2] ┆ [3.6, 5.07,  ┆ 4           ┆ validation ┆ [2.97,      ┆ video_valid │
     │ "guard", …   ┆             ┆ … 30.23]     ┆             ┆            ┆ 4.54, …     ┆ ation_2     │
     │ "shoot"]     ┆             ┆              ┆             ┆            ┆ 27.42]      ┆             │
     └──────────────┴─────────────┴──────────────┴─────────────┴────────────┴─────────────┴─────────────┘
+
 
     ```
     """
@@ -591,8 +592,8 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     ...     },
     ...     schema={
     ...         Column.VIDEO: pl.String,
-    ...         Column.START_TIME: pl.Float32,
-    ...         Column.END_TIME: pl.Float32,
+    ...         Column.START_TIME: pl.Float64,
+    ...         Column.END_TIME: pl.Float64,
     ...         Column.ACTION: pl.String,
     ...         Column.ACTION_ID: pl.Int64,
     ...         Column.SPLIT: pl.String,
@@ -725,8 +726,8 @@ def to_list(frame: pl.DataFrame) -> dict[str, list]:
     ...     },
     ...     schema={
     ...         Column.VIDEO: pl.String,
-    ...         Column.START_TIME: pl.Float32,
-    ...         Column.END_TIME: pl.Float32,
+    ...         Column.START_TIME: pl.Float64,
+    ...         Column.END_TIME: pl.Float64,
     ...         Column.ACTION: pl.String,
     ...         Column.ACTION_ID: pl.Int64,
     ...         Column.SPLIT: pl.String,

@@ -61,10 +61,10 @@ def check_data_coarse(data: pl.DataFrame) -> None:
         pl.Int64,
         pl.String,
         pl.Int64,
-        pl.Float32,
+        pl.Float64,
         pl.String,
         pl.Int64,
-        pl.Float32,
+        pl.Float64,
     ]
 
 
@@ -163,10 +163,10 @@ def check_data_fine(data: pl.DataFrame) -> None:
         pl.Int64,
         pl.String,
         pl.Int64,
-        pl.Float32,
+        pl.Float64,
         pl.String,
         pl.Int64,
-        pl.Float32,
+        pl.Float64,
     ]
 
 

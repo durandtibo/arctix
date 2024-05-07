@@ -292,7 +292,7 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
     transformer = td.Sequential(
         [
             td.Sort(columns=[Column.COOKING_ACTIVITY, Column.PERSON, Column.START_TIME]),
-            td.Cast(columns=[Column.START_TIME, Column.END_TIME], dtype=pl.Float32),
+            td.Cast(columns=[Column.START_TIME, Column.END_TIME], dtype=pl.Float64),
             td.StripChars(columns=[Column.ACTION, Column.PERSON, Column.COOKING_ACTIVITY]),
             td.Function(partial(filter_by_split, split=split)),
             td.TokenToIndex(

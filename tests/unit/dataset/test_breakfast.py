@@ -186,10 +186,10 @@ def data_prepared() -> pl.DataFrame:
             Column.ACTION_ID: pl.Int64,
             Column.COOKING_ACTIVITY: pl.String,
             Column.COOKING_ACTIVITY_ID: pl.Int64,
-            Column.END_TIME: pl.Float32,
+            Column.END_TIME: pl.Float64,
             Column.PERSON: pl.String,
             Column.PERSON_ID: pl.Int64,
-            Column.START_TIME: pl.Float32,
+            Column.START_TIME: pl.Float64,
         },
     )
 
@@ -212,10 +212,10 @@ def data_prepared_empty() -> pl.DataFrame:
             Column.ACTION_ID: pl.Int64,
             Column.COOKING_ACTIVITY: pl.String,
             Column.COOKING_ACTIVITY_ID: pl.Int64,
-            Column.END_TIME: pl.Float32,
+            Column.END_TIME: pl.Float64,
             Column.PERSON: pl.String,
             Column.PERSON_ID: pl.Int64,
-            Column.START_TIME: pl.Float32,
+            Column.START_TIME: pl.Float64,
         },
     )
 
@@ -799,10 +799,10 @@ def test_prepare_data_split_train1() -> None:
                 Column.ACTION_ID: pl.Int64,
                 Column.COOKING_ACTIVITY: pl.String,
                 Column.COOKING_ACTIVITY_ID: pl.Int64,
-                Column.END_TIME: pl.Float32,
+                Column.END_TIME: pl.Float64,
                 Column.PERSON: pl.String,
                 Column.PERSON_ID: pl.Int64,
-                Column.START_TIME: pl.Float32,
+                Column.START_TIME: pl.Float64,
             },
         ),
     )
@@ -840,9 +840,9 @@ def test_prepare_data_empty(data_prepared_empty: pl.DataFrame) -> None:
             schema={
                 Column.ACTION: pl.String,
                 Column.COOKING_ACTIVITY: pl.String,
-                Column.END_TIME: pl.Float32,
+                Column.END_TIME: pl.Float64,
                 Column.PERSON: pl.String,
-                Column.START_TIME: pl.Float32,
+                Column.START_TIME: pl.Float64,
             },
         )
     )
@@ -891,11 +891,11 @@ def test_group_by_sequence(data_prepared: pl.DataFrame) -> None:
                 Column.ACTION_ID: pl.List(pl.Int64),
                 Column.COOKING_ACTIVITY: pl.String,
                 Column.COOKING_ACTIVITY_ID: pl.Int64,
-                Column.END_TIME: pl.List(pl.Float32),
+                Column.END_TIME: pl.List(pl.Float64),
                 Column.PERSON: pl.String,
                 Column.PERSON_ID: pl.Int64,
                 Column.SEQUENCE_LENGTH: pl.UInt32,
-                Column.START_TIME: pl.List(pl.Float32),
+                Column.START_TIME: pl.List(pl.Float64),
             },
         ),
     )
@@ -921,11 +921,11 @@ def test_group_by_sequence_empty(data_prepared_empty: pl.DataFrame) -> None:
                 Column.ACTION_ID: pl.List(pl.Int64),
                 Column.COOKING_ACTIVITY: pl.String,
                 Column.COOKING_ACTIVITY_ID: pl.Int64,
-                Column.END_TIME: pl.List(pl.Float32),
+                Column.END_TIME: pl.List(pl.Float64),
                 Column.PERSON: pl.String,
                 Column.PERSON_ID: pl.Int64,
                 Column.SEQUENCE_LENGTH: pl.UInt32,
-                Column.START_TIME: pl.List(pl.Float32),
+                Column.START_TIME: pl.List(pl.Float64),
             },
         ),
     )

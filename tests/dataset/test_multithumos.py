@@ -79,9 +79,9 @@ def check_data(data: pl.DataFrame, split: DatasetSplit) -> None:
     assert data.dtypes == [
         pl.String,
         pl.Int64,
-        pl.Float32,
+        pl.Float64,
         pl.String,
-        pl.Float32,
+        pl.Float64,
         pl.String,
     ]
 
