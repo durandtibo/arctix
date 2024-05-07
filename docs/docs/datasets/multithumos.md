@@ -4,9 +4,9 @@ This page contains information about the MultiTHUMOS dataset, which was publishe
 paper:
 
 ```textmate
-Every Moment Counts: Dense Detailed Labeling of Actions in Complex
-Videos. Yeung S., Russakovsky O., Jin N., Andriluka M., Mori G., Fei-Fei
-L. IJCV 2017 (http://arxiv.org/pdf/1507.05738)
+Every Moment Counts: Dense Detailed Labeling of Actions in Complex Videos.
+Yeung S., Russakovsky O., Jin N., Andriluka M., Mori G., Fei-Fei L.
+IJCV 2017 (http://arxiv.org/pdf/1507.05738)
 ```
 
 The data can be downloaded from
@@ -67,7 +67,7 @@ shape: (38_690, 6)
 ┌─────────────────────────┬────────────┬────────────┬─────────────────────┬───────────┬────────────┐
 │ video                   ┆ start_time ┆ end_time   ┆ action              ┆ action_id ┆ split      │
 │ ---                     ┆ ---        ┆ ---        ┆ ---                 ┆ ---       ┆ ---        │
-│ str                     ┆ f32        ┆ f32        ┆ str                 ┆ i64       ┆ str        │
+│ str                     ┆ f64        ┆ f64        ┆ str                 ┆ i64       ┆ str        │
 ╞═════════════════════════╪════════════╪════════════╪═════════════════════╪═══════════╪════════════╡
 │ video_test_0000004      ┆ 0.03       ┆ 1.1        ┆ Stand               ┆ 3         ┆ test       │
 │ video_test_0000004      ┆ 0.2        ┆ 1.1        ┆ CricketBowling      ┆ 32        ┆ test       │
@@ -115,7 +115,7 @@ shape: (18_482, 6)
 ┌─────────────────────────┬────────────┬────────────┬─────────────────────┬───────────┬────────────┐
 │ video                   ┆ start_time ┆ end_time   ┆ action              ┆ action_id ┆ split      │
 │ ---                     ┆ ---        ┆ ---        ┆ ---                 ┆ ---       ┆ ---        │
-│ str                     ┆ f32        ┆ f32        ┆ str                 ┆ i64       ┆ str        │
+│ str                     ┆ f64        ┆ f64        ┆ str                 ┆ i64       ┆ str        │
 ╞═════════════════════════╪════════════╪════════════╪═════════════════════╪═══════════╪════════════╡
 │ video_validation_000005 ┆ 0.03       ┆ 31.0       ┆ Stand               ┆ 3         ┆ validation │
 │ 1                       ┆            ┆            ┆                     ┆           ┆            │
