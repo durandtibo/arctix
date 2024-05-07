@@ -8,7 +8,13 @@ import numpy as np
 import polars as pl
 import pytest
 
-from arctix.dataset.multithumos import Column, fetch_data, prepare_data, to_array
+from arctix.dataset.multithumos import (
+    Column,
+    MetadataKeys,
+    fetch_data,
+    prepare_data,
+    to_array,
+)
 from arctix.utils.vocab import Vocabulary
 
 
@@ -89,8 +95,8 @@ def check_data(data: pl.DataFrame, split: DatasetSplit) -> None:
 def check_metadata(metadata: dict) -> None:
     assert isinstance(metadata, dict)
     assert len(metadata) == 1
-    assert isinstance(metadata["vocab_action"], Vocabulary)
-    assert len(metadata["vocab_action"]) == 65
+    assert isinstance(metadata[MetadataKeys.VOCAB_ACTION], Vocabulary)
+    assert len(metadata[MetadataKeys.VOCAB_ACTION]) == 65
 
 
 def check_arrays(arrays: dict, split: DatasetSplit) -> None:

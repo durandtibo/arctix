@@ -7,17 +7,23 @@ directory `/path/to/data/epic_kitchen_100/`.
 from __future__ import annotations
 
 __all__ = [
+    "ANNOTATION_FILENAMES",
+    "ANNOTATION_URL",
+    "Column",
+    "MetadataKeys",
+    "NUM_NOUNS",
+    "NUM_VERBS",
     "download_data",
     "fetch_data",
+    "group_by_sequence",
     "is_annotation_path_ready",
     "load_data",
     "load_event_data",
     "load_noun_vocab",
     "load_verb_vocab",
-    "group_by_sequence",
-    "to_list",
-    "to_array",
     "prepare_data",
+    "to_array",
+    "to_list",
 ]
 
 import logging
@@ -58,6 +64,8 @@ NUM_VERBS = 97
 
 
 class Column:
+    r"""Indicate the column names."""
+
     ALL_NOUNS: str = "all_nouns"
     ALL_NOUN_IDS: str = "all_noun_classes"
     NARRATION: str = "narration"
@@ -76,6 +84,13 @@ class Column:
     VERB: str = "verb"
     VERB_ID: str = "verb_class"
     VIDEO_ID: str = "video_id"
+
+
+class MetadataKeys:
+    r"""Indicate the metadata keys."""
+
+    VOCAB_NOUN: str = "vocab_noun"
+    VOCAB_VERB: str = "vocab_verb"
 
 
 def fetch_data(path: Path, split: str, force_download: bool = False) -> tuple[pl.DataFrame, dict]:
@@ -196,7 +211,10 @@ def load_data(path: Path, split: str) -> tuple[pl.DataFrame, dict]:
     ```
     """
     data = load_event_data(path.joinpath(f"EPIC_100_{split}.csv"))
-    metadata = {"noun_vocab": load_noun_vocab(path), "verb_vocab": load_verb_vocab(path)}
+    metadata = {
+        MetadataKeys.VOCAB_NOUN: load_noun_vocab(path),
+        MetadataKeys.VOCAB_VERB: load_verb_vocab(path),
+    }
     return data, metadata
 
 

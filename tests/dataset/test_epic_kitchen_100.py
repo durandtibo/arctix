@@ -8,7 +8,13 @@ import numpy as np
 import polars as pl
 import pytest
 
-from arctix.dataset.epic_kitchen_100 import Column, fetch_data, prepare_data, to_array
+from arctix.dataset.epic_kitchen_100 import (
+    Column,
+    MetadataKeys,
+    fetch_data,
+    prepare_data,
+    to_array,
+)
 from arctix.utils.vocab import Vocabulary
 
 
@@ -137,11 +143,11 @@ def check_metadata(metadata: dict) -> None:
     assert isinstance(metadata, dict)
     assert len(metadata) == 2
 
-    assert isinstance(metadata["noun_vocab"], Vocabulary)
-    assert len(metadata["noun_vocab"]) == 300
+    assert isinstance(metadata[MetadataKeys.VOCAB_NOUN], Vocabulary)
+    assert len(metadata[MetadataKeys.VOCAB_NOUN]) == 300
 
-    assert isinstance(metadata["verb_vocab"], Vocabulary)
-    assert len(metadata["verb_vocab"]) == 97
+    assert isinstance(metadata[MetadataKeys.VOCAB_VERB], Vocabulary)
+    assert len(metadata[MetadataKeys.VOCAB_VERB]) == 97
 
 
 def check_arrays(arrays: dict, split: DatasetSplit) -> None:

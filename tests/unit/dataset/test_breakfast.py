@@ -14,6 +14,7 @@ from polars.testing import assert_frame_equal
 from arctix.dataset.breakfast import (
     URLS,
     Column,
+    MetadataKeys,
     download_data,
     fetch_data,
     filter_by_split,
@@ -699,7 +700,7 @@ def test_prepare_data(data_raw: pl.DataFrame, data_prepared: pl.DataFrame) -> No
     assert objects_are_equal(
         metadata,
         {
-            "vocab_action": Vocabulary(
+            MetadataKeys.VOCAB_ACTION: Vocabulary(
                 Counter(
                     {
                         "SIL": 4,
@@ -711,8 +712,8 @@ def test_prepare_data(data_raw: pl.DataFrame, data_prepared: pl.DataFrame) -> No
                     }
                 )
             ),
-            "vocab_activity": Vocabulary(Counter({"cereals": 6, "milk": 4})),
-            "vocab_person": Vocabulary(Counter({"P03": 6, "P54": 4})),
+            MetadataKeys.VOCAB_ACTIVITY: Vocabulary(Counter({"cereals": 6, "milk": 4})),
+            MetadataKeys.VOCAB_PERSON: Vocabulary(Counter({"P03": 6, "P54": 4})),
         },
     )
 
@@ -809,7 +810,7 @@ def test_prepare_data_split_train1() -> None:
     assert objects_are_equal(
         metadata,
         {
-            "vocab_action": Vocabulary(
+            MetadataKeys.VOCAB_ACTION: Vocabulary(
                 Counter(
                     {
                         "SIL": 4,
@@ -821,8 +822,8 @@ def test_prepare_data_split_train1() -> None:
                     }
                 )
             ),
-            "vocab_activity": Vocabulary(Counter({"cereals": 6, "milk": 4})),
-            "vocab_person": Vocabulary(Counter({"P03": 6, "P54": 4})),
+            MetadataKeys.VOCAB_ACTIVITY: Vocabulary(Counter({"cereals": 6, "milk": 4})),
+            MetadataKeys.VOCAB_PERSON: Vocabulary(Counter({"P03": 6, "P54": 4})),
         },
     )
 
@@ -850,9 +851,9 @@ def test_prepare_data_empty(data_prepared_empty: pl.DataFrame) -> None:
     assert objects_are_equal(
         metadata,
         {
-            "vocab_action": Vocabulary(Counter({})),
-            "vocab_activity": Vocabulary(Counter({})),
-            "vocab_person": Vocabulary(Counter({})),
+            MetadataKeys.VOCAB_ACTION: Vocabulary(Counter({})),
+            MetadataKeys.VOCAB_ACTIVITY: Vocabulary(Counter({})),
+            MetadataKeys.VOCAB_PERSON: Vocabulary(Counter({})),
         },
     )
 

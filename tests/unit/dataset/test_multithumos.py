@@ -16,6 +16,7 @@ from arctix.dataset.multithumos import (
     ANNOTATION_FILENAMES,
     ANNOTATION_URL,
     Column,
+    MetadataKeys,
     download_data,
     fetch_data,
     filter_by_split,
@@ -356,7 +357,7 @@ def test_prepare_data(
 ) -> None:
     data, metadata = prepare_data(data_raw)
     assert_frame_equal(data, data_prepared)
-    assert objects_are_equal(metadata, {"vocab_action": vocab_action})
+    assert objects_are_equal(metadata, {MetadataKeys.VOCAB_ACTION: vocab_action})
 
 
 def test_prepare_data_empty() -> None:
@@ -397,7 +398,7 @@ def test_prepare_data_empty() -> None:
             },
         ),
     )
-    assert objects_are_equal(metadata, {"vocab_action": Vocabulary(Counter({}))})
+    assert objects_are_equal(metadata, {MetadataKeys.VOCAB_ACTION: Vocabulary(Counter({}))})
 
 
 def test_prepare_data_split_validation() -> None:
@@ -483,7 +484,7 @@ def test_prepare_data_split_validation() -> None:
     )
     assert objects_are_equal(
         metadata,
-        {"vocab_action": Vocabulary(Counter({"guard": 4, "dribble": 4}))},
+        {MetadataKeys.VOCAB_ACTION: Vocabulary(Counter({"guard": 4, "dribble": 4}))},
     )
 
 
