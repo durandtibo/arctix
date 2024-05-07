@@ -7,13 +7,23 @@ directory `/path/to/data/epic_kitchen_100/`.
 from __future__ import annotations
 
 __all__ = [
+    "ANNOTATION_FILENAMES",
+    "ANNOTATION_URL",
+    "Column",
+    "MetadataKeys",
+    "NUM_NOUNS",
+    "NUM_VERBS",
     "download_data",
     "fetch_data",
+    "group_by_sequence",
     "is_annotation_path_ready",
     "load_data",
     "load_event_data",
     "load_noun_vocab",
     "load_verb_vocab",
+    "prepare_data",
+    "to_array",
+    "to_list",
 ]
 
 import logging
@@ -54,24 +64,33 @@ NUM_VERBS = 97
 
 
 class Column:
-    ALL_NOUNS = "all_nouns"
-    ALL_NOUN_IDS = "all_noun_classes"
-    NARRATION = "narration"
-    NARRATION_ID = "narration_id"
-    NARRATION_TIMESTAMP = "narration_timestamp"
-    NOUN = "noun"
-    NOUN_ID = "noun_class"
-    PARTICIPANT_ID = "participant_id"
+    r"""Indicate the column names."""
+
+    ALL_NOUNS: str = "all_nouns"
+    ALL_NOUN_IDS: str = "all_noun_classes"
+    NARRATION: str = "narration"
+    NARRATION_ID: str = "narration_id"
+    NARRATION_TIMESTAMP: str = "narration_timestamp"
+    NOUN: str = "noun"
+    NOUN_ID: str = "noun_class"
+    PARTICIPANT_ID: str = "participant_id"
     SEQUENCE_LENGTH: str = "sequence_length"
-    START_FRAME = "start_frame"
-    START_TIMESTAMP = "start_timestamp"
-    START_TIME_SECOND = "start_time_second"
-    STOP_FRAME = "stop_frame"
-    STOP_TIMESTAMP = "stop_timestamp"
-    STOP_TIME_SECOND = "stop_time_second"
-    VERB = "verb"
-    VERB_ID = "verb_class"
-    VIDEO_ID = "video_id"
+    START_FRAME: str = "start_frame"
+    START_TIMESTAMP: str = "start_timestamp"
+    START_TIME_SECOND: str = "start_time_second"
+    STOP_FRAME: str = "stop_frame"
+    STOP_TIMESTAMP: str = "stop_timestamp"
+    STOP_TIME_SECOND: str = "stop_time_second"
+    VERB: str = "verb"
+    VERB_ID: str = "verb_class"
+    VIDEO_ID: str = "video_id"
+
+
+class MetadataKeys:
+    r"""Indicate the metadata keys."""
+
+    VOCAB_NOUN: str = "vocab_noun"
+    VOCAB_VERB: str = "vocab_verb"
 
 
 def fetch_data(path: Path, split: str, force_download: bool = False) -> tuple[pl.DataFrame, dict]:
@@ -192,7 +211,10 @@ def load_data(path: Path, split: str) -> tuple[pl.DataFrame, dict]:
     ```
     """
     data = load_event_data(path.joinpath(f"EPIC_100_{split}.csv"))
-    metadata = {"noun_vocab": load_noun_vocab(path), "verb_vocab": load_verb_vocab(path)}
+    metadata = {
+        MetadataKeys.VOCAB_NOUN: load_noun_vocab(path),
+        MetadataKeys.VOCAB_VERB: load_verb_vocab(path),
+    }
     return data, metadata
 
 
@@ -396,7 +418,7 @@ def prepare_data(frame: pl.DataFrame, metadata: dict) -> tuple[pl.DataFrame, dic
     │ sse ┆ lis ┆ str ┆ --- ┆ mes ┆     ┆ --- ┆ id  ┆ --- ┆ eco ┆ amp ┆ --- ┆ con ┆ mp  ┆     ┆ --- ┆ str │
     │ s   ┆ t[s ┆     ┆ str ┆ tam ┆     ┆ i64 ┆ --- ┆ i64 ┆ nd  ┆ --- ┆ i64 ┆ d   ┆ --- ┆     ┆ i64 ┆     │
     │ --- ┆ tr] ┆     ┆     ┆ p   ┆     ┆     ┆ str ┆     ┆ --- ┆ tim ┆     ┆ --- ┆ tim ┆     ┆     ┆     │
-    │ lis ┆     ┆     ┆     ┆ --- ┆     ┆     ┆     ┆     ┆ f32 ┆ e   ┆     ┆ f32 ┆ e   ┆     ┆     ┆     │
+    │ lis ┆     ┆     ┆     ┆ --- ┆     ┆     ┆     ┆     ┆ f64 ┆ e   ┆     ┆ f64 ┆ e   ┆     ┆     ┆     │
     │ t[i ┆     ┆     ┆     ┆ tim ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     │
     │ 64] ┆     ┆     ┆     ┆ e   ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     │
     ╞═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╡
@@ -424,7 +446,7 @@ def prepare_data(frame: pl.DataFrame, metadata: dict) -> tuple[pl.DataFrame, dic
             td.Sort(columns=[Column.VIDEO_ID, Column.START_FRAME]),
             td.TimeToSecond(in_col=Column.START_TIMESTAMP, out_col=Column.START_TIME_SECOND),
             td.TimeToSecond(in_col=Column.STOP_TIMESTAMP, out_col=Column.STOP_TIME_SECOND),
-            td.Cast(columns=[Column.START_TIME_SECOND, Column.STOP_TIME_SECOND], dtype=pl.Float32),
+            td.Cast(columns=[Column.START_TIME_SECOND, Column.STOP_TIME_SECOND], dtype=pl.Float64),
             td.SortColumns(),
         ]
     )
@@ -608,3 +630,6 @@ if __name__ == "__main__":  # pragma: no cover
     data, metadata = prepare_data(data_raw, metadata_raw)
     logger.info(f"data:\n{data}")
     logger.info(f"metadata:\n{metadata}")
+
+    arrays = to_array(data)
+    logger.info(f"arrays:\n{arrays}")

@@ -26,6 +26,7 @@ nav:
   - get_started.md
   - Datasets:
       - datasets/breakfast.md
+      - datasets/epic_kitchen_100.md
       - datasets/multithumos.md
   - Reference:
       - arctix.dataset: refs/dataset.md

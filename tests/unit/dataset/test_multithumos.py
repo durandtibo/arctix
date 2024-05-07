@@ -16,6 +16,7 @@ from arctix.dataset.multithumos import (
     ANNOTATION_FILENAMES,
     ANNOTATION_URL,
     Column,
+    MetadataKeys,
     download_data,
     fetch_data,
     filter_by_split,
@@ -174,9 +175,9 @@ def data_prepared() -> pl.DataFrame:
         schema={
             Column.ACTION: pl.String,
             Column.ACTION_ID: pl.Int64,
-            Column.END_TIME: pl.Float32,
+            Column.END_TIME: pl.Float64,
             Column.SPLIT: pl.String,
-            Column.START_TIME: pl.Float32,
+            Column.START_TIME: pl.Float64,
             Column.VIDEO: pl.String,
         },
     )
@@ -356,7 +357,7 @@ def test_prepare_data(
 ) -> None:
     data, metadata = prepare_data(data_raw)
     assert_frame_equal(data, data_prepared)
-    assert objects_are_equal(metadata, {"vocab_action": vocab_action})
+    assert objects_are_equal(metadata, {MetadataKeys.VOCAB_ACTION: vocab_action})
 
 
 def test_prepare_data_empty() -> None:
@@ -390,14 +391,14 @@ def test_prepare_data_empty() -> None:
             schema={
                 Column.ACTION: pl.String,
                 Column.ACTION_ID: pl.Int64,
-                Column.END_TIME: pl.Float32,
+                Column.END_TIME: pl.Float64,
                 Column.SPLIT: pl.String,
-                Column.START_TIME: pl.Float32,
+                Column.START_TIME: pl.Float64,
                 Column.VIDEO: pl.String,
             },
         ),
     )
-    assert objects_are_equal(metadata, {"vocab_action": Vocabulary(Counter({}))})
+    assert objects_are_equal(metadata, {MetadataKeys.VOCAB_ACTION: Vocabulary(Counter({}))})
 
 
 def test_prepare_data_split_validation() -> None:
@@ -474,16 +475,16 @@ def test_prepare_data_split_validation() -> None:
             schema={
                 Column.ACTION: pl.String,
                 Column.ACTION_ID: pl.Int64,
-                Column.END_TIME: pl.Float32,
+                Column.END_TIME: pl.Float64,
                 Column.SPLIT: pl.String,
-                Column.START_TIME: pl.Float32,
+                Column.START_TIME: pl.Float64,
                 Column.VIDEO: pl.String,
             },
         ),
     )
     assert objects_are_equal(
         metadata,
-        {"vocab_action": Vocabulary(Counter({"guard": 4, "dribble": 4}))},
+        {MetadataKeys.VOCAB_ACTION: Vocabulary(Counter({"guard": 4, "dribble": 4}))},
     )
 
 
@@ -694,10 +695,10 @@ def test_group_by_sequence(data_prepared: pl.DataFrame) -> None:
             schema={
                 Column.ACTION: pl.List(pl.String),
                 Column.ACTION_ID: pl.List(pl.Int64),
-                Column.END_TIME: pl.List(pl.Float32),
+                Column.END_TIME: pl.List(pl.Float64),
                 Column.SEQUENCE_LENGTH: pl.UInt32,
                 Column.SPLIT: pl.String,
-                Column.START_TIME: pl.List(pl.Float32),
+                Column.START_TIME: pl.List(pl.Float64),
                 Column.VIDEO: pl.String,
             },
         ),
@@ -719,9 +720,9 @@ def test_group_by_sequence_empty() -> None:
                 schema={
                     Column.ACTION: pl.String,
                     Column.ACTION_ID: pl.Int64,
-                    Column.END_TIME: pl.Float32,
+                    Column.END_TIME: pl.Float64,
                     Column.SPLIT: pl.String,
-                    Column.START_TIME: pl.Float32,
+                    Column.START_TIME: pl.Float64,
                     Column.VIDEO: pl.String,
                 },
             )
@@ -739,10 +740,10 @@ def test_group_by_sequence_empty() -> None:
             schema={
                 Column.ACTION: pl.List(pl.String),
                 Column.ACTION_ID: pl.List(pl.Int64),
-                Column.END_TIME: pl.List(pl.Float32),
+                Column.END_TIME: pl.List(pl.Float64),
                 Column.SEQUENCE_LENGTH: pl.UInt32,
                 Column.SPLIT: pl.String,
-                Column.START_TIME: pl.List(pl.Float32),
+                Column.START_TIME: pl.List(pl.Float64),
                 Column.VIDEO: pl.String,
             },
         ),
@@ -832,9 +833,9 @@ def test_to_array_empty() -> None:
                 schema={
                     Column.ACTION: pl.String,
                     Column.ACTION_ID: pl.Int64,
-                    Column.END_TIME: pl.Float32,
+                    Column.END_TIME: pl.Float64,
                     Column.SPLIT: pl.String,
-                    Column.START_TIME: pl.Float32,
+                    Column.START_TIME: pl.Float64,
                     Column.VIDEO: pl.String,
                 },
             )
@@ -909,9 +910,9 @@ def test_to_list_empty() -> None:
                 schema={
                     Column.ACTION: pl.String,
                     Column.ACTION_ID: pl.Int64,
-                    Column.END_TIME: pl.Float32,
+                    Column.END_TIME: pl.Float64,
                     Column.SPLIT: pl.String,
-                    Column.START_TIME: pl.Float32,
+                    Column.START_TIME: pl.Float64,
                     Column.VIDEO: pl.String,
                 },
             )
