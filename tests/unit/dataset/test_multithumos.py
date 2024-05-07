@@ -174,9 +174,9 @@ def data_prepared() -> pl.DataFrame:
         schema={
             Column.ACTION: pl.String,
             Column.ACTION_ID: pl.Int64,
-            Column.END_TIME: pl.Float32,
+            Column.END_TIME: pl.Float64,
             Column.SPLIT: pl.String,
-            Column.START_TIME: pl.Float32,
+            Column.START_TIME: pl.Float64,
             Column.VIDEO: pl.String,
         },
     )
@@ -390,9 +390,9 @@ def test_prepare_data_empty() -> None:
             schema={
                 Column.ACTION: pl.String,
                 Column.ACTION_ID: pl.Int64,
-                Column.END_TIME: pl.Float32,
+                Column.END_TIME: pl.Float64,
                 Column.SPLIT: pl.String,
-                Column.START_TIME: pl.Float32,
+                Column.START_TIME: pl.Float64,
                 Column.VIDEO: pl.String,
             },
         ),
@@ -474,9 +474,9 @@ def test_prepare_data_split_validation() -> None:
             schema={
                 Column.ACTION: pl.String,
                 Column.ACTION_ID: pl.Int64,
-                Column.END_TIME: pl.Float32,
+                Column.END_TIME: pl.Float64,
                 Column.SPLIT: pl.String,
-                Column.START_TIME: pl.Float32,
+                Column.START_TIME: pl.Float64,
                 Column.VIDEO: pl.String,
             },
         ),
@@ -694,10 +694,10 @@ def test_group_by_sequence(data_prepared: pl.DataFrame) -> None:
             schema={
                 Column.ACTION: pl.List(pl.String),
                 Column.ACTION_ID: pl.List(pl.Int64),
-                Column.END_TIME: pl.List(pl.Float32),
+                Column.END_TIME: pl.List(pl.Float64),
                 Column.SEQUENCE_LENGTH: pl.UInt32,
                 Column.SPLIT: pl.String,
-                Column.START_TIME: pl.List(pl.Float32),
+                Column.START_TIME: pl.List(pl.Float64),
                 Column.VIDEO: pl.String,
             },
         ),
@@ -719,9 +719,9 @@ def test_group_by_sequence_empty() -> None:
                 schema={
                     Column.ACTION: pl.String,
                     Column.ACTION_ID: pl.Int64,
-                    Column.END_TIME: pl.Float32,
+                    Column.END_TIME: pl.Float64,
                     Column.SPLIT: pl.String,
-                    Column.START_TIME: pl.Float32,
+                    Column.START_TIME: pl.Float64,
                     Column.VIDEO: pl.String,
                 },
             )
@@ -739,10 +739,10 @@ def test_group_by_sequence_empty() -> None:
             schema={
                 Column.ACTION: pl.List(pl.String),
                 Column.ACTION_ID: pl.List(pl.Int64),
-                Column.END_TIME: pl.List(pl.Float32),
+                Column.END_TIME: pl.List(pl.Float64),
                 Column.SEQUENCE_LENGTH: pl.UInt32,
                 Column.SPLIT: pl.String,
-                Column.START_TIME: pl.List(pl.Float32),
+                Column.START_TIME: pl.List(pl.Float64),
                 Column.VIDEO: pl.String,
             },
         ),
@@ -832,9 +832,9 @@ def test_to_array_empty() -> None:
                 schema={
                     Column.ACTION: pl.String,
                     Column.ACTION_ID: pl.Int64,
-                    Column.END_TIME: pl.Float32,
+                    Column.END_TIME: pl.Float64,
                     Column.SPLIT: pl.String,
-                    Column.START_TIME: pl.Float32,
+                    Column.START_TIME: pl.Float64,
                     Column.VIDEO: pl.String,
                 },
             )
@@ -909,9 +909,9 @@ def test_to_list_empty() -> None:
                 schema={
                     Column.ACTION: pl.String,
                     Column.ACTION_ID: pl.Int64,
-                    Column.END_TIME: pl.Float32,
+                    Column.END_TIME: pl.Float64,
                     Column.SPLIT: pl.String,
-                    Column.START_TIME: pl.Float32,
+                    Column.START_TIME: pl.Float64,
                     Column.VIDEO: pl.String,
                 },
             )

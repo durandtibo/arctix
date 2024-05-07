@@ -14,6 +14,10 @@ __all__ = [
     "load_event_data",
     "load_noun_vocab",
     "load_verb_vocab",
+    "group_by_sequence",
+    "to_list",
+    "to_array",
+    "prepare_data",
 ]
 
 import logging
@@ -396,7 +400,7 @@ def prepare_data(frame: pl.DataFrame, metadata: dict) -> tuple[pl.DataFrame, dic
     │ sse ┆ lis ┆ str ┆ --- ┆ mes ┆     ┆ --- ┆ id  ┆ --- ┆ eco ┆ amp ┆ --- ┆ con ┆ mp  ┆     ┆ --- ┆ str │
     │ s   ┆ t[s ┆     ┆ str ┆ tam ┆     ┆ i64 ┆ --- ┆ i64 ┆ nd  ┆ --- ┆ i64 ┆ d   ┆ --- ┆     ┆ i64 ┆     │
     │ --- ┆ tr] ┆     ┆     ┆ p   ┆     ┆     ┆ str ┆     ┆ --- ┆ tim ┆     ┆ --- ┆ tim ┆     ┆     ┆     │
-    │ lis ┆     ┆     ┆     ┆ --- ┆     ┆     ┆     ┆     ┆ f32 ┆ e   ┆     ┆ f32 ┆ e   ┆     ┆     ┆     │
+    │ lis ┆     ┆     ┆     ┆ --- ┆     ┆     ┆     ┆     ┆ f64 ┆ e   ┆     ┆ f64 ┆ e   ┆     ┆     ┆     │
     │ t[i ┆     ┆     ┆     ┆ tim ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     │
     │ 64] ┆     ┆     ┆     ┆ e   ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     │
     ╞═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╡
@@ -424,7 +428,7 @@ def prepare_data(frame: pl.DataFrame, metadata: dict) -> tuple[pl.DataFrame, dic
             td.Sort(columns=[Column.VIDEO_ID, Column.START_FRAME]),
             td.TimeToSecond(in_col=Column.START_TIMESTAMP, out_col=Column.START_TIME_SECOND),
             td.TimeToSecond(in_col=Column.STOP_TIMESTAMP, out_col=Column.STOP_TIME_SECOND),
-            td.Cast(columns=[Column.START_TIME_SECOND, Column.STOP_TIME_SECOND], dtype=pl.Float32),
+            td.Cast(columns=[Column.START_TIME_SECOND, Column.STOP_TIME_SECOND], dtype=pl.Float64),
             td.SortColumns(),
         ]
     )
