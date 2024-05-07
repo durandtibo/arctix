@@ -630,3 +630,6 @@ if __name__ == "__main__":  # pragma: no cover
     data, metadata = prepare_data(data_raw, metadata_raw)
     logger.info(f"data:\n{data}")
     logger.info(f"metadata:\n{metadata}")
+
+    arrays = to_array(data)
+    logger.info(f"arrays:\n{arrays}")
