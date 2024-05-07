@@ -7,7 +7,13 @@ import numpy as np
 import polars as pl
 import pytest
 
-from arctix.dataset.breakfast import Column, fetch_data, prepare_data, to_array
+from arctix.dataset.breakfast import (
+    Column,
+    MetadataKeys,
+    fetch_data,
+    prepare_data,
+    to_array,
+)
 from arctix.utils.vocab import Vocabulary
 
 
@@ -71,12 +77,12 @@ def check_data_coarse(data: pl.DataFrame) -> None:
 def check_metadata_coarse(metadata: dict) -> None:
     assert isinstance(metadata, dict)
     assert len(metadata) == 3
-    assert isinstance(metadata["vocab_action"], Vocabulary)
-    assert len(metadata["vocab_action"]) == 48
-    assert isinstance(metadata["vocab_activity"], Vocabulary)
-    assert len(metadata["vocab_activity"]) == 10
-    assert isinstance(metadata["vocab_person"], Vocabulary)
-    assert len(metadata["vocab_person"]) == 52
+    assert isinstance(metadata[MetadataKeys.VOCAB_ACTION], Vocabulary)
+    assert len(metadata[MetadataKeys.VOCAB_ACTION]) == 48
+    assert isinstance(metadata[MetadataKeys.VOCAB_ACTIVITY], Vocabulary)
+    assert len(metadata[MetadataKeys.VOCAB_ACTIVITY]) == 10
+    assert isinstance(metadata[MetadataKeys.VOCAB_PERSON], Vocabulary)
+    assert len(metadata[MetadataKeys.VOCAB_PERSON]) == 52
 
 
 def check_arrays_coarse(arrays: dict) -> None:
@@ -173,12 +179,12 @@ def check_data_fine(data: pl.DataFrame) -> None:
 def check_metadata_fine(metadata: dict) -> None:
     assert isinstance(metadata, dict)
     assert len(metadata) == 3
-    assert isinstance(metadata["vocab_action"], Vocabulary)
-    assert len(metadata["vocab_action"]) == 178
-    assert isinstance(metadata["vocab_activity"], Vocabulary)
-    assert len(metadata["vocab_activity"]) == 10
-    assert isinstance(metadata["vocab_person"], Vocabulary)
-    assert len(metadata["vocab_person"]) == 49
+    assert isinstance(metadata[MetadataKeys.VOCAB_ACTION], Vocabulary)
+    assert len(metadata[MetadataKeys.VOCAB_ACTION]) == 178
+    assert isinstance(metadata[MetadataKeys.VOCAB_ACTIVITY], Vocabulary)
+    assert len(metadata[MetadataKeys.VOCAB_ACTIVITY]) == 10
+    assert isinstance(metadata[MetadataKeys.VOCAB_PERSON], Vocabulary)
+    assert len(metadata[MetadataKeys.VOCAB_PERSON]) == 49
 
 
 def check_arrays_fine(arrays: dict) -> None:

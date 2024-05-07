@@ -7,6 +7,10 @@ directory `/path/to/data/multithumos/`.
 from __future__ import annotations
 
 __all__ = [
+    "ANNOTATION_FILENAMES",
+    "ANNOTATION_URL",
+    "Column",
+    "MetadataKeys",
     "download_data",
     "fetch_data",
     "filter_by_split",
@@ -118,6 +122,8 @@ ANNOTATION_FILENAMES = [
 
 
 class Column:
+    r"""Indicate the column names."""
+
     ACTION: str = "action"
     ACTION_ID: str = "action_id"
     END_TIME: str = "end_time"
@@ -126,6 +132,12 @@ class Column:
     START_TIME: str = "start_time"
     VIDEO: str = "video"
     VIDEO_ID: str = "video_id"
+
+
+class MetadataKeys:
+    r"""Indicate the metadata keys."""
+
+    VOCAB_ACTION: str = "vocab_action"
 
 
 def fetch_data(path: Path, force_download: bool = False) -> pl.DataFrame:
@@ -385,7 +397,7 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
         ]
     )
     out = transformer.transform(frame)
-    return out, {"vocab_action": vocab_action}
+    return out, {MetadataKeys.VOCAB_ACTION: vocab_action}
 
 
 def generate_split_column(frame: pl.DataFrame) -> pl.DataFrame:
