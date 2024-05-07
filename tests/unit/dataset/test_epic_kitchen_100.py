@@ -19,6 +19,7 @@ from arctix.dataset.epic_kitchen_100 import (
     NUM_NOUNS,
     NUM_VERBS,
     Column,
+    MetadataKeys,
     download_data,
     fetch_data,
     group_by_sequence,
@@ -210,10 +211,10 @@ def data_prepared() -> pl.DataFrame:
             Column.NOUN_ID: pl.Int64,
             Column.PARTICIPANT_ID: pl.String,
             Column.START_FRAME: pl.Int64,
-            Column.START_TIME_SECOND: pl.Float32,
+            Column.START_TIME_SECOND: pl.Float64,
             Column.START_TIMESTAMP: pl.Time,
             Column.STOP_FRAME: pl.Int64,
-            Column.STOP_TIME_SECOND: pl.Float32,
+            Column.STOP_TIME_SECOND: pl.Float64,
             Column.STOP_TIMESTAMP: pl.Time,
             Column.VERB: pl.String,
             Column.VERB_ID: pl.Int64,
@@ -645,10 +646,10 @@ def data_prepared2() -> pl.DataFrame:
             Column.NOUN_ID: pl.Int64,
             Column.PARTICIPANT_ID: pl.String,
             Column.START_FRAME: pl.Int64,
-            Column.START_TIME_SECOND: pl.Float32,
+            Column.START_TIME_SECOND: pl.Float64,
             Column.START_TIMESTAMP: pl.Time,
             Column.STOP_FRAME: pl.Int64,
-            Column.STOP_TIME_SECOND: pl.Float32,
+            Column.STOP_TIME_SECOND: pl.Float64,
             Column.STOP_TIMESTAMP: pl.Time,
             Column.VERB: pl.String,
             Column.VERB_ID: pl.Int64,
@@ -682,7 +683,9 @@ def test_fetch_data(
         data, metadata = fetch_data(data_dir, split="train")
         download_mock.assert_called_once_with(data_dir, False)
         assert_frame_equal(data, data_raw)
-        assert objects_are_equal(metadata, {"noun_vocab": noun_vocab, "verb_vocab": verb_vocab})
+        assert objects_are_equal(
+            metadata, {MetadataKeys.VOCAB_NOUN: noun_vocab, MetadataKeys.VOCAB_VERB: verb_vocab}
+        )
 
 
 ###################################
@@ -771,7 +774,9 @@ def test_load_data(
 ) -> None:
     data, metadata = load_data(data_dir, split="train")
     assert_frame_equal(data, data_raw)
-    assert objects_are_equal(metadata, {"noun_vocab": noun_vocab, "verb_vocab": verb_vocab})
+    assert objects_are_equal(
+        metadata, {MetadataKeys.VOCAB_NOUN: noun_vocab, MetadataKeys.VOCAB_VERB: verb_vocab}
+    )
 
 
 #####################################
@@ -865,10 +870,13 @@ def test_prepare_data(
     verb_vocab: Vocabulary,
 ) -> None:
     data, metadata = prepare_data(
-        data_raw, metadata={"noun_vocab": noun_vocab, "verb_vocab": verb_vocab}
+        data_raw,
+        metadata={MetadataKeys.VOCAB_NOUN: noun_vocab, MetadataKeys.VOCAB_VERB: verb_vocab},
     )
     assert_frame_equal(data, data_prepared)
-    assert objects_are_equal(metadata, {"noun_vocab": noun_vocab, "verb_vocab": verb_vocab})
+    assert objects_are_equal(
+        metadata, {MetadataKeys.VOCAB_NOUN: noun_vocab, MetadataKeys.VOCAB_VERB: verb_vocab}
+    )
 
 
 def test_prepare_data_empty() -> None:
@@ -943,10 +951,10 @@ def test_prepare_data_empty() -> None:
                 Column.NOUN_ID: pl.Int64,
                 Column.PARTICIPANT_ID: pl.String,
                 Column.START_FRAME: pl.Int64,
-                Column.START_TIME_SECOND: pl.Float32,
+                Column.START_TIME_SECOND: pl.Float64,
                 Column.START_TIMESTAMP: pl.Time,
                 Column.STOP_FRAME: pl.Int64,
-                Column.STOP_TIME_SECOND: pl.Float32,
+                Column.STOP_TIME_SECOND: pl.Float64,
                 Column.STOP_TIMESTAMP: pl.Time,
                 Column.VERB: pl.String,
                 Column.VERB_ID: pl.Int64,
@@ -1174,10 +1182,10 @@ def test_group_by_sequence(data_prepared2: pl.DataFrame) -> None:
                 Column.PARTICIPANT_ID: pl.String,
                 Column.SEQUENCE_LENGTH: pl.UInt32,
                 Column.START_FRAME: pl.List(pl.Int64),
-                Column.START_TIME_SECOND: pl.List(pl.Float32),
+                Column.START_TIME_SECOND: pl.List(pl.Float64),
                 Column.START_TIMESTAMP: pl.List(pl.Time),
                 Column.STOP_FRAME: pl.List(pl.Int64),
-                Column.STOP_TIME_SECOND: pl.List(pl.Float32),
+                Column.STOP_TIME_SECOND: pl.List(pl.Float64),
                 Column.STOP_TIMESTAMP: pl.List(pl.Time),
                 Column.VERB: pl.List(pl.String),
                 Column.VERB_ID: pl.List(pl.Int64),
@@ -1220,10 +1228,10 @@ def test_group_by_sequence_empty() -> None:
                     Column.NOUN_ID: pl.Int64,
                     Column.PARTICIPANT_ID: pl.String,
                     Column.START_FRAME: pl.Int64,
-                    Column.START_TIME_SECOND: pl.Float32,
+                    Column.START_TIME_SECOND: pl.Float64,
                     Column.START_TIMESTAMP: pl.Time,
                     Column.STOP_FRAME: pl.Int64,
-                    Column.STOP_TIME_SECOND: pl.Float32,
+                    Column.STOP_TIME_SECOND: pl.Float64,
                     Column.STOP_TIMESTAMP: pl.Time,
                     Column.VERB: pl.String,
                     Column.VERB_ID: pl.Int64,
@@ -1263,10 +1271,10 @@ def test_group_by_sequence_empty() -> None:
                 Column.PARTICIPANT_ID: pl.String,
                 Column.SEQUENCE_LENGTH: pl.UInt32,
                 Column.START_FRAME: pl.List(pl.Int64),
-                Column.START_TIME_SECOND: pl.List(pl.Float32),
+                Column.START_TIME_SECOND: pl.List(pl.Float64),
                 Column.START_TIMESTAMP: pl.List(pl.Time),
                 Column.STOP_FRAME: pl.List(pl.Int64),
-                Column.STOP_TIME_SECOND: pl.List(pl.Float32),
+                Column.STOP_TIME_SECOND: pl.List(pl.Float64),
                 Column.STOP_TIMESTAMP: pl.List(pl.Time),
                 Column.VERB: pl.List(pl.String),
                 Column.VERB_ID: pl.List(pl.Int64),
@@ -1480,10 +1488,10 @@ def test_to_array_empty() -> None:
                     Column.NOUN_ID: pl.Int64,
                     Column.PARTICIPANT_ID: pl.String,
                     Column.START_FRAME: pl.Int64,
-                    Column.START_TIME_SECOND: pl.Float32,
+                    Column.START_TIME_SECOND: pl.Float64,
                     Column.START_TIMESTAMP: pl.Time,
                     Column.STOP_FRAME: pl.Int64,
-                    Column.STOP_TIME_SECOND: pl.Float32,
+                    Column.STOP_TIME_SECOND: pl.Float64,
                     Column.STOP_TIMESTAMP: pl.Time,
                     Column.VERB: pl.String,
                     Column.VERB_ID: pl.Int64,
@@ -1764,10 +1772,10 @@ def test_to_list_empty() -> None:
                     Column.NOUN_ID: pl.Int64,
                     Column.PARTICIPANT_ID: pl.String,
                     Column.START_FRAME: pl.Int64,
-                    Column.START_TIME_SECOND: pl.Float32,
+                    Column.START_TIME_SECOND: pl.Float64,
                     Column.START_TIMESTAMP: pl.Time,
                     Column.STOP_FRAME: pl.Int64,
-                    Column.STOP_TIME_SECOND: pl.Float32,
+                    Column.STOP_TIME_SECOND: pl.Float64,
                     Column.STOP_TIMESTAMP: pl.Time,
                     Column.VERB: pl.String,
                     Column.VERB_ID: pl.Int64,

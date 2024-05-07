@@ -14,6 +14,7 @@ from polars.testing import assert_frame_equal
 from arctix.dataset.breakfast import (
     URLS,
     Column,
+    MetadataKeys,
     download_data,
     fetch_data,
     filter_by_split,
@@ -186,10 +187,10 @@ def data_prepared() -> pl.DataFrame:
             Column.ACTION_ID: pl.Int64,
             Column.COOKING_ACTIVITY: pl.String,
             Column.COOKING_ACTIVITY_ID: pl.Int64,
-            Column.END_TIME: pl.Float32,
+            Column.END_TIME: pl.Float64,
             Column.PERSON: pl.String,
             Column.PERSON_ID: pl.Int64,
-            Column.START_TIME: pl.Float32,
+            Column.START_TIME: pl.Float64,
         },
     )
 
@@ -212,10 +213,10 @@ def data_prepared_empty() -> pl.DataFrame:
             Column.ACTION_ID: pl.Int64,
             Column.COOKING_ACTIVITY: pl.String,
             Column.COOKING_ACTIVITY_ID: pl.Int64,
-            Column.END_TIME: pl.Float32,
+            Column.END_TIME: pl.Float64,
             Column.PERSON: pl.String,
             Column.PERSON_ID: pl.Int64,
-            Column.START_TIME: pl.Float32,
+            Column.START_TIME: pl.Float64,
         },
     )
 
@@ -699,7 +700,7 @@ def test_prepare_data(data_raw: pl.DataFrame, data_prepared: pl.DataFrame) -> No
     assert objects_are_equal(
         metadata,
         {
-            "vocab_action": Vocabulary(
+            MetadataKeys.VOCAB_ACTION: Vocabulary(
                 Counter(
                     {
                         "SIL": 4,
@@ -711,8 +712,8 @@ def test_prepare_data(data_raw: pl.DataFrame, data_prepared: pl.DataFrame) -> No
                     }
                 )
             ),
-            "vocab_activity": Vocabulary(Counter({"cereals": 6, "milk": 4})),
-            "vocab_person": Vocabulary(Counter({"P03": 6, "P54": 4})),
+            MetadataKeys.VOCAB_ACTIVITY: Vocabulary(Counter({"cereals": 6, "milk": 4})),
+            MetadataKeys.VOCAB_PERSON: Vocabulary(Counter({"P03": 6, "P54": 4})),
         },
     )
 
@@ -799,17 +800,17 @@ def test_prepare_data_split_train1() -> None:
                 Column.ACTION_ID: pl.Int64,
                 Column.COOKING_ACTIVITY: pl.String,
                 Column.COOKING_ACTIVITY_ID: pl.Int64,
-                Column.END_TIME: pl.Float32,
+                Column.END_TIME: pl.Float64,
                 Column.PERSON: pl.String,
                 Column.PERSON_ID: pl.Int64,
-                Column.START_TIME: pl.Float32,
+                Column.START_TIME: pl.Float64,
             },
         ),
     )
     assert objects_are_equal(
         metadata,
         {
-            "vocab_action": Vocabulary(
+            MetadataKeys.VOCAB_ACTION: Vocabulary(
                 Counter(
                     {
                         "SIL": 4,
@@ -821,8 +822,8 @@ def test_prepare_data_split_train1() -> None:
                     }
                 )
             ),
-            "vocab_activity": Vocabulary(Counter({"cereals": 6, "milk": 4})),
-            "vocab_person": Vocabulary(Counter({"P03": 6, "P54": 4})),
+            MetadataKeys.VOCAB_ACTIVITY: Vocabulary(Counter({"cereals": 6, "milk": 4})),
+            MetadataKeys.VOCAB_PERSON: Vocabulary(Counter({"P03": 6, "P54": 4})),
         },
     )
 
@@ -840,9 +841,9 @@ def test_prepare_data_empty(data_prepared_empty: pl.DataFrame) -> None:
             schema={
                 Column.ACTION: pl.String,
                 Column.COOKING_ACTIVITY: pl.String,
-                Column.END_TIME: pl.Float32,
+                Column.END_TIME: pl.Float64,
                 Column.PERSON: pl.String,
-                Column.START_TIME: pl.Float32,
+                Column.START_TIME: pl.Float64,
             },
         )
     )
@@ -850,9 +851,9 @@ def test_prepare_data_empty(data_prepared_empty: pl.DataFrame) -> None:
     assert objects_are_equal(
         metadata,
         {
-            "vocab_action": Vocabulary(Counter({})),
-            "vocab_activity": Vocabulary(Counter({})),
-            "vocab_person": Vocabulary(Counter({})),
+            MetadataKeys.VOCAB_ACTION: Vocabulary(Counter({})),
+            MetadataKeys.VOCAB_ACTIVITY: Vocabulary(Counter({})),
+            MetadataKeys.VOCAB_PERSON: Vocabulary(Counter({})),
         },
     )
 
@@ -891,11 +892,11 @@ def test_group_by_sequence(data_prepared: pl.DataFrame) -> None:
                 Column.ACTION_ID: pl.List(pl.Int64),
                 Column.COOKING_ACTIVITY: pl.String,
                 Column.COOKING_ACTIVITY_ID: pl.Int64,
-                Column.END_TIME: pl.List(pl.Float32),
+                Column.END_TIME: pl.List(pl.Float64),
                 Column.PERSON: pl.String,
                 Column.PERSON_ID: pl.Int64,
                 Column.SEQUENCE_LENGTH: pl.UInt32,
-                Column.START_TIME: pl.List(pl.Float32),
+                Column.START_TIME: pl.List(pl.Float64),
             },
         ),
     )
@@ -921,11 +922,11 @@ def test_group_by_sequence_empty(data_prepared_empty: pl.DataFrame) -> None:
                 Column.ACTION_ID: pl.List(pl.Int64),
                 Column.COOKING_ACTIVITY: pl.String,
                 Column.COOKING_ACTIVITY_ID: pl.Int64,
-                Column.END_TIME: pl.List(pl.Float32),
+                Column.END_TIME: pl.List(pl.Float64),
                 Column.PERSON: pl.String,
                 Column.PERSON_ID: pl.Int64,
                 Column.SEQUENCE_LENGTH: pl.UInt32,
-                Column.START_TIME: pl.List(pl.Float32),
+                Column.START_TIME: pl.List(pl.Float64),
             },
         ),
     )
