@@ -1,7 +1,7 @@
 name: Dataset Tests
 on:
   schedule:
-    - cron: '00 1 * * *' # run at 1:00 AM UTC
+    - cron: '00 20 * * *' # run at 20:00 UTC
   workflow_dispatch:  # to trigger manually
 
 jobs:

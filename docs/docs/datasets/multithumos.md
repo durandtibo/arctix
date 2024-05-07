@@ -4,9 +4,9 @@ This page contains information about the MultiTHUMOS dataset, which was publishe
 paper:
 
 ```textmate
-Every Moment Counts: Dense Detailed Labeling of Actions in Complex
-Videos. Yeung S., Russakovsky O., Jin N., Andriluka M., Mori G., Fei-Fei
-L. IJCV 2017 (http://arxiv.org/pdf/1507.05738)
+Every Moment Counts: Dense Detailed Labeling of Actions in Complex Videos.
+Yeung S., Russakovsky O., Jin N., Andriluka M., Mori G., Fei-Fei L.
+IJCV 2017 (http://arxiv.org/pdf/1507.05738)
 ```
 
 The data can be downloaded from
