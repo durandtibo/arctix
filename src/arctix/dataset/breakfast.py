@@ -7,6 +7,12 @@ directory `/path/to/data/breakfast/`.
 from __future__ import annotations
 
 __all__ = [
+    "COOKING_ACTIVITIES",
+    "Column",
+    "DATASET_SPLITS",
+    "MetadataKeys",
+    "NUM_COOKING_ACTIVITIES",
+    "URLS",
     "download_data",
     "fetch_data",
     "filter_by_split",
@@ -97,6 +103,8 @@ DATASET_SPLITS = {
 
 
 class Column:
+    r"""Indicate the column names."""
+
     ACTION: str = "action"
     ACTION_ID: str = "action_id"
     COOKING_ACTIVITY: str = "cooking_activity"
@@ -106,6 +114,14 @@ class Column:
     PERSON_ID: str = "person_id"
     START_TIME: str = "start_time"
     SEQUENCE_LENGTH: str = "sequence_length"
+
+
+class MetadataKeys:
+    r"""Indicate the metadata keys."""
+
+    VOCAB_ACTION: str = "vocab_action"
+    VOCAB_ACTIVITY: str = "vocab_activity"
+    VOCAB_PERSON: str = "vocab_person"
 
 
 def fetch_data(
@@ -292,7 +308,7 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
     transformer = td.Sequential(
         [
             td.Sort(columns=[Column.COOKING_ACTIVITY, Column.PERSON, Column.START_TIME]),
-            td.Cast(columns=[Column.START_TIME, Column.END_TIME], dtype=pl.Float32),
+            td.Cast(columns=[Column.START_TIME, Column.END_TIME], dtype=pl.Float64),
             td.StripChars(columns=[Column.ACTION, Column.PERSON, Column.COOKING_ACTIVITY]),
             td.Function(partial(filter_by_split, split=split)),
             td.TokenToIndex(
@@ -311,9 +327,9 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
     )
     out = transformer.transform(frame)
     return out, {
-        "vocab_action": vocab_action,
-        "vocab_activity": vocab_activity,
-        "vocab_person": vocab_person,
+        MetadataKeys.VOCAB_ACTION: vocab_action,
+        MetadataKeys.VOCAB_ACTIVITY: vocab_activity,
+        MetadataKeys.VOCAB_PERSON: vocab_person,
     }
 
 
