@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "arctix"
-version = "0.0.4a0"
+version = "0.0.4"
 description = ""
 readme = "README.md"
 authors = ["Thibaut Durand <durand.tibo+gh@gmail.com>"]
