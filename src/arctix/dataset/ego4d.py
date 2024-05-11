@@ -8,7 +8,11 @@ from __future__ import annotations
 
 __all__ = [
     "Column",
+    "MetadataKeys",
+    "NUM_NOUNS",
+    "NUM_VERBS",
     "load_annotation_file",
+    "load_data",
     "load_noun_vocab",
     "load_taxonomy_vocab",
     "load_verb_vocab",
@@ -44,6 +48,43 @@ class Column:
     VERB_ID: str = "verb_label"
     VIDEO_ID: str = "video_uid"
     SPLIT: str = "split"
+
+
+class MetadataKeys:
+    r"""Indicate the metadata keys."""
+
+    VOCAB_NOUN: str = "vocab_noun"
+    VOCAB_VERB: str = "vocab_verb"
+
+
+def load_data(path: Path, split: str) -> tuple[pl.DataFrame, dict]:
+    r"""Load the annotations in a DataFrame and the metadata.
+
+    Args:
+        path: The directory where the dataset annotations are stored.
+        split: The dataset split.
+
+    Returns:
+        The annotations in a DataFrame and the metadata.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from pathlib import Path
+    >>> from arctix.dataset.ego4d import load_data
+    >>> data, metadata = load_data(
+    ...     Path("/path/to/data/ego4d/"), split="train"
+    ... )  # doctest: +SKIP
+
+    ```
+    """
+    data = load_annotation_file(path=path, split=split)
+    metadata = {
+        MetadataKeys.VOCAB_NOUN: load_noun_vocab(path),
+        MetadataKeys.VOCAB_VERB: load_verb_vocab(path),
+    }
+    return data, metadata
 
 
 def load_annotation_file(path: Path, split: str) -> pl.DataFrame:
