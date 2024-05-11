@@ -58,7 +58,11 @@ class MetadataKeys:
 
 
 def fetch_data(path: Path, split: str) -> tuple[pl.DataFrame, dict]:
-    r"""Load the annotations in a DataFrame and the metadata.
+    r"""Download and load the data and the metadata.
+
+    Notes:
+        This function does not implement the data downloading because
+        it is necessary to get credentials to access the data.
 
     Args:
         path: The directory where the dataset annotations are stored.
@@ -83,7 +87,7 @@ def fetch_data(path: Path, split: str) -> tuple[pl.DataFrame, dict]:
 
 
 def load_data(path: Path, split: str) -> tuple[pl.DataFrame, dict]:
-    r"""Load the annotations in a DataFrame and the metadata.
+    r"""Load the data and the metadata.
 
     Args:
         path: The directory where the dataset annotations are stored.
