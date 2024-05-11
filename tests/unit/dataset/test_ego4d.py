@@ -125,6 +125,16 @@ def create_taxonomy_file(path: Path) -> None:
     )
 
 
+@pytest.fixture()
+def vocab_noun() -> Vocabulary:
+    return Vocabulary(Counter({f"noun{i:03}": 1 for i in range(NUM_NOUNS)}))
+
+
+@pytest.fixture()
+def vocab_verb() -> Vocabulary:
+    return Vocabulary(Counter({f"verb{i:03}": 1 for i in range(NUM_VERBS)}))
+
+
 ##########################################
 #     Tests for load_annotation_file     #
 ##########################################
@@ -171,10 +181,8 @@ def test_load_annotation_file(data_dir: Path) -> None:
 #####################################
 
 
-def test_load_noun_vocab(data_dir: Path) -> None:
-    assert load_noun_vocab(data_dir).equal(
-        Vocabulary(Counter({f"noun{i:03}": 1 for i in range(NUM_NOUNS)}))
-    )
+def test_load_noun_vocab(data_dir: Path, vocab_noun: Vocabulary) -> None:
+    assert load_noun_vocab(data_dir).equal(vocab_noun)
 
 
 #####################################
@@ -182,10 +190,8 @@ def test_load_noun_vocab(data_dir: Path) -> None:
 #####################################
 
 
-def test_load_verb_vocab(data_dir: Path) -> None:
-    assert load_verb_vocab(data_dir).equal(
-        Vocabulary(Counter({f"verb{i:03}": 1 for i in range(NUM_VERBS)}))
-    )
+def test_load_verb_vocab(data_dir: Path, vocab_verb: Vocabulary) -> None:
+    assert load_verb_vocab(data_dir).equal(vocab_verb)
 
 
 #########################################
@@ -193,16 +199,12 @@ def test_load_verb_vocab(data_dir: Path) -> None:
 #########################################
 
 
-def test_load_taxonomy_vocab_nouns(data_dir: Path) -> None:
-    assert load_taxonomy_vocab(data_dir, name="nouns").equal(
-        Vocabulary(Counter({f"noun{i:03}": 1 for i in range(NUM_NOUNS)}))
-    )
+def test_load_taxonomy_vocab_nouns(data_dir: Path, vocab_noun: Vocabulary) -> None:
+    assert load_taxonomy_vocab(data_dir, name="nouns").equal(vocab_noun)
 
 
-def test_load_taxonomy_vocab_verbs(data_dir: Path) -> None:
-    assert load_taxonomy_vocab(data_dir, name="verbs").equal(
-        Vocabulary(Counter({f"verb{i:03}": 1 for i in range(NUM_VERBS)}))
-    )
+def test_load_taxonomy_vocab_verbs(data_dir: Path, vocab_verb: Vocabulary) -> None:
+    assert load_taxonomy_vocab(data_dir, name="verbs").equal(vocab_verb)
 
 
 def test_load_taxonomy_vocab_expected_size(data_dir: Path) -> None:
