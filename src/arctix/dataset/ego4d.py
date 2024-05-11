@@ -57,8 +57,37 @@ class MetadataKeys:
     VOCAB_VERB: str = "vocab_verb"
 
 
+def fetch_data(path: Path, split: str) -> tuple[pl.DataFrame, dict]:
+    r"""Download and load the data and the metadata.
+
+    Notes:
+        This function does not implement the data downloading because
+        it is necessary to get credentials to access the data.
+
+    Args:
+        path: The directory where the dataset annotations are stored.
+        split: The dataset split.
+
+    Returns:
+        The annotations in a DataFrame and the metadata.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from pathlib import Path
+    >>> from arctix.dataset.ego4d import fetch_data
+    >>> data, metadata = fetch_data(
+    ...     Path("/path/to/data/ego4d/"), split="train"
+    ... )  # doctest: +SKIP
+
+    ```
+    """
+    return load_data(path=path, split=split)
+
+
 def load_data(path: Path, split: str) -> tuple[pl.DataFrame, dict]:
-    r"""Load the annotations in a DataFrame and the metadata.
+    r"""Load the data and the metadata.
 
     Args:
         path: The directory where the dataset annotations are stored.
@@ -242,5 +271,6 @@ if __name__ == "__main__":  # pragma: no cover
     logging.basicConfig(level=logging.DEBUG)
 
     path = Path(os.environ["ARCTIX_DATA_PATH"]).joinpath("ego4d")
-    raw_data = load_annotation_file(path, split="train")
-    logger.info(f"data_raw:\n{raw_data}")
+    data_raw, metadata_raw = fetch_data(path, split="train")
+    logger.info(f"data_raw:\n{data_raw}")
+    logger.info(f"metadata_raw:\n{metadata_raw}")
