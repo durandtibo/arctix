@@ -15,8 +15,8 @@ from arctix.dataset.ego4d import (
     Column,
     MetadataKeys,
     fetch_data,
-    load_annotation_file,
     load_data,
+    load_event_data,
     load_noun_vocab,
     load_taxonomy_vocab,
     load_verb_vocab,
@@ -145,30 +145,30 @@ def data_raw() -> pl.DataFrame:
         {
             Column.ACTION_END_FRAME: [47, 82, 102, 74, 142],
             Column.ACTION_END_SEC: [4.7, 8.2, 10.2, 7.4, 14.2],
-            Column.ACTION_INDEX: [0, 1, 2, 0, 1],
             Column.ACTION_START_FRAME: [23, 39, 74, 12, 82],
             Column.ACTION_START_SEC: [2.3, 3.9, 7.4, 1.2, 8.2],
+            Column.ACTION_INDEX: [0, 1, 2, 0, 1],
             Column.CLIP_ID: ["clip1", "clip1", "clip1", "clip2", "clip2"],
             Column.NOUN: ["noun2", "noun3", "noun1", "noun1", "noun2"],
             Column.NOUN_ID: [2, 3, 1, 1, 2],
+            Column.SPLIT: ["train", "train", "train", "train", "train"],
             Column.VERB: ["verb4", "verb2", "verb1", "verb1", "verb2"],
             Column.VERB_ID: [4, 2, 1, 1, 2],
             Column.VIDEO_ID: ["video1", "video1", "video1", "video2", "video2"],
-            Column.SPLIT: ["train", "train", "train", "train", "train"],
         },
         schema={
             Column.ACTION_END_FRAME: pl.Int64,
             Column.ACTION_END_SEC: pl.Float64,
-            Column.ACTION_INDEX: pl.Int64,
             Column.ACTION_START_FRAME: pl.Int64,
             Column.ACTION_START_SEC: pl.Float64,
+            Column.ACTION_INDEX: pl.Int64,
             Column.CLIP_ID: pl.String,
             Column.NOUN: pl.String,
             Column.NOUN_ID: pl.Int64,
+            Column.SPLIT: pl.String,
             Column.VERB: pl.String,
             Column.VERB_ID: pl.Int64,
             Column.VIDEO_ID: pl.String,
-            Column.SPLIT: pl.String,
         },
     )
 
@@ -203,13 +203,13 @@ def test_load_data(
     )
 
 
-##########################################
-#     Tests for load_annotation_file     #
-##########################################
+#####################################
+#     Tests for load_event_data     #
+#####################################
 
 
-def test_load_annotation_file(data_dir: Path, data_raw: pl.DataFrame) -> None:
-    assert_frame_equal(load_annotation_file(data_dir, split="train"), data_raw)
+def test_load_event_data(data_dir: Path, data_raw: pl.DataFrame) -> None:
+    assert_frame_equal(load_event_data(data_dir, split="train"), data_raw)
 
 
 #####################################
