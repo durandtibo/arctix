@@ -6,7 +6,13 @@ directory `/path/to/data/ego4d/`.
 
 from __future__ import annotations
 
-__all__ = ["load_annotation_file", "load_taxonomy_vocab", "Column"]
+__all__ = [
+    "Column",
+    "load_annotation_file",
+    "load_noun_vocab",
+    "load_taxonomy_vocab",
+    "load_verb_vocab",
+]
 
 import logging
 from collections import Counter
@@ -18,6 +24,9 @@ from iden.io import load_json
 from arctix.utils.vocab import Vocabulary
 
 logger = logging.getLogger(__name__)
+
+NUM_NOUNS = 521
+NUM_VERBS = 117
 
 
 class Column:
@@ -100,19 +109,66 @@ def load_annotation_file(path: Path, split: str) -> pl.DataFrame:
     )
 
 
-def load_taxonomy_vocab(path: Path, name: str) -> Vocabulary:
+def load_noun_vocab(path: Path) -> Vocabulary:
+    r"""Load the vocabulary of nouns.
+
+    Args:
+        path: The path to the Ego4D annotations data.
+
+    Returns:
+        The vocabulary for nouns.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from pathlib import Path
+    >>> from arctix.dataset.ego4d import load_noun_vocab
+    >>> vocab_noun = load_noun_vocab(Path("/path/to/data/ego4d/"))  # doctest: +SKIP
+
+    ```
+    """
+    return load_taxonomy_vocab(path, name="nouns", expected_size=NUM_NOUNS)
+
+
+def load_verb_vocab(path: Path) -> Vocabulary:
+    r"""Load the vocabulary of verbs.
+
+    Args:
+        path: The path to the Ego4D annotations data.
+
+    Returns:
+        The vocabulary for verbs.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from pathlib import Path
+    >>> from arctix.dataset.ego4d import load_verb_vocab
+    >>> vocab_verb = load_verb_vocab(Path("/path/to/data/ego4d/"))  # doctest: +SKIP
+
+    ```
+    """
+    return load_taxonomy_vocab(path, name="verbs", expected_size=NUM_VERBS)
+
+
+def load_taxonomy_vocab(path: Path, name: str, expected_size: int | None = None) -> Vocabulary:
     r"""Load a vocabulary from the taxonomy annotation file.
 
     Args:
         path: The path to the Ego4D annotations data.
         name: The taxonomy name to load. The valid values are
             ``'nouns'`` and ``'verbs'``.
+        expected_size: Indicate the expected vocabulary size.
+            If ``None``, the size is not checked.
 
     Returns:
         The vocabulary associated to the given taxonomy.
 
     Raises:
         RuntimeError: if the name is incorrect.
+        RuntimeError: if the vocabulary size is incorrect.
 
     Example usage:
 
@@ -132,7 +188,11 @@ def load_taxonomy_vocab(path: Path, name: str) -> Vocabulary:
     path = path.joinpath("ego4d_data/v2/annotations/fho_lta_taxonomy.json")
     logger.info(f"loading taxonomy data from {path}...")
     data = load_json(path)
-    return Vocabulary(Counter({token: 1 for token in data[name]}))
+    vocab = Vocabulary(Counter({token: 1 for token in data[name]}))
+    if expected_size is not None and (count := len(vocab)) != expected_size:
+        msg = f"Expected {expected_size} {name} but received {count:,}"
+        raise RuntimeError(msg)
+    return vocab
 
 
 if __name__ == "__main__":  # pragma: no cover

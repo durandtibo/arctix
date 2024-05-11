@@ -8,7 +8,15 @@ import pytest
 from iden.io import save_json
 from polars.testing import assert_frame_equal
 
-from arctix.dataset.ego4d import Column, load_annotation_file, load_taxonomy_vocab
+from arctix.dataset.ego4d import (
+    NUM_NOUNS,
+    NUM_VERBS,
+    Column,
+    load_annotation_file,
+    load_noun_vocab,
+    load_taxonomy_vocab,
+    load_verb_vocab,
+)
 from arctix.utils.vocab import Vocabulary
 
 if TYPE_CHECKING:
@@ -110,11 +118,21 @@ def create_train_annotations(path: Path) -> None:
 def create_taxonomy_file(path: Path) -> None:
     save_json(
         {
-            "nouns": ["noun0", "noun1", "noun2", "noun3", "noun4", "noun5", "noun6", "noun7"],
-            "verbs": ["verb0", "verb1", "verb2", "verb3", "verb4"],
+            "nouns": [f"noun{i:03}" for i in range(NUM_NOUNS)],
+            "verbs": [f"verb{i:03}" for i in range(NUM_VERBS)],
         },
         path.joinpath("ego4d_data/v2/annotations/fho_lta_taxonomy.json"),
     )
+
+
+@pytest.fixture()
+def vocab_noun() -> Vocabulary:
+    return Vocabulary(Counter({f"noun{i:03}": 1 for i in range(NUM_NOUNS)}))
+
+
+@pytest.fixture()
+def vocab_verb() -> Vocabulary:
+    return Vocabulary(Counter({f"verb{i:03}": 1 for i in range(NUM_VERBS)}))
 
 
 ##########################################
@@ -158,34 +176,46 @@ def test_load_annotation_file(data_dir: Path) -> None:
     )
 
 
-##############################################
+#####################################
+#     Tests for load_noun_vocab     #
+#####################################
+
+
+def test_load_noun_vocab(data_dir: Path, vocab_noun: Vocabulary) -> None:
+    assert load_noun_vocab(data_dir).equal(vocab_noun)
+
+
+#####################################
+#     Tests for load_verb_vocab     #
+#####################################
+
+
+def test_load_verb_vocab(data_dir: Path, vocab_verb: Vocabulary) -> None:
+    assert load_verb_vocab(data_dir).equal(vocab_verb)
+
+
+#########################################
 #     Tests for load_taxonomy_vocab     #
-##############################################
+#########################################
 
 
-def test_load_taxonomy_vocab_nouns(data_dir: Path) -> None:
-    assert load_taxonomy_vocab(data_dir, name="nouns").equal(
-        Vocabulary(
-            Counter(
-                {
-                    "noun0": 1,
-                    "noun1": 1,
-                    "noun2": 1,
-                    "noun3": 1,
-                    "noun4": 1,
-                    "noun5": 1,
-                    "noun6": 1,
-                    "noun7": 1,
-                }
-            )
-        )
+def test_load_taxonomy_vocab_nouns(data_dir: Path, vocab_noun: Vocabulary) -> None:
+    assert load_taxonomy_vocab(data_dir, name="nouns").equal(vocab_noun)
+
+
+def test_load_taxonomy_vocab_verbs(data_dir: Path, vocab_verb: Vocabulary) -> None:
+    assert load_taxonomy_vocab(data_dir, name="verbs").equal(vocab_verb)
+
+
+def test_load_taxonomy_vocab_expected_size(data_dir: Path) -> None:
+    assert load_taxonomy_vocab(data_dir, name="nouns", expected_size=NUM_NOUNS).equal(
+        Vocabulary(Counter({f"noun{i:03}": 1 for i in range(NUM_NOUNS)}))
     )
 
 
-def test_load_taxonomy_vocab_verbs(data_dir: Path) -> None:
-    assert load_taxonomy_vocab(data_dir, name="verbs").equal(
-        Vocabulary(Counter({"verb0": 1, "verb1": 1, "verb2": 1, "verb3": 1, "verb4": 1}))
-    )
+def test_load_taxonomy_vocab_expected_size_incorrect(data_dir: Path) -> None:
+    with pytest.raises(RuntimeError, match="Expected 1 nouns but received"):
+        load_taxonomy_vocab(data_dir, name="nouns", expected_size=1)
 
 
 def test_load_taxonomy_vocab_incorrect_name(data_dir: Path) -> None:
