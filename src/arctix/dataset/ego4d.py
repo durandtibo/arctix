@@ -11,7 +11,7 @@ __all__ = [
     "MetadataKeys",
     "NUM_NOUNS",
     "NUM_VERBS",
-    "load_annotation_file",
+    "load_event_data",
     "load_data",
     "load_noun_vocab",
     "load_taxonomy_vocab",
@@ -25,6 +25,7 @@ from pathlib import Path
 import polars as pl
 from iden.io import load_json
 
+from arctix.transformer import dataframe as td
 from arctix.utils.vocab import Vocabulary
 
 logger = logging.getLogger(__name__)
@@ -108,7 +109,7 @@ def load_data(path: Path, split: str) -> tuple[pl.DataFrame, dict]:
 
     ```
     """
-    data = load_annotation_file(path=path, split=split)
+    data = load_event_data(path=path, split=split)
     metadata = {
         MetadataKeys.VOCAB_NOUN: load_noun_vocab(path),
         MetadataKeys.VOCAB_VERB: load_verb_vocab(path),
@@ -116,7 +117,7 @@ def load_data(path: Path, split: str) -> tuple[pl.DataFrame, dict]:
     return data, metadata
 
 
-def load_annotation_file(path: Path, split: str) -> pl.DataFrame:
+def load_event_data(path: Path, split: str) -> pl.DataFrame:
     r"""Load the data in the annotation file into a DataFrame.
 
     Args:
@@ -132,8 +133,8 @@ def load_annotation_file(path: Path, split: str) -> pl.DataFrame:
     ```pycon
 
     >>> from pathlib import Path
-    >>> from arctix.dataset.ego4d import load_annotation_file
-    >>> data = load_annotation_file(
+    >>> from arctix.dataset.ego4d import load_event_data
+    >>> data = load_event_data(
     ...     Path("/path/to/data/ego4d/"), split="train"
     ... )  # doctest: +SKIP
 
@@ -142,15 +143,15 @@ def load_annotation_file(path: Path, split: str) -> pl.DataFrame:
     path = path.joinpath(f"ego4d_data/v2/annotations/fho_lta_{split}.json")
     logger.info(f"loading data for {split} split...")
     data = load_json(path)
-    return (
+    frame = (
         pl.DataFrame(
             data["clips"],
             schema={
                 Column.ACTION_END_FRAME: pl.Int64,
                 Column.ACTION_END_SEC: pl.Float64,
-                Column.ACTION_INDEX: pl.Int64,
                 Column.ACTION_START_FRAME: pl.Int64,
                 Column.ACTION_START_SEC: pl.Float64,
+                Column.ACTION_INDEX: pl.Int64,
                 Column.CLIP_ID: pl.String,
                 Column.NOUN: pl.String,
                 Column.NOUN_ID: pl.Int64,
@@ -164,9 +165,9 @@ def load_annotation_file(path: Path, split: str) -> pl.DataFrame:
             [
                 Column.ACTION_END_FRAME,
                 Column.ACTION_END_SEC,
-                Column.ACTION_INDEX,
                 Column.ACTION_START_FRAME,
                 Column.ACTION_START_SEC,
+                Column.ACTION_INDEX,
                 Column.CLIP_ID,
                 Column.NOUN,
                 Column.NOUN_ID,
@@ -177,6 +178,13 @@ def load_annotation_file(path: Path, split: str) -> pl.DataFrame:
         )
         .with_columns(pl.lit(split).alias(Column.SPLIT))
     )
+    transformer = td.Sequential(
+        [
+            td.Sort(columns=[Column.VIDEO_ID, Column.CLIP_ID, Column.ACTION_INDEX]),
+            td.SortColumns(),
+        ]
+    )
+    return transformer.transform(frame)
 
 
 def load_noun_vocab(path: Path) -> Vocabulary:
