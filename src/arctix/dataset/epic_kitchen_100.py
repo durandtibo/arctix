@@ -94,7 +94,7 @@ class MetadataKeys:
 
 
 def fetch_data(path: Path, split: str, force_download: bool = False) -> tuple[pl.DataFrame, dict]:
-    r"""Download and load the data for Breakfast dataset.
+    r"""Download and load the data for EPIC-KITCHENS-100 dataset.
 
     Args:
         path: The path where to store the downloaded data.

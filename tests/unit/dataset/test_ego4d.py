@@ -14,6 +14,7 @@ from arctix.dataset.ego4d import (
     NUM_VERBS,
     Column,
     MetadataKeys,
+    fetch_data,
     load_annotation_file,
     load_data,
     load_noun_vocab,
@@ -169,6 +170,21 @@ def data_raw() -> pl.DataFrame:
             Column.VIDEO_ID: pl.String,
             Column.SPLIT: pl.String,
         },
+    )
+
+
+################################
+#     Tests for fetch_data     #
+################################
+
+
+def test_fetch_data(
+    data_dir: Path, data_raw: pl.DataFrame, vocab_noun: Vocabulary, vocab_verb: Vocabulary
+) -> None:
+    data, metadata = fetch_data(data_dir, split="train")
+    assert_frame_equal(data, data_raw)
+    assert objects_are_equal(
+        metadata, {MetadataKeys.VOCAB_NOUN: vocab_noun, MetadataKeys.VOCAB_VERB: vocab_verb}
     )
 
 
