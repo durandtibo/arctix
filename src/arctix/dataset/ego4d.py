@@ -6,13 +6,16 @@ directory `/path/to/data/ego4d/`.
 
 from __future__ import annotations
 
-__all__ = ["load_annotation_file", "Column"]
+__all__ = ["load_annotation_file", "load_taxonomy_vocab", "Column"]
 
 import logging
+from collections import Counter
 from pathlib import Path
 
 import polars as pl
 from iden.io import load_json
+
+from arctix.utils.vocab import Vocabulary
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +98,41 @@ def load_annotation_file(path: Path, split: str) -> pl.DataFrame:
         )
         .with_columns(pl.lit(split).alias(Column.SPLIT))
     )
+
+
+def load_taxonomy_vocab(path: Path, name: str) -> Vocabulary:
+    r"""Load a vocabulary from the taxonomy annotation file.
+
+    Args:
+        path: The path to the Ego4D annotations data.
+        name: The taxonomy name to load. The valid values are
+            ``'nouns'`` and ``'verbs'``.
+
+    Returns:
+        The vocabulary associated to the given taxonomy.
+
+    Raises:
+        RuntimeError: if the name is incorrect.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from pathlib import Path
+    >>> from arctix.dataset.ego4d import load_taxonomy_vocab
+    >>> data = load_taxonomy_vocab(
+    ...     Path("/path/to/data/ego4d/"), name="nouns"
+    ... )  # doctest: +SKIP
+
+    ```
+    """
+    if name not in {"nouns", "verbs"}:
+        msg = f"Incorrect taxonomy name: {name}. The valid values are 'nouns' and 'verbs'"
+        raise RuntimeError(msg)
+    path = path.joinpath("ego4d_data/v2/annotations/fho_lta_taxonomy.json")
+    logger.info(f"loading taxonomy data from {path}...")
+    data = load_json(path)
+    return Vocabulary(Counter({token: 1 for token in data[name]}))
 
 
 if __name__ == "__main__":  # pragma: no cover

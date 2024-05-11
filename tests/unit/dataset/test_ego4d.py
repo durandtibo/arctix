@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from typing import TYPE_CHECKING
 
 import polars as pl
@@ -7,7 +8,8 @@ import pytest
 from iden.io import save_json
 from polars.testing import assert_frame_equal
 
-from arctix.dataset.ego4d import Column, load_annotation_file
+from arctix.dataset.ego4d import Column, load_annotation_file, load_taxonomy_vocab
+from arctix.utils.vocab import Vocabulary
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -17,6 +19,7 @@ if TYPE_CHECKING:
 def data_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
     path = tmp_path_factory.mktemp("ego4d")
     create_train_annotations(path)
+    create_taxonomy_file(path)
     return path
 
 
@@ -104,6 +107,16 @@ def create_train_annotations(path: Path) -> None:
     )
 
 
+def create_taxonomy_file(path: Path) -> None:
+    save_json(
+        {
+            "nouns": ["noun0", "noun1", "noun2", "noun3", "noun4", "noun5", "noun6", "noun7"],
+            "verbs": ["verb0", "verb1", "verb2", "verb3", "verb4"],
+        },
+        path.joinpath("ego4d_data/v2/annotations/fho_lta_taxonomy.json"),
+    )
+
+
 ##########################################
 #     Tests for load_annotation_file     #
 ##########################################
@@ -143,3 +156,38 @@ def test_load_annotation_file(data_dir: Path) -> None:
             },
         ),
     )
+
+
+##############################################
+#     Tests for load_taxonomy_vocab     #
+##############################################
+
+
+def test_load_taxonomy_vocab_nouns(data_dir: Path) -> None:
+    assert load_taxonomy_vocab(data_dir, name="nouns").equal(
+        Vocabulary(
+            Counter(
+                {
+                    "noun0": 1,
+                    "noun1": 1,
+                    "noun2": 1,
+                    "noun3": 1,
+                    "noun4": 1,
+                    "noun5": 1,
+                    "noun6": 1,
+                    "noun7": 1,
+                }
+            )
+        )
+    )
+
+
+def test_load_taxonomy_vocab_verbs(data_dir: Path) -> None:
+    assert load_taxonomy_vocab(data_dir, name="verbs").equal(
+        Vocabulary(Counter({"verb0": 1, "verb1": 1, "verb2": 1, "verb3": 1, "verb4": 1}))
+    )
+
+
+def test_load_taxonomy_vocab_incorrect_name(data_dir: Path) -> None:
+    with pytest.raises(RuntimeError, match="Incorrect taxonomy name:"):
+        load_taxonomy_vocab(data_dir, name="incorrect")
