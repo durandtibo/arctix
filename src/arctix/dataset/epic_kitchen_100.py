@@ -191,7 +191,7 @@ def is_annotation_path_ready(path: Path) -> bool:
 
 
 def load_data(path: Path, split: str) -> tuple[pl.DataFrame, dict]:
-    r"""Load all the annotations in a DataFrame.
+    r"""Load all the annotations in a DataFrame and the metadata.
 
     Args:
         path: The directory where the dataset annotations are stored.
