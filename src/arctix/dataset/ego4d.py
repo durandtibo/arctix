@@ -23,10 +23,12 @@ import logging
 from collections import Counter
 from pathlib import Path
 
+import numpy as np
 import polars as pl
 from iden.io import load_json
 
 from arctix.transformer import dataframe as td
+from arctix.utils.masking import convert_sequences_to_array, generate_mask_from_lengths
 from arctix.utils.vocab import Vocabulary
 
 logger = logging.getLogger(__name__)
@@ -440,6 +442,171 @@ def group_by_sequence(frame: pl.DataFrame, group_col: str = Column.CLIP_ID) -> p
         ]
     )
     return transformer.transform(data)
+
+
+def to_array(frame: pl.DataFrame, group_col: str = Column.CLIP_ID) -> dict[str, np.ndarray]:
+    r"""Convert a DataFrame to a dictionary of arrays.
+
+    Args:
+        frame: The input DataFrame.
+        group_col: The column used to generate the sequences.
+
+    Returns:
+        The dictionary of arrays.
+
+    Example usage:
+
+    ```pycon
+
+    >>> import polars as pl
+    >>> from arctix.dataset.ego4d import Column, to_array
+    >>> frame = pl.DataFrame(
+    ...     {
+    ...         Column.ACTION_END_FRAME: [47, 82, 102, 74, 142],
+    ...         Column.ACTION_END_SEC: [4.7, 8.2, 10.2, 7.4, 14.2],
+    ...         Column.ACTION_START_FRAME: [23, 39, 74, 12, 82],
+    ...         Column.ACTION_START_SEC: [2.3, 3.9, 7.4, 1.2, 8.2],
+    ...         Column.ACTION_INDEX: [0, 1, 2, 0, 1],
+    ...         Column.CLIP_ID: ["clip1", "clip1", "clip1", "clip2", "clip2"],
+    ...         Column.NOUN: ["noun2", "noun3", "noun1", "noun1", "noun2"],
+    ...         Column.NOUN_ID: [2, 3, 1, 1, 2],
+    ...         Column.SPLIT: ["train", "train", "train", "train", "train"],
+    ...         Column.VERB: ["verb4", "verb2", "verb1", "verb1", "verb2"],
+    ...         Column.VERB_ID: [4, 2, 1, 1, 2],
+    ...         Column.VIDEO_ID: ["video1", "video1", "video1", "video2", "video2"],
+    ...     }
+    ... )
+    >>> arrays = to_array(frame)
+    >>> arrays
+    {'noun': masked_array(
+      data=[['noun2', 'noun3', 'noun1'],
+            ['noun1', 'noun2', --]],
+      mask=[[False, False, False],
+            [False, False,  True]],
+      fill_value='N/A',
+      dtype='<U5'), 'noun_label': masked_array(
+      data=[[2, 3, 1],
+            [1, 2, --]],
+      mask=[[False, False, False],
+            [False, False,  True]],
+      fill_value=999999), 'split': array(['train', 'train'], dtype='<U5'),
+      'sequence_length': array([3, 2]), 'action_clip_start_frame': masked_array(
+      data=[[23, 39, 74],
+            [12, 82, --]],
+      mask=[[False, False, False],
+            [False, False,  True]],
+      fill_value=999999), 'action_clip_start_sec': masked_array(
+      data=[[2.3, 3.9, 7.4],
+            [1.2, 8.2, --]],
+      mask=[[False, False, False],
+            [False, False,  True]],
+      fill_value=1e+20), 'action_clip_end_frame': masked_array(
+      data=[[47, 82, 102],
+            [74, 142, --]],
+      mask=[[False, False, False],
+            [False, False,  True]],
+      fill_value=999999), 'action_clip_end_sec': masked_array(
+      data=[[4.7, 8.2, 10.2],
+            [7.4, 14.2, --]],
+      mask=[[False, False, False],
+            [False, False,  True]],
+      fill_value=1e+20), 'verb': masked_array(
+      data=[['verb4', 'verb2', 'verb1'],
+            ['verb1', 'verb2', --]],
+      mask=[[False, False, False],
+            [False, False,  True]],
+      fill_value='N/A',
+      dtype='<U5'), 'verb_label': masked_array(
+      data=[[4, 2, 1],
+            [1, 2, --]],
+      mask=[[False, False, False],
+            [False, False,  True]],
+      fill_value=999999), 'clip_uid': array(['clip1', 'clip2'], dtype='<U5')}
+
+    ```
+    """
+    groups = group_by_sequence(frame, group_col)
+    lengths = groups.get_column(Column.SEQUENCE_LENGTH).to_numpy()
+    mask = generate_mask_from_lengths(lengths)
+    return {
+        Column.NOUN: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.NOUN).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.object_,
+                padded_value="N/A",
+            ).astype(str),
+            mask=mask,
+        ),
+        Column.NOUN_ID: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.NOUN_ID).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.int64,
+                padded_value=-1,
+            ),
+            mask=mask,
+        ),
+        Column.SPLIT: groups.get_column(Column.SPLIT).to_numpy().astype(str),
+        Column.SEQUENCE_LENGTH: groups.get_column(Column.SEQUENCE_LENGTH)
+        .to_numpy()
+        .astype(np.int64),
+        Column.ACTION_START_FRAME: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.ACTION_START_FRAME).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.int64,
+                padded_value=-1,
+            ),
+            mask=mask,
+        ),
+        Column.ACTION_START_SEC: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.ACTION_START_SEC).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.float64,
+                padded_value=-1.0,
+            ),
+            mask=mask,
+        ),
+        Column.ACTION_END_FRAME: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.ACTION_END_FRAME).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.int64,
+                padded_value=-1,
+            ),
+            mask=mask,
+        ),
+        Column.ACTION_END_SEC: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.ACTION_END_SEC).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.float64,
+                padded_value=-1.0,
+            ),
+            mask=mask,
+        ),
+        Column.VERB: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.VERB).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.object_,
+                padded_value="N/A",
+            ).astype(str),
+            mask=mask,
+        ),
+        Column.VERB_ID: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.VERB_ID).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.int64,
+                padded_value=-1,
+            ),
+            mask=mask,
+        ),
+        group_col: groups.get_column(group_col).to_numpy().astype(str),
+    }
 
 
 def to_list(frame: pl.DataFrame, group_col: str = Column.CLIP_ID) -> dict[str, list]:
