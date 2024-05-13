@@ -483,7 +483,7 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
             pl.col(Column.STOP_TIME_SECOND),
             pl.col(Column.VERB),
             pl.col(Column.VERB_ID),
-            pl.len().alias(Column.SEQUENCE_LENGTH),
+            pl.len().cast(pl.Int64).alias(Column.SEQUENCE_LENGTH),
         )
     )
     transformer = td.Sequential(
