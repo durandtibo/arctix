@@ -15,6 +15,7 @@ from arctix.dataset.ego4d import (
     Column,
     MetadataKeys,
     fetch_data,
+    group_by_sequence,
     load_data,
     load_event_data,
     load_noun_vocab,
@@ -312,4 +313,79 @@ def test_prepare_data(
     assert_frame_equal(data, data_prepared)
     assert objects_are_equal(
         metadata, {MetadataKeys.VOCAB_NOUN: vocab_noun, MetadataKeys.VOCAB_VERB: vocab_verb}
+    )
+
+
+#######################################
+#     Tests for group_by_sequence     #
+#######################################
+
+
+def test_group_by_sequence_clip_id(data_prepared: pl.DataFrame) -> None:
+    data = group_by_sequence(data_prepared)
+    assert_frame_equal(
+        data,
+        pl.DataFrame(
+            {
+                Column.ACTION_END_FRAME: [[47, 82, 102], [74, 142]],
+                Column.ACTION_END_SEC: [[4.7, 8.2, 10.2], [7.4, 14.2]],
+                Column.ACTION_START_FRAME: [[23, 39, 74], [12, 82]],
+                Column.ACTION_START_SEC: [[2.3, 3.9, 7.4], [1.2, 8.2]],
+                Column.CLIP_ID: ["clip1", "clip2"],
+                Column.NOUN: [["noun2", "noun3", "noun1"], ["noun1", "noun2"]],
+                Column.NOUN_ID: [[2, 3, 1], [1, 2]],
+                Column.SEQUENCE_LENGTH: [3, 2],
+                Column.SPLIT: ["train", "train"],
+                Column.VERB: [["verb4", "verb2", "verb1"], ["verb1", "verb2"]],
+                Column.VERB_ID: [[4, 2, 1], [1, 2]],
+            },
+            schema={
+                Column.ACTION_END_FRAME: pl.List(pl.Int64),
+                Column.ACTION_END_SEC: pl.List(pl.Float64),
+                Column.ACTION_START_FRAME: pl.List(pl.Int64),
+                Column.ACTION_START_SEC: pl.List(pl.Float64),
+                Column.CLIP_ID: pl.String,
+                Column.NOUN: pl.List(pl.String),
+                Column.NOUN_ID: pl.List(pl.Int64),
+                Column.SEQUENCE_LENGTH: pl.Int64,
+                Column.SPLIT: pl.String,
+                Column.VERB: pl.List(pl.String),
+                Column.VERB_ID: pl.List(pl.Int64),
+            },
+        ),
+    )
+
+
+def test_group_by_sequence_video_id(data_prepared: pl.DataFrame) -> None:
+    data = group_by_sequence(data_prepared, group_col=Column.VIDEO_ID)
+    assert_frame_equal(
+        data,
+        pl.DataFrame(
+            {
+                Column.ACTION_END_FRAME: [[47, 82, 102], [74, 142]],
+                Column.ACTION_END_SEC: [[4.7, 8.2, 10.2], [7.4, 14.2]],
+                Column.ACTION_START_FRAME: [[23, 39, 74], [12, 82]],
+                Column.ACTION_START_SEC: [[2.3, 3.9, 7.4], [1.2, 8.2]],
+                Column.NOUN: [["noun2", "noun3", "noun1"], ["noun1", "noun2"]],
+                Column.NOUN_ID: [[2, 3, 1], [1, 2]],
+                Column.SEQUENCE_LENGTH: [3, 2],
+                Column.SPLIT: ["train", "train"],
+                Column.VERB: [["verb4", "verb2", "verb1"], ["verb1", "verb2"]],
+                Column.VERB_ID: [[4, 2, 1], [1, 2]],
+                Column.VIDEO_ID: ["video1", "video2"],
+            },
+            schema={
+                Column.ACTION_END_FRAME: pl.List(pl.Int64),
+                Column.ACTION_END_SEC: pl.List(pl.Float64),
+                Column.ACTION_START_FRAME: pl.List(pl.Int64),
+                Column.ACTION_START_SEC: pl.List(pl.Float64),
+                Column.NOUN: pl.List(pl.String),
+                Column.NOUN_ID: pl.List(pl.Int64),
+                Column.SEQUENCE_LENGTH: pl.Int64,
+                Column.SPLIT: pl.String,
+                Column.VERB: pl.List(pl.String),
+                Column.VERB_ID: pl.List(pl.Int64),
+                Column.VIDEO_ID: pl.String,
+            },
+        ),
     )

@@ -50,6 +50,7 @@ class Column:
     VERB_ID: str = "verb_label"
     VIDEO_ID: str = "video_uid"
     SPLIT: str = "split"
+    SEQUENCE_LENGTH: str = "sequence_length"
 
 
 class MetadataKeys:
@@ -358,6 +359,41 @@ def prepare_data(frame: pl.DataFrame, metadata: dict) -> tuple[pl.DataFrame, dic
     return out, metadata
 
 
+def group_by_sequence(frame: pl.DataFrame, group_col: str = Column.CLIP_ID) -> pl.DataFrame:
+    r"""Group the DataFrame by sequences of actions.
+
+    Args:
+        frame: The input DataFrame.
+        group_col: The column used to generate the sequence.
+
+    Returns:
+        The DataFrame after the grouping.
+    """
+    data = (
+        frame.sort(by=[Column.VIDEO_ID, Column.CLIP_ID, Column.ACTION_INDEX])
+        .group_by([group_col])
+        .agg(
+            pl.col(Column.ACTION_END_FRAME),
+            pl.col(Column.ACTION_END_SEC),
+            pl.col(Column.ACTION_START_FRAME),
+            pl.col(Column.ACTION_START_SEC),
+            pl.col(Column.NOUN),
+            pl.col(Column.NOUN_ID),
+            pl.col(Column.VERB),
+            pl.col(Column.VERB_ID),
+            pl.first(Column.SPLIT),
+            pl.len().cast(pl.Int64).alias(Column.SEQUENCE_LENGTH),
+        )
+    )
+    transformer = td.Sequential(
+        [
+            td.Sort(columns=[group_col]),
+            td.SortColumns(),
+        ]
+    )
+    return transformer.transform(data)
+
+
 if __name__ == "__main__":  # pragma: no cover
     import os
 
@@ -367,3 +403,7 @@ if __name__ == "__main__":  # pragma: no cover
     data_raw, metadata_raw = fetch_data(path, split="train")
     logger.info(f"data_raw:\n{data_raw}")
     logger.info(f"metadata_raw:\n{metadata_raw}")
+
+    data, metadata = prepare_data(data_raw, metadata_raw)
+    logger.info(f"data:\n{data}")
+    logger.info(f"metadata:\n{metadata}")
