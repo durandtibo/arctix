@@ -364,7 +364,7 @@ def group_by_sequence(frame: pl.DataFrame, group_col: str = Column.CLIP_ID) -> p
 
     Args:
         frame: The input DataFrame.
-        group_col: The column used to generate the sequence.
+        group_col: The column used to generate the sequences.
 
     Returns:
         The DataFrame after the grouping.
@@ -440,6 +440,57 @@ def group_by_sequence(frame: pl.DataFrame, group_col: str = Column.CLIP_ID) -> p
         ]
     )
     return transformer.transform(data)
+
+
+def to_list(frame: pl.DataFrame, group_col: str = Column.CLIP_ID) -> dict[str, list]:
+    r"""Convert a DataFrame to a dictionary of lists.
+
+    Args:
+        frame: The input DataFrame.
+        group_col: The column used to generate the sequences.
+
+    Returns:
+        The dictionary of lists.
+
+    Example usage:
+
+    ```pycon
+
+    >>> import polars as pl
+    >>> from arctix.dataset.ego4d import Column, to_list
+    >>> frame = pl.DataFrame(
+    ...     {
+    ...         Column.ACTION_END_FRAME: [47, 82, 102, 74, 142],
+    ...         Column.ACTION_END_SEC: [4.7, 8.2, 10.2, 7.4, 14.2],
+    ...         Column.ACTION_START_FRAME: [23, 39, 74, 12, 82],
+    ...         Column.ACTION_START_SEC: [2.3, 3.9, 7.4, 1.2, 8.2],
+    ...         Column.ACTION_INDEX: [0, 1, 2, 0, 1],
+    ...         Column.CLIP_ID: ["clip1", "clip1", "clip1", "clip2", "clip2"],
+    ...         Column.NOUN: ["noun2", "noun3", "noun1", "noun1", "noun2"],
+    ...         Column.NOUN_ID: [2, 3, 1, 1, 2],
+    ...         Column.SPLIT: ["train", "train", "train", "train", "train"],
+    ...         Column.VERB: ["verb4", "verb2", "verb1", "verb1", "verb2"],
+    ...         Column.VERB_ID: [4, 2, 1, 1, 2],
+    ...         Column.VIDEO_ID: ["video1", "video1", "video1", "video2", "video2"],
+    ...     }
+    ... )
+    >>> data_list = to_list(frame)
+    >>> data_list
+    {'action_clip_end_frame': [[47, 82, 102], [74, 142]],
+     'action_clip_end_sec': [[4.7, 8.2, 10.2], [7.4, 14.2]],
+     'action_clip_start_frame': [[23, 39, 74], [12, 82]],
+     'action_clip_start_sec': [[2.3, 3.9, 7.4], [1.2, 8.2]],
+     'clip_uid': ['clip1', 'clip2'],
+     'noun': [['noun2', 'noun3', 'noun1'], ['noun1', 'noun2']],
+     'noun_label': [[2, 3, 1], [1, 2]],
+     'sequence_length': [3, 2],
+     'split': ['train', 'train'],
+     'verb': [['verb4', 'verb2', 'verb1'], ['verb1', 'verb2']],
+     'verb_label': [[4, 2, 1], [1, 2]]}
+
+    ```
+    """
+    return group_by_sequence(frame, group_col).to_dict(as_series=False)
 
 
 if __name__ == "__main__":  # pragma: no cover

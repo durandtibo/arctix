@@ -22,6 +22,7 @@ from arctix.dataset.ego4d import (
     load_taxonomy_vocab,
     load_verb_vocab,
     prepare_data,
+    to_list,
 )
 from arctix.utils.vocab import Vocabulary
 
@@ -388,4 +389,47 @@ def test_group_by_sequence_video_id(data_prepared: pl.DataFrame) -> None:
                 Column.VIDEO_ID: pl.String,
             },
         ),
+    )
+
+
+#############################
+#     Tests for to_list     #
+#############################
+
+
+def test_to_list_clip_id(data_prepared: pl.DataFrame) -> None:
+    assert objects_are_equal(
+        to_list(data_prepared),
+        {
+            Column.ACTION_END_FRAME: [[47, 82, 102], [74, 142]],
+            Column.ACTION_END_SEC: [[4.7, 8.2, 10.2], [7.4, 14.2]],
+            Column.ACTION_START_FRAME: [[23, 39, 74], [12, 82]],
+            Column.ACTION_START_SEC: [[2.3, 3.9, 7.4], [1.2, 8.2]],
+            Column.CLIP_ID: ["clip1", "clip2"],
+            Column.NOUN: [["noun2", "noun3", "noun1"], ["noun1", "noun2"]],
+            Column.NOUN_ID: [[2, 3, 1], [1, 2]],
+            Column.SEQUENCE_LENGTH: [3, 2],
+            Column.SPLIT: ["train", "train"],
+            Column.VERB: [["verb4", "verb2", "verb1"], ["verb1", "verb2"]],
+            Column.VERB_ID: [[4, 2, 1], [1, 2]],
+        },
+    )
+
+
+def test_to_list_video_id(data_prepared: pl.DataFrame) -> None:
+    assert objects_are_equal(
+        to_list(data_prepared, group_col=Column.VIDEO_ID),
+        {
+            Column.ACTION_END_FRAME: [[47, 82, 102], [74, 142]],
+            Column.ACTION_END_SEC: [[4.7, 8.2, 10.2], [7.4, 14.2]],
+            Column.ACTION_START_FRAME: [[23, 39, 74], [12, 82]],
+            Column.ACTION_START_SEC: [[2.3, 3.9, 7.4], [1.2, 8.2]],
+            Column.NOUN: [["noun2", "noun3", "noun1"], ["noun1", "noun2"]],
+            Column.NOUN_ID: [[2, 3, 1], [1, 2]],
+            Column.SEQUENCE_LENGTH: [3, 2],
+            Column.SPLIT: ["train", "train"],
+            Column.VERB: [["verb4", "verb2", "verb1"], ["verb1", "verb2"]],
+            Column.VERB_ID: [[4, 2, 1], [1, 2]],
+            Column.VIDEO_ID: ["video1", "video2"],
+        },
     )
