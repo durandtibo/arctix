@@ -453,6 +453,77 @@ def to_array(frame: pl.DataFrame, group_col: str = Column.CLIP_ID) -> dict[str, 
 
     Returns:
         The dictionary of arrays.
+
+    Example usage:
+
+    ```pycon
+
+    >>> import polars as pl
+    >>> from arctix.dataset.ego4d import Column, to_array
+    >>> frame = pl.DataFrame(
+    ...     {
+    ...         Column.ACTION_END_FRAME: [47, 82, 102, 74, 142],
+    ...         Column.ACTION_END_SEC: [4.7, 8.2, 10.2, 7.4, 14.2],
+    ...         Column.ACTION_START_FRAME: [23, 39, 74, 12, 82],
+    ...         Column.ACTION_START_SEC: [2.3, 3.9, 7.4, 1.2, 8.2],
+    ...         Column.ACTION_INDEX: [0, 1, 2, 0, 1],
+    ...         Column.CLIP_ID: ["clip1", "clip1", "clip1", "clip2", "clip2"],
+    ...         Column.NOUN: ["noun2", "noun3", "noun1", "noun1", "noun2"],
+    ...         Column.NOUN_ID: [2, 3, 1, 1, 2],
+    ...         Column.SPLIT: ["train", "train", "train", "train", "train"],
+    ...         Column.VERB: ["verb4", "verb2", "verb1", "verb1", "verb2"],
+    ...         Column.VERB_ID: [4, 2, 1, 1, 2],
+    ...         Column.VIDEO_ID: ["video1", "video1", "video1", "video2", "video2"],
+    ...     }
+    ... )
+    >>> arrays = to_array(frame)
+    >>> arrays
+    {'noun': masked_array(
+      data=[['noun2', 'noun3', 'noun1'],
+            ['noun1', 'noun2', --]],
+      mask=[[False, False, False],
+            [False, False,  True]],
+      fill_value='N/A',
+      dtype='<U5'), 'noun_label': masked_array(
+      data=[[2, 3, 1],
+            [1, 2, --]],
+      mask=[[False, False, False],
+            [False, False,  True]],
+      fill_value=999999), 'split': array(['train', 'train'], dtype='<U5'),
+      'sequence_length': array([3, 2]), 'action_clip_start_frame': masked_array(
+      data=[[23, 39, 74],
+            [12, 82, --]],
+      mask=[[False, False, False],
+            [False, False,  True]],
+      fill_value=999999), 'action_clip_start_sec': masked_array(
+      data=[[2.3, 3.9, 7.4],
+            [1.2, 8.2, --]],
+      mask=[[False, False, False],
+            [False, False,  True]],
+      fill_value=1e+20), 'action_clip_end_frame': masked_array(
+      data=[[47, 82, 102],
+            [74, 142, --]],
+      mask=[[False, False, False],
+            [False, False,  True]],
+      fill_value=999999), 'action_clip_end_sec': masked_array(
+      data=[[4.7, 8.2, 10.2],
+            [7.4, 14.2, --]],
+      mask=[[False, False, False],
+            [False, False,  True]],
+      fill_value=1e+20), 'verb': masked_array(
+      data=[['verb4', 'verb2', 'verb1'],
+            ['verb1', 'verb2', --]],
+      mask=[[False, False, False],
+            [False, False,  True]],
+      fill_value='N/A',
+      dtype='<U5'), 'verb_label': masked_array(
+      data=[[4, 2, 1],
+            [1, 2, --]],
+      mask=[[False, False, False],
+            [False, False,  True]],
+      fill_value=999999), 'clip_uid': array(['clip1', 'clip2'], dtype='<U5')}
+
+    ```
     """
     groups = group_by_sequence(frame, group_col)
     lengths = groups.get_column(Column.SEQUENCE_LENGTH).to_numpy()
