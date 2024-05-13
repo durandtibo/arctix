@@ -390,7 +390,7 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
     │ action    ┆ action_id ┆ cooking_ ┆ cooking_ ┆ end_time ┆ person ┆ person_i ┆ sequence ┆ start_ti │
     │ ---       ┆ ---       ┆ activity ┆ activity ┆ ---      ┆ ---    ┆ d        ┆ _length  ┆ me       │
     │ list[str] ┆ list[i64] ┆ ---      ┆ _id      ┆ list[f64 ┆ str    ┆ ---      ┆ ---      ┆ ---      │
-    │           ┆           ┆ str      ┆ ---      ┆ ]        ┆        ┆ i64      ┆ u32      ┆ list[f64 │
+    │           ┆           ┆ str      ┆ ---      ┆ ]        ┆        ┆ i64      ┆ i64      ┆ list[f64 │
     │           ┆           ┆          ┆ i64      ┆          ┆        ┆          ┆          ┆ ]        │
     ╞═══════════╪═══════════╪══════════╪══════════╪══════════╪════════╪══════════╪══════════╪══════════╡
     │ ["SIL",   ┆ [0, 2, …  ┆ cereals  ┆ 0        ┆ [30.0,   ┆ P03    ┆ 0        ┆ 6        ┆ [1.0,    │
@@ -412,7 +412,7 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
         pl.col(Column.ACTION_ID),
         pl.col(Column.START_TIME),
         pl.col(Column.END_TIME),
-        pl.len().alias(Column.SEQUENCE_LENGTH),
+        pl.len().cast(pl.Int64).alias(Column.SEQUENCE_LENGTH),
     )
     transformer = td.Sequential(
         [
