@@ -251,6 +251,16 @@ def load_data(path: Path) -> pl.DataFrame:
 
     Returns:
         The annotations in a DataFrame.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from pathlib import Path
+    >>> from arctix.dataset.multithumos import load_data
+    >>> data = load_data(Path("/path/to/data/multithumos/"))  # doctest: +SKIP
+
+    ```
     """
     paths = FileFilter(PathLister([sanitize_path(path)], pattern="annotations/*.txt"))
     annotations = list(map(load_annotation_file, paths))
@@ -274,6 +284,18 @@ def load_annotation_file(path: Path) -> dict[str, list]:
     Returns:
         A dictionary with the action, the start time, and end time
             of each action.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from pathlib import Path
+    >>> from arctix.dataset.multithumos import load_annotation_file
+    >>> data = load_annotation_file(
+    ...     Path("/path/to/data/multithumos/annotations/BasketballBlock.txt")
+    ... )  # doctest: +SKIP
+
+    ```
     """
     path = sanitize_path(path)
     if path.suffix != ".txt":
@@ -453,6 +475,61 @@ def filter_by_split(frame: pl.DataFrame, split: str = "all") -> pl.DataFrame:
 
     Returns:
         The filtered DataFrame.
+
+    Example usage:
+
+    ```pycon
+
+    >>> import polars as pl
+    >>> from arctix.dataset.multithumos import Column, filter_by_split
+    >>> frame = pl.DataFrame(
+    ...     {
+    ...         Column.VIDEO: [
+    ...             "video_test_1",
+    ...             "video_test_1",
+    ...             "video_test_1",
+    ...             "video_validation_2",
+    ...             "video_validation_2",
+    ...             "video_validation_2",
+    ...             "video_validation_2",
+    ...         ],
+    ...         Column.START_TIME: [1.50, 17.57, 79.30, 2.97, 4.54, 20.22, 27.42],
+    ...         Column.END_TIME: [5.40, 18.33, 83.90, 3.60, 5.07, 20.49, 30.23],
+    ...         Column.ACTION: [
+    ...             "dribble",
+    ...             "guard",
+    ...             "dribble",
+    ...             "guard",
+    ...             "guard",
+    ...             "guard",
+    ...             "shoot",
+    ...         ],
+    ...         Column.ACTION_ID: [1, 0, 1, 0, 0, 0, 2],
+    ...         Column.SPLIT: [
+    ...             "test",
+    ...             "test",
+    ...             "test",
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...             "validation",
+    ...         ],
+    ...     },
+    ... )
+    >>> data = filter_by_split(frame, split='test')
+    >>> data
+    shape: (3, 6)
+    ┌──────────────┬────────────┬──────────┬─────────┬───────────┬───────┐
+    │ video        ┆ start_time ┆ end_time ┆ action  ┆ action_id ┆ split │
+    │ ---          ┆ ---        ┆ ---      ┆ ---     ┆ ---       ┆ ---   │
+    │ str          ┆ f64        ┆ f64      ┆ str     ┆ i64       ┆ str   │
+    ╞══════════════╪════════════╪══════════╪═════════╪═══════════╪═══════╡
+    │ video_test_1 ┆ 1.5        ┆ 5.4      ┆ dribble ┆ 1         ┆ test  │
+    │ video_test_1 ┆ 17.57      ┆ 18.33    ┆ guard   ┆ 0         ┆ test  │
+    │ video_test_1 ┆ 79.3       ┆ 83.9     ┆ dribble ┆ 1         ┆ test  │
+    └──────────────┴────────────┴──────────┴─────────┴───────────┴───────┘
+
+    ```
     """
     splits = {split}
     if split == "all":
@@ -508,14 +585,6 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
     ...             "validation",
     ...         ],
     ...     },
-    ...     schema={
-    ...         Column.VIDEO: pl.String,
-    ...         Column.START_TIME: pl.Float64,
-    ...         Column.END_TIME: pl.Float64,
-    ...         Column.ACTION: pl.String,
-    ...         Column.ACTION_ID: pl.Int64,
-    ...         Column.SPLIT: pl.String,
-    ...     },
     ... )
     >>> groups = group_by_sequence(frame)
     >>> groups
@@ -524,7 +593,7 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
     │ action       ┆ action_id   ┆ end_time     ┆ sequence_le ┆ split      ┆ start_time  ┆ video       │
     │ ---          ┆ ---         ┆ ---          ┆ ngth        ┆ ---        ┆ ---         ┆ ---         │
     │ list[str]    ┆ list[i64]   ┆ list[f64]    ┆ ---         ┆ str        ┆ list[f64]   ┆ str         │
-    │              ┆             ┆              ┆ u32         ┆            ┆             ┆             │
+    │              ┆             ┆              ┆ i64         ┆            ┆             ┆             │
     ╞══════════════╪═════════════╪══════════════╪═════════════╪════════════╪═════════════╪═════════════╡
     │ ["dribble",  ┆ [1, 0, 1]   ┆ [5.4, 18.33, ┆ 3           ┆ validation ┆ [1.5,       ┆ video_valid │
     │ "guard",     ┆             ┆ 83.9]        ┆             ┆            ┆ 17.57,      ┆ ation_1     │
@@ -534,7 +603,6 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
     │ "shoot"]     ┆             ┆              ┆             ┆            ┆ 27.42]      ┆             │
     └──────────────┴─────────────┴──────────────┴─────────────┴────────────┴─────────────┴─────────────┘
 
-
     ```
     """
     data = frame.group_by([Column.VIDEO]).agg(
@@ -543,7 +611,7 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
         pl.col(Column.ACTION_ID),
         pl.col(Column.START_TIME),
         pl.col(Column.END_TIME),
-        pl.len().alias(Column.SEQUENCE_LENGTH),
+        pl.len().cast(pl.Int64).alias(Column.SEQUENCE_LENGTH),
     )
     transformer = td.Sequential(
         [
@@ -601,14 +669,6 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     ...             "validation",
     ...             "validation",
     ...         ],
-    ...     },
-    ...     schema={
-    ...         Column.VIDEO: pl.String,
-    ...         Column.START_TIME: pl.Float64,
-    ...         Column.END_TIME: pl.Float64,
-    ...         Column.ACTION: pl.String,
-    ...         Column.ACTION_ID: pl.Int64,
-    ...         Column.SPLIT: pl.String,
     ...     },
     ... )
     >>> arrays = to_array(frame)
@@ -735,14 +795,6 @@ def to_list(frame: pl.DataFrame) -> dict[str, list]:
     ...             "validation",
     ...             "validation",
     ...         ],
-    ...     },
-    ...     schema={
-    ...         Column.VIDEO: pl.String,
-    ...         Column.START_TIME: pl.Float64,
-    ...         Column.END_TIME: pl.Float64,
-    ...         Column.ACTION: pl.String,
-    ...         Column.ACTION_ID: pl.Int64,
-    ...         Column.SPLIT: pl.String,
     ...     },
     ... )
     >>> data_list = to_list(frame)
