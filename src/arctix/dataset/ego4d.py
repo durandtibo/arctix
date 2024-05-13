@@ -50,6 +50,7 @@ class Column:
     VERB_ID: str = "verb_label"
     VIDEO_ID: str = "video_uid"
     SPLIT: str = "split"
+    SEQUENCE_LENGTH: str = "sequence_length"
 
 
 class MetadataKeys:
@@ -358,6 +359,89 @@ def prepare_data(frame: pl.DataFrame, metadata: dict) -> tuple[pl.DataFrame, dic
     return out, metadata
 
 
+def group_by_sequence(frame: pl.DataFrame, group_col: str = Column.CLIP_ID) -> pl.DataFrame:
+    r"""Group the DataFrame by sequences of actions.
+
+    Args:
+        frame: The input DataFrame.
+        group_col: The column used to generate the sequence.
+
+    Returns:
+        The DataFrame after the grouping.
+
+    Example usage:
+
+    ```pycon
+
+    >>> import polars as pl
+    >>> from arctix.dataset.ego4d import Column, group_by_sequence
+    >>> frame = pl.DataFrame(
+    ...     {
+    ...         Column.ACTION_END_FRAME: [47, 82, 102, 74, 142],
+    ...         Column.ACTION_END_SEC: [4.7, 8.2, 10.2, 7.4, 14.2],
+    ...         Column.ACTION_START_FRAME: [23, 39, 74, 12, 82],
+    ...         Column.ACTION_START_SEC: [2.3, 3.9, 7.4, 1.2, 8.2],
+    ...         Column.ACTION_INDEX: [0, 1, 2, 0, 1],
+    ...         Column.CLIP_ID: ["clip1", "clip1", "clip1", "clip2", "clip2"],
+    ...         Column.NOUN: ["noun2", "noun3", "noun1", "noun1", "noun2"],
+    ...         Column.NOUN_ID: [2, 3, 1, 1, 2],
+    ...         Column.SPLIT: ["train", "train", "train", "train", "train"],
+    ...         Column.VERB: ["verb4", "verb2", "verb1", "verb1", "verb2"],
+    ...         Column.VERB_ID: [4, 2, 1, 1, 2],
+    ...         Column.VIDEO_ID: ["video1", "video1", "video1", "video2", "video2"],
+    ...     }
+    ... )
+    >>> data = group_by_sequence(frame)
+    >>> with pl.Config(tbl_cols=-1):
+    ...     data
+    shape: (2, 11)
+    ┌─────────┬────────┬────────┬────────┬────────┬────────┬────────┬────────┬───────┬────────┬────────┐
+    │ action_ ┆ action ┆ action ┆ action ┆ clip_u ┆ noun   ┆ noun_l ┆ sequen ┆ split ┆ verb   ┆ verb_l │
+    │ clip_en ┆ _clip_ ┆ _clip_ ┆ _clip_ ┆ id     ┆ ---    ┆ abel   ┆ ce_len ┆ ---   ┆ ---    ┆ abel   │
+    │ d_frame ┆ end_se ┆ start_ ┆ start_ ┆ ---    ┆ list[s ┆ ---    ┆ gth    ┆ str   ┆ list[s ┆ ---    │
+    │ ---     ┆ c      ┆ frame  ┆ sec    ┆ str    ┆ tr]    ┆ list[i ┆ ---    ┆       ┆ tr]    ┆ list[i │
+    │ list[i6 ┆ ---    ┆ ---    ┆ ---    ┆        ┆        ┆ 64]    ┆ i64    ┆       ┆        ┆ 64]    │
+    │ 4]      ┆ list[f ┆ list[i ┆ list[f ┆        ┆        ┆        ┆        ┆       ┆        ┆        │
+    │         ┆ 64]    ┆ 64]    ┆ 64]    ┆        ┆        ┆        ┆        ┆       ┆        ┆        │
+    ╞═════════╪════════╪════════╪════════╪════════╪════════╪════════╪════════╪═══════╪════════╪════════╡
+    │ [47,    ┆ [4.7,  ┆ [23,   ┆ [2.3,  ┆ clip1  ┆ ["noun ┆ [2, 3, ┆ 3      ┆ train ┆ ["verb ┆ [4, 2, │
+    │ 82,     ┆ 8.2,   ┆ 39,    ┆ 3.9,   ┆        ┆ 2",    ┆ 1]     ┆        ┆       ┆ 4",    ┆ 1]     │
+    │ 102]    ┆ 10.2]  ┆ 74]    ┆ 7.4]   ┆        ┆ "noun3 ┆        ┆        ┆       ┆ "verb2 ┆        │
+    │         ┆        ┆        ┆        ┆        ┆ ", "no ┆        ┆        ┆       ┆ ", "ve ┆        │
+    │         ┆        ┆        ┆        ┆        ┆ un1"]  ┆        ┆        ┆       ┆ rb1"]  ┆        │
+    │ [74,    ┆ [7.4,  ┆ [12,   ┆ [1.2,  ┆ clip2  ┆ ["noun ┆ [1, 2] ┆ 2      ┆ train ┆ ["verb ┆ [1, 2] │
+    │ 142]    ┆ 14.2]  ┆ 82]    ┆ 8.2]   ┆        ┆ 1",    ┆        ┆        ┆       ┆ 1",    ┆        │
+    │         ┆        ┆        ┆        ┆        ┆ "noun2 ┆        ┆        ┆       ┆ "verb2 ┆        │
+    │         ┆        ┆        ┆        ┆        ┆ "]     ┆        ┆        ┆       ┆ "]     ┆        │
+    └─────────┴────────┴────────┴────────┴────────┴────────┴────────┴────────┴───────┴────────┴────────┘
+
+    ```
+    """
+    data = (
+        frame.sort(by=[Column.VIDEO_ID, Column.CLIP_ID, Column.ACTION_INDEX])
+        .group_by([group_col])
+        .agg(
+            pl.col(Column.ACTION_END_FRAME),
+            pl.col(Column.ACTION_END_SEC),
+            pl.col(Column.ACTION_START_FRAME),
+            pl.col(Column.ACTION_START_SEC),
+            pl.col(Column.NOUN),
+            pl.col(Column.NOUN_ID),
+            pl.col(Column.VERB),
+            pl.col(Column.VERB_ID),
+            pl.first(Column.SPLIT),
+            pl.len().cast(pl.Int64).alias(Column.SEQUENCE_LENGTH),
+        )
+    )
+    transformer = td.Sequential(
+        [
+            td.Sort(columns=[group_col]),
+            td.SortColumns(),
+        ]
+    )
+    return transformer.transform(data)
+
+
 if __name__ == "__main__":  # pragma: no cover
     import os
 
@@ -367,3 +451,7 @@ if __name__ == "__main__":  # pragma: no cover
     data_raw, metadata_raw = fetch_data(path, split="train")
     logger.info(f"data_raw:\n{data_raw}")
     logger.info(f"metadata_raw:\n{metadata_raw}")
+
+    data, metadata = prepare_data(data_raw, metadata_raw)
+    logger.info(f"data:\n{data}")
+    logger.info(f"metadata:\n{metadata}")
