@@ -16,6 +16,7 @@ __all__ = [
     "load_noun_vocab",
     "load_taxonomy_vocab",
     "load_verb_vocab",
+    "prepare_data",
 ]
 
 import logging
@@ -271,6 +272,58 @@ def load_taxonomy_vocab(path: Path, name: str, expected_size: int | None = None)
         msg = f"Expected {expected_size} {name} but received {count:,}"
         raise RuntimeError(msg)
     return vocab
+
+
+def prepare_data(frame: pl.DataFrame, metadata: dict) -> tuple[pl.DataFrame, dict]:
+    r"""Prepare the data.
+
+    Args:
+        frame: The raw DataFrame.
+        metadata: The metadata wich contains the vocabularies to
+            convert verbs and nouns to index.
+
+    Returns:
+        A tuple containing the prepared data and the metadata.
+
+    Example usage:
+
+    ```pycon
+
+    >>> import datetime
+    >>> import polars as pl
+    >>> from arctix.dataset.epic_kitchen_100 import Column, prepare_data
+    >>> frame = pl.DataFrame(
+    ...     {}
+    ... )
+    >>> data, metadata = prepare_data(frame, metadata={})
+    >>> with pl.Config(tbl_cols=-1):
+    ...     data
+    shape: (3, 17)
+
+    >>> metadata
+    {}
+
+    ```
+    """
+    transformer = td.Sequential(
+        [
+            td.Cast(
+                columns=[
+                    Column.ACTION_INDEX,
+                    Column.ACTION_END_FRAME,
+                    Column.ACTION_START_FRAME,
+                    Column.NOUN_ID,
+                    Column.VERB_ID,
+                ],
+                dtype=pl.Int64,
+            ),
+            td.Cast(columns=[Column.ACTION_START_SEC, Column.ACTION_END_SEC], dtype=pl.Float64),
+            td.Sort(columns=[Column.VIDEO_ID, Column.CLIP_ID, Column.ACTION_INDEX]),
+            td.SortColumns(),
+        ]
+    )
+    out = transformer.transform(frame)
+    return out, metadata
 
 
 if __name__ == "__main__":  # pragma: no cover
