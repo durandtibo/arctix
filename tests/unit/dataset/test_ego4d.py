@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import Counter
 from typing import TYPE_CHECKING
 
+import numpy as np
 import polars as pl
 import pytest
 from coola import objects_are_equal
@@ -22,6 +23,7 @@ from arctix.dataset.ego4d import (
     load_taxonomy_vocab,
     load_verb_vocab,
     prepare_data,
+    to_array,
     to_list,
 )
 from arctix.utils.vocab import Vocabulary
@@ -389,6 +391,87 @@ def test_group_by_sequence_video_id(data_prepared: pl.DataFrame) -> None:
                 Column.VIDEO_ID: pl.String,
             },
         ),
+    )
+
+
+##############################
+#     Tests for to_array     #
+##############################
+
+
+def test_to_array_clip_id(data_prepared: pl.DataFrame) -> None:
+    mask = np.array([[False, False, False], [False, False, True]])
+    assert objects_are_equal(
+        to_array(data_prepared),
+        {
+            Column.ACTION_END_FRAME: np.ma.masked_array(
+                data=np.array([[47, 82, 102], [74, 142, -1]], dtype=np.int64), mask=mask
+            ),
+            Column.ACTION_END_SEC: np.ma.masked_array(
+                data=np.array([[4.7, 8.2, 10.2], [7.4, 14.2, -1.0]], dtype=np.float64), mask=mask
+            ),
+            Column.ACTION_START_FRAME: np.ma.masked_array(
+                data=np.array([[23, 39, 74], [12, 82, -1]], dtype=np.int64), mask=mask
+            ),
+            Column.ACTION_START_SEC: np.ma.masked_array(
+                data=np.array([[2.3, 3.9, 7.4], [1.2, 8.2, -1.0]], dtype=np.float64), mask=mask
+            ),
+            Column.CLIP_ID: np.array(["clip1", "clip2"]),
+            Column.NOUN: np.ma.masked_array(
+                data=np.array([["noun2", "noun3", "noun1"], ["noun1", "noun2", "N/A"]]),
+                mask=mask,
+            ),
+            Column.NOUN_ID: np.ma.masked_array(
+                data=np.array([[2, 3, 1], [1, 2, -1]], dtype=np.int64), mask=mask
+            ),
+            Column.SEQUENCE_LENGTH: np.array([3, 2], dtype=np.int64),
+            Column.SPLIT: np.array(["train", "train"]),
+            Column.VERB: np.ma.masked_array(
+                data=np.array([["verb4", "verb2", "verb1"], ["verb1", "verb2", "N/A"]]),
+                mask=mask,
+            ),
+            Column.VERB_ID: np.ma.masked_array(
+                data=np.array([[4, 2, 1], [1, 2, -1]], dtype=np.int64), mask=mask
+            ),
+        },
+    )
+
+
+def test_to_array_video_id(data_prepared: pl.DataFrame) -> None:
+    mask = np.array([[False, False, False], [False, False, True]])
+    assert objects_are_equal(
+        to_array(data_prepared, group_col=Column.VIDEO_ID),
+        {
+            Column.ACTION_END_FRAME: np.ma.masked_array(
+                data=np.array([[47, 82, 102], [74, 142, -1]], dtype=np.int64), mask=mask
+            ),
+            Column.ACTION_END_SEC: np.ma.masked_array(
+                data=np.array([[4.7, 8.2, 10.2], [7.4, 14.2, -1.0]], dtype=np.float64), mask=mask
+            ),
+            Column.ACTION_START_FRAME: np.ma.masked_array(
+                data=np.array([[23, 39, 74], [12, 82, -1]], dtype=np.int64), mask=mask
+            ),
+            Column.ACTION_START_SEC: np.ma.masked_array(
+                data=np.array([[2.3, 3.9, 7.4], [1.2, 8.2, -1.0]], dtype=np.float64), mask=mask
+            ),
+            Column.NOUN: np.ma.masked_array(
+                data=np.array([["noun2", "noun3", "noun1"], ["noun1", "noun2", "N/A"]]),
+                mask=mask,
+            ),
+            Column.NOUN_ID: np.ma.masked_array(
+                data=np.array([[2, 3, 1], [1, 2, -1]], dtype=np.int64), mask=mask
+            ),
+            Column.SEQUENCE_LENGTH: np.array([3, 2], dtype=np.int64),
+            Column.SPLIT: np.array(["train", "train"]),
+            Column.VERB: np.ma.masked_array(
+                data=np.array([["verb4", "verb2", "verb1"], ["verb1", "verb2", "N/A"]]),
+                mask=mask,
+            ),
+            Column.VERB_ID: np.ma.masked_array(
+                data=np.array([[4, 2, 1], [1, 2, -1]], dtype=np.int64), mask=mask
+            ),
+            Column.VIDEO_ID: np.array(["video1", "video2"]),
+        },
     )
 
 
