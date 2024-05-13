@@ -205,6 +205,16 @@ def load_data(path: Path, remove_duplicate: bool = True) -> pl.DataFrame:
 
     Returns:
         The annotations in a DataFrame.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from pathlib import Path
+    >>> from arctix.dataset.breakfast import load_data
+    >>> data = load_data(Path("/path/to/data/breakfast/"))  # doctest: +SKIP
+
+    ```
     """
     paths = FileFilter(PathLister([sanitize_path(path)], pattern="**/*.txt"))
     annotations = list(map(load_annotation_file, paths))
@@ -230,6 +240,16 @@ def load_annotation_file(path: Path) -> dict[str, list]:
     Returns:
         A dictionary with the action, the start time, and end time
             of each action.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from pathlib import Path
+    >>> from arctix.dataset.breakfast import load_annotation_file
+    >>> data = load_annotation_file(Path("/path/to/data/breakfast/segmentation_coarse/cereals/P03_cam01_P03_cereals.txt"))  # doctest: +SKIP
+
+    ```
     """
     path = sanitize_path(path)
     if path.suffix != ".txt":
@@ -299,6 +319,106 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
 
     Returns:
         A tuple containing the prepared data and the metadata.
+
+    Example usage:
+
+    ```pycon
+
+    >>> import polars as pl
+    >>> from arctix.dataset.breakfast import Column, group_by_sequence
+    >>> frame = pl.DataFrame(
+    ...     {
+    ...         Column.ACTION: [
+    ...             "SIL",
+    ...             "take_bowl",
+    ...             "pour_cereals",
+    ...             "pour_milk",
+    ...             "stir_cereals",
+    ...             "SIL",
+    ...             "SIL",
+    ...             "pour_milk",
+    ...             "spoon_powder",
+    ...             "SIL",
+    ...         ],
+    ...         Column.COOKING_ACTIVITY: [
+    ...             "cereals",
+    ...             "cereals",
+    ...             "cereals",
+    ...             "cereals",
+    ...             "cereals",
+    ...             "cereals",
+    ...             "milk",
+    ...             "milk",
+    ...             "milk",
+    ...             "milk",
+    ...         ],
+    ...         Column.END_TIME: [
+    ...             30.0,
+    ...             150.0,
+    ...             428.0,
+    ...             575.0,
+    ...             705.0,
+    ...             836.0,
+    ...             47.0,
+    ...             215.0,
+    ...             565.0,
+    ...             747.0,
+    ...         ],
+    ...         Column.PERSON: [
+    ...             "P03",
+    ...             "P03",
+    ...             "P03",
+    ...             "P03",
+    ...             "P03",
+    ...             "P03",
+    ...             "P54",
+    ...             "P54",
+    ...             "P54",
+    ...             "P54",
+    ...         ],
+    ...         Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
+    ...     },
+    ... )
+    >>> data, metadata = prepare_data(frame)
+    >>> with pl.Config(tbl_cols=-1):
+    ...     data
+    shape: (10, 8)
+    ┌─────────────┬───────────┬─────────────┬─────────────┬──────────┬────────┬───────────┬────────────┐
+    │ action      ┆ action_id ┆ cooking_act ┆ cooking_act ┆ end_time ┆ person ┆ person_id ┆ start_time │
+    │ ---         ┆ ---       ┆ ivity       ┆ ivity_id    ┆ ---      ┆ ---    ┆ ---       ┆ ---        │
+    │ str         ┆ i64       ┆ ---         ┆ ---         ┆ f64      ┆ str    ┆ i64       ┆ f64        │
+    │             ┆           ┆ str         ┆ i64         ┆          ┆        ┆           ┆            │
+    ╞═════════════╪═══════════╪═════════════╪═════════════╪══════════╪════════╪═══════════╪════════════╡
+    │ SIL         ┆ 0         ┆ cereals     ┆ 0           ┆ 30.0     ┆ P03    ┆ 0         ┆ 1.0        │
+    │ take_bowl   ┆ 2         ┆ cereals     ┆ 0           ┆ 150.0    ┆ P03    ┆ 0         ┆ 31.0       │
+    │ pour_cereal ┆ 5         ┆ cereals     ┆ 0           ┆ 428.0    ┆ P03    ┆ 0         ┆ 151.0      │
+    │ s           ┆           ┆             ┆             ┆          ┆        ┆           ┆            │
+    │ pour_milk   ┆ 1         ┆ cereals     ┆ 0           ┆ 575.0    ┆ P03    ┆ 0         ┆ 429.0      │
+    │ stir_cereal ┆ 3         ┆ cereals     ┆ 0           ┆ 705.0    ┆ P03    ┆ 0         ┆ 576.0      │
+    │ s           ┆           ┆             ┆             ┆          ┆        ┆           ┆            │
+    │ SIL         ┆ 0         ┆ cereals     ┆ 0           ┆ 836.0    ┆ P03    ┆ 0         ┆ 706.0      │
+    │ SIL         ┆ 0         ┆ milk        ┆ 1           ┆ 47.0     ┆ P54    ┆ 1         ┆ 1.0        │
+    │ pour_milk   ┆ 1         ┆ milk        ┆ 1           ┆ 215.0    ┆ P54    ┆ 1         ┆ 48.0       │
+    │ spoon_powde ┆ 4         ┆ milk        ┆ 1           ┆ 565.0    ┆ P54    ┆ 1         ┆ 216.0      │
+    │ r           ┆           ┆             ┆             ┆          ┆        ┆           ┆            │
+    │ SIL         ┆ 0         ┆ milk        ┆ 1           ┆ 747.0    ┆ P54    ┆ 1         ┆ 566.0      │
+    └─────────────┴───────────┴─────────────┴─────────────┴──────────┴────────┴───────────┴────────────┘
+    >>> metadata
+    {'vocab_action': Vocabulary(
+      counter=Counter({'SIL': 4, 'pour_milk': 2, 'take_bowl': 1, 'stir_cereals': 1, 'spoon_powder': 1, 'pour_cereals': 1}),
+      index_to_token=('SIL', 'pour_milk', 'take_bowl', 'stir_cereals', 'spoon_powder', 'pour_cereals'),
+      token_to_index={'SIL': 0, 'pour_milk': 1, 'take_bowl': 2, 'stir_cereals': 3, 'spoon_powder': 4, 'pour_cereals': 5},
+    ), 'vocab_activity': Vocabulary(
+      counter=Counter({'cereals': 6, 'milk': 4}),
+      index_to_token=('cereals', 'milk'),
+      token_to_index={'cereals': 0, 'milk': 1},
+    ), 'vocab_person': Vocabulary(
+      counter=Counter({'P03': 6, 'P54': 4}),
+      index_to_token=('P03', 'P54'),
+      token_to_index={'P03': 0, 'P54': 1},
+    )}
+
+    ```
     """
     vocab_action = generate_vocabulary(frame, col=Column.ACTION).sort_by_count()
     vocab_person = generate_vocabulary(frame, col=Column.PERSON).sort_by_count()
