@@ -16,6 +16,7 @@ __all__ = [
     "load_noun_vocab",
     "load_taxonomy_vocab",
     "load_verb_vocab",
+    "prepare_data",
 ]
 
 import logging
@@ -271,6 +272,90 @@ def load_taxonomy_vocab(path: Path, name: str, expected_size: int | None = None)
         msg = f"Expected {expected_size} {name} but received {count:,}"
         raise RuntimeError(msg)
     return vocab
+
+
+def prepare_data(frame: pl.DataFrame, metadata: dict) -> tuple[pl.DataFrame, dict]:
+    r"""Prepare the data.
+
+    Args:
+        frame: The raw DataFrame.
+        metadata: The metadata wich contains the vocabularies to
+            convert verbs and nouns to index.
+
+    Returns:
+        A tuple containing the prepared data and the metadata.
+
+    Example usage:
+
+    ```pycon
+
+    >>> import polars as pl
+    >>> from arctix.dataset.ego4d import Column, prepare_data
+    >>> frame = pl.DataFrame(
+    ...     {
+    ...         Column.ACTION_END_FRAME: [47, 82, 102, 74, 142],
+    ...         Column.ACTION_END_SEC: [4.7, 8.2, 10.2, 7.4, 14.2],
+    ...         Column.ACTION_START_FRAME: [23, 39, 74, 12, 82],
+    ...         Column.ACTION_START_SEC: [2.3, 3.9, 7.4, 1.2, 8.2],
+    ...         Column.ACTION_INDEX: [0, 1, 2, 0, 1],
+    ...         Column.CLIP_ID: ["clip1", "clip1", "clip1", "clip2", "clip2"],
+    ...         Column.NOUN: ["noun2", "noun3", "noun1", "noun1", "noun2"],
+    ...         Column.NOUN_ID: [2, 3, 1, 1, 2],
+    ...         Column.SPLIT: ["train", "train", "train", "train", "train"],
+    ...         Column.VERB: ["verb4", "verb2", "verb1", "verb1", "verb2"],
+    ...         Column.VERB_ID: [4, 2, 1, 1, 2],
+    ...         Column.VIDEO_ID: ["video1", "video1", "video1", "video2", "video2"],
+    ...     }
+    ... )
+    >>> data, metadata = prepare_data(frame, metadata={})
+    >>> with pl.Config(tbl_cols=-1):
+    ...     data
+    shape: (5, 12)
+    ┌────────┬────────┬────────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┐
+    │ action ┆ action ┆ action ┆ actio ┆ actio ┆ clip_ ┆ noun  ┆ noun_ ┆ split ┆ verb  ┆ verb_ ┆ video │
+    │ _clip_ ┆ _clip_ ┆ _clip_ ┆ n_cli ┆ n_idx ┆ uid   ┆ ---   ┆ label ┆ ---   ┆ ---   ┆ label ┆ _uid  │
+    │ end_fr ┆ end_se ┆ start_ ┆ p_sta ┆ ---   ┆ ---   ┆ str   ┆ ---   ┆ str   ┆ str   ┆ ---   ┆ ---   │
+    │ ame    ┆ c      ┆ frame  ┆ rt_se ┆ i64   ┆ str   ┆       ┆ i64   ┆       ┆       ┆ i64   ┆ str   │
+    │ ---    ┆ ---    ┆ ---    ┆ c     ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+    │ i64    ┆ f64    ┆ i64    ┆ ---   ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+    │        ┆        ┆        ┆ f64   ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+    ╞════════╪════════╪════════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╡
+    │ 47     ┆ 4.7    ┆ 23     ┆ 2.3   ┆ 0     ┆ clip1 ┆ noun2 ┆ 2     ┆ train ┆ verb4 ┆ 4     ┆ video │
+    │        ┆        ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ 1     │
+    │ 82     ┆ 8.2    ┆ 39     ┆ 3.9   ┆ 1     ┆ clip1 ┆ noun3 ┆ 3     ┆ train ┆ verb2 ┆ 2     ┆ video │
+    │        ┆        ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ 1     │
+    │ 102    ┆ 10.2   ┆ 74     ┆ 7.4   ┆ 2     ┆ clip1 ┆ noun1 ┆ 1     ┆ train ┆ verb1 ┆ 1     ┆ video │
+    │        ┆        ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ 1     │
+    │ 74     ┆ 7.4    ┆ 12     ┆ 1.2   ┆ 0     ┆ clip2 ┆ noun1 ┆ 1     ┆ train ┆ verb1 ┆ 1     ┆ video │
+    │        ┆        ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ 2     │
+    │ 142    ┆ 14.2   ┆ 82     ┆ 8.2   ┆ 1     ┆ clip2 ┆ noun2 ┆ 2     ┆ train ┆ verb2 ┆ 2     ┆ video │
+    │        ┆        ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ 2     │
+    └────────┴────────┴────────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘
+
+    >>> metadata
+    {}
+
+    ```
+    """
+    transformer = td.Sequential(
+        [
+            td.Cast(
+                columns=[
+                    Column.ACTION_INDEX,
+                    Column.ACTION_END_FRAME,
+                    Column.ACTION_START_FRAME,
+                    Column.NOUN_ID,
+                    Column.VERB_ID,
+                ],
+                dtype=pl.Int64,
+            ),
+            td.Cast(columns=[Column.ACTION_START_SEC, Column.ACTION_END_SEC], dtype=pl.Float64),
+            td.Sort(columns=[Column.VIDEO_ID, Column.CLIP_ID, Column.ACTION_INDEX]),
+            td.SortColumns(),
+        ]
+    )
+    out = transformer.transform(frame)
+    return out, metadata
 
 
 if __name__ == "__main__":  # pragma: no cover
