@@ -283,3 +283,91 @@ jobs:
   #################################
   #     Optional dependencies     #
   #################################
+
+  gdown:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      max-parallel: 8
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ]
+        python-version: [ '3.12', '3.11', '3.10', '3.9' ]
+        gdown-version: [ 5.2.0 ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package
+        run: |
+          pip install arctix gdown==${{ matrix.gdown-version }}
+
+      - name: Run some checks
+        run: |
+          python tests/package_checks.py
+
+  requests:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      max-parallel: 8
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ]
+        python-version: [ '3.12', '3.11', '3.10', '3.9' ]
+        requests-version: [ 2.31.0, 2.20.0 ]
+        exclude:
+          # python 3.12
+          - requests-version: 2.20.0
+            python-version: '3.12'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package
+        run: |
+          pip install arctix requests==${{ matrix.requests-version }}
+
+      - name: Run some checks
+        run: |
+          python tests/package_checks.py
+
+  tqdm:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      max-parallel: 8
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ]
+        python-version: [ '3.12', '3.11', '3.10', '3.9' ]
+        tqdm-version: [ 4.66.4, 4.65.2 ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package
+        run: |
+          pip install arctix tqdm==${{ matrix.tqdm-version }}
+
+      - name: Run some checks
+        run: |
+          python tests/package_checks.py

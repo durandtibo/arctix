@@ -255,7 +255,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest ]
         python-version: [ '3.12', '3.11', '3.10', '3.9' ]
-        gdown-version: [ 5.1.0 ]
+        gdown-version: [ 5.2.0 ]
 
     steps:
       - name: Checkout
@@ -351,7 +351,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest ]
         python-version: [ '3.12', '3.11', '3.10', '3.9' ]
-        tqdm-version: [ 4.66.2, 4.65.2 ]
+        tqdm-version: [ 4.66.4, 4.65.2 ]
 
     steps:
       - name: Checkout
