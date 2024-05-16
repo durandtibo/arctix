@@ -58,3 +58,26 @@ def test_diff_dataframe_transformer_transform_float32() -> None:
             schema={"col1": pl.Float32, "col2": pl.String, "diff": pl.Float32},
         ),
     )
+
+
+def test_diff_dataframe_transformer_transform_shift_2() -> None:
+    frame = pl.DataFrame(
+        {
+            "col1": [1, 2, 3, 4, 5],
+            "col2": ["a", "b", "c", "d", "e"],
+        },
+        schema={"col1": pl.Int64, "col2": pl.String},
+    )
+    transformer = Diff(in_col="col1", out_col="diff", shift=2)
+    out = transformer.transform(frame)
+    assert_frame_equal(
+        out,
+        pl.DataFrame(
+            {
+                "col1": [1, 2, 3, 4, 5],
+                "col2": ["a", "b", "c", "d", "e"],
+                "diff": [None, None, 2, 2, 2],
+            },
+            schema={"col1": pl.Int64, "col2": pl.String, "diff": pl.Int64},
+        ),
+    )

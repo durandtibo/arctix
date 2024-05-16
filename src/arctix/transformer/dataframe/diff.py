@@ -4,9 +4,11 @@ from __future__ import annotations
 
 __all__ = ["DiffDataFrameTransformer"]
 
+
 import polars as pl
 
 from arctix.transformer.dataframe import BaseDataFrameTransformer
+
 
 
 class DiffDataFrameTransformer(BaseDataFrameTransformer):
@@ -17,7 +19,6 @@ class DiffDataFrameTransformer(BaseDataFrameTransformer):
         in_col: The input column name.
         out_col: The output column name.
         shift: The number of slots to shift.
-        null_behavior: Indicate how to handle null values.
 
     Example usage:
 
@@ -27,7 +28,7 @@ class DiffDataFrameTransformer(BaseDataFrameTransformer):
     >>> from arctix.transformer.dataframe import Diff
     >>> transformer = Diff(in_col="col1", out_col="diff")
     >>> transformer
-    DiffDataFrameTransformer(in_col=col1, out_col=diff, shift=1, null_behavior=ignore)
+    DiffDataFrameTransformer(in_col=col1, out_col=diff, shift=1)
     >>> frame = pl.DataFrame(
     ...     {
     ...         "col1": [1, 2, 3, 4, 5],
@@ -65,25 +66,18 @@ class DiffDataFrameTransformer(BaseDataFrameTransformer):
     ```
     """
 
-    def __init__(
-        self, in_col: str, out_col: str, shift: int = 1, null_behavior: str = "ignore"
-    ) -> None:
+    def __init__(self, in_col: str, out_col: str, shift: int = 1) -> None:
         self._in_col = in_col
         self._out_col = out_col
         self._shift = shift
-        self._null_behavior = null_behavior
 
     def __repr__(self) -> str:
         return (
             f"{self.__class__.__qualname__}(in_col={self._in_col}, "
-            f"out_col={self._out_col}, shift={self._shift}, null_behavior={self._null_behavior})"
+            f"out_col={self._out_col}, shift={self._shift})"
         )
 
     def transform(self, frame: pl.DataFrame) -> pl.DataFrame:
         return frame.with_columns(
-            frame.select(
-                pl.col(self._in_col)
-                .diff(n=self._shift, null_behavior=self._null_behavior)
-                .alias(self._out_col)
-            )
+            frame.select(pl.col(self._in_col).diff(n=self._shift).alias(self._out_col))
         )
