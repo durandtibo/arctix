@@ -10,7 +10,6 @@ import polars as pl
 from arctix.transformer.dataframe import BaseDataFrameTransformer
 
 
-
 class DiffDataFrameTransformer(BaseDataFrameTransformer):
     r"""Implement a transformer to compute the first discrete difference
     between shifted items.
