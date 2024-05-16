@@ -10,6 +10,8 @@ __all__ = [
     "FunctionDataFrameTransformer",
     "IndexToToken",
     "IndexToTokenDataFrameTransformer",
+    "Diff",
+    "DiffDataFrameTransformer",
     "JsonDecode",
     "JsonDecodeDataFrameTransformer",
     "Replace",
@@ -41,6 +43,8 @@ from arctix.transformer.dataframe.casting import CastDataFrameTransformer
 from arctix.transformer.dataframe.casting import CastDataFrameTransformer as Cast
 from arctix.transformer.dataframe.casting import ToTimeDataFrameTransformer
 from arctix.transformer.dataframe.casting import ToTimeDataFrameTransformer as ToTime
+from arctix.transformer.dataframe.diff import DiffDataFrameTransformer
+from arctix.transformer.dataframe.diff import DiffDataFrameTransformer as Diff
 from arctix.transformer.dataframe.function import FunctionDataFrameTransformer
 from arctix.transformer.dataframe.function import (
     FunctionDataFrameTransformer as Function,
