@@ -6,12 +6,12 @@ __all__ = [
     "BaseDataFrameTransformer",
     "Cast",
     "CastDataFrameTransformer",
+    "Diff",
+    "DiffDataFrameTransformer",
     "Function",
     "FunctionDataFrameTransformer",
     "IndexToToken",
     "IndexToTokenDataFrameTransformer",
-    "Diff",
-    "DiffDataFrameTransformer",
     "JsonDecode",
     "JsonDecodeDataFrameTransformer",
     "Replace",
@@ -24,6 +24,8 @@ __all__ = [
     "SortDataFrameTransformer",
     "StripChars",
     "StripCharsDataFrameTransformer",
+    "TimeDiff",
+    "TimeDiffDataFrameTransformer",
     "TimeToSecond",
     "TimeToSecondDataFrameTransformer",
     "ToTime",
@@ -45,6 +47,8 @@ from arctix.transformer.dataframe.casting import ToTimeDataFrameTransformer
 from arctix.transformer.dataframe.casting import ToTimeDataFrameTransformer as ToTime
 from arctix.transformer.dataframe.diff import DiffDataFrameTransformer
 from arctix.transformer.dataframe.diff import DiffDataFrameTransformer as Diff
+from arctix.transformer.dataframe.diff import TimeDiffDataFrameTransformer
+from arctix.transformer.dataframe.diff import TimeDiffDataFrameTransformer as TimeDiff
 from arctix.transformer.dataframe.function import FunctionDataFrameTransformer
 from arctix.transformer.dataframe.function import (
     FunctionDataFrameTransformer as Function,
