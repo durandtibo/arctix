@@ -181,6 +181,18 @@ def data_prepared() -> pl.DataFrame:
             Column.PERSON: ["P03", "P03", "P03", "P03", "P03", "P03", "P54", "P54", "P54", "P54"],
             Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
             Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
+            Column.START_TIME_DIFF: [
+                0.0,
+                30.0,
+                120.0,
+                278.0,
+                147.0,
+                130.0,
+                0.0,
+                47.0,
+                168.0,
+                350.0,
+            ],
         },
         schema={
             Column.ACTION: pl.String,
@@ -191,6 +203,7 @@ def data_prepared() -> pl.DataFrame:
             Column.PERSON: pl.String,
             Column.PERSON_ID: pl.Int64,
             Column.START_TIME: pl.Float64,
+            Column.START_TIME_DIFF: pl.Float64,
         },
     )
 
@@ -207,6 +220,7 @@ def data_prepared_empty() -> pl.DataFrame:
             Column.PERSON: [],
             Column.PERSON_ID: [],
             Column.START_TIME: [],
+            Column.START_TIME_DIFF: [],
         },
         schema={
             Column.ACTION: pl.String,
@@ -217,6 +231,7 @@ def data_prepared_empty() -> pl.DataFrame:
             Column.PERSON: pl.String,
             Column.PERSON_ID: pl.Int64,
             Column.START_TIME: pl.Float64,
+            Column.START_TIME_DIFF: pl.Float64,
         },
     )
 
@@ -794,6 +809,7 @@ def test_prepare_data_split_train1() -> None:
                 Column.PERSON: ["P54", "P54", "P54", "P54"],
                 Column.PERSON_ID: [1, 1, 1, 1],
                 Column.START_TIME: [1.0, 48.0, 216.0, 566.0],
+                Column.START_TIME_DIFF: [0.0, 47.0, 168.0, 350.0],
             },
             schema={
                 Column.ACTION: pl.String,
@@ -804,6 +820,7 @@ def test_prepare_data_split_train1() -> None:
                 Column.PERSON: pl.String,
                 Column.PERSON_ID: pl.Int64,
                 Column.START_TIME: pl.Float64,
+                Column.START_TIME_DIFF: pl.Float64,
             },
         ),
     )
@@ -886,6 +903,10 @@ def test_group_by_sequence(data_prepared: pl.DataFrame) -> None:
                     [1.0, 31.0, 151.0, 429.0, 576.0, 706.0],
                     [1.0, 48.0, 216.0, 566.0],
                 ],
+                Column.START_TIME_DIFF: [
+                    [0.0, 30.0, 120.0, 278.0, 147.0, 130.0],
+                    [0.0, 47.0, 168.0, 350.0],
+                ],
             },
             schema={
                 Column.ACTION: pl.List(pl.String),
@@ -897,6 +918,7 @@ def test_group_by_sequence(data_prepared: pl.DataFrame) -> None:
                 Column.PERSON_ID: pl.Int64,
                 Column.SEQUENCE_LENGTH: pl.Int64,
                 Column.START_TIME: pl.List(pl.Float64),
+                Column.START_TIME_DIFF: pl.List(pl.Float64),
             },
         ),
     )
@@ -916,6 +938,7 @@ def test_group_by_sequence_empty(data_prepared_empty: pl.DataFrame) -> None:
                 Column.PERSON_ID: [],
                 Column.SEQUENCE_LENGTH: [],
                 Column.START_TIME: [],
+                Column.START_TIME_DIFF: [],
             },
             schema={
                 Column.ACTION: pl.List(pl.String),
@@ -927,6 +950,7 @@ def test_group_by_sequence_empty(data_prepared_empty: pl.DataFrame) -> None:
                 Column.PERSON_ID: pl.Int64,
                 Column.SEQUENCE_LENGTH: pl.Int64,
                 Column.START_TIME: pl.List(pl.Float64),
+                Column.START_TIME_DIFF: pl.List(pl.Float64),
             },
         ),
     )
@@ -978,6 +1002,12 @@ def test_to_array(data_prepared: pl.DataFrame) -> None:
                 ),
                 mask=mask,
             ),
+            Column.START_TIME_DIFF: np.ma.masked_array(
+                data=np.array(
+                    [[0.0, 30.0, 120.0, 278.0, 147.0, 130.0], [0.0, 47.0, 168.0, 350.0, -1.0, -1.0]]
+                ),
+                mask=mask,
+            ),
             Column.SEQUENCE_LENGTH: np.array([6, 4]),
         },
     )
@@ -998,6 +1028,9 @@ def test_to_array_empty(data_prepared_empty: pl.DataFrame) -> None:
             Column.PERSON_ID: np.array([], dtype=int),
             Column.SEQUENCE_LENGTH: np.array([], dtype=int),
             Column.START_TIME: np.ma.masked_array(
+                data=np.zeros(shape=(0, 0), dtype=float), mask=None
+            ),
+            Column.START_TIME_DIFF: np.ma.masked_array(
                 data=np.zeros(shape=(0, 0), dtype=float), mask=None
             ),
         },
@@ -1031,6 +1064,10 @@ def test_to_list(data_prepared: pl.DataFrame) -> None:
                 [1.0, 31.0, 151.0, 429.0, 576.0, 706.0],
                 [1.0, 48.0, 216.0, 566.0],
             ],
+            Column.START_TIME_DIFF: [
+                [0.0, 30.0, 120.0, 278.0, 147.0, 130.0],
+                [0.0, 47.0, 168.0, 350.0],
+            ],
         },
     )
 
@@ -1048,5 +1085,6 @@ def test_to_list_empty(data_prepared_empty: pl.DataFrame) -> None:
             Column.PERSON_ID: [],
             Column.SEQUENCE_LENGTH: [],
             Column.START_TIME: [],
+            Column.START_TIME_DIFF: [],
         },
     )
