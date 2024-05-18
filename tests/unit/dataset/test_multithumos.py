@@ -160,6 +160,7 @@ def data_prepared() -> pl.DataFrame:
                 "validation",
             ],
             Column.START_TIME: [72.0, 44.0, 1.0, 17.0, 17.0, 79.0, 2.0, 4.0, 20.0],
+            Column.START_TIME_DIFF: [0.0, 0.0, 0.0, 16.0, 0.0, 62.0, 0.0, 2.0, 16.0],
             Column.VIDEO: [
                 "video_validation_0000266",
                 "video_validation_0000681",
@@ -178,6 +179,7 @@ def data_prepared() -> pl.DataFrame:
             Column.END_TIME: pl.Float64,
             Column.SPLIT: pl.String,
             Column.START_TIME: pl.Float64,
+            Column.START_TIME_DIFF: pl.Float64,
             Column.VIDEO: pl.String,
         },
     )
@@ -386,6 +388,7 @@ def test_prepare_data_empty() -> None:
                 Column.END_TIME: [],
                 Column.SPLIT: [],
                 Column.START_TIME: [],
+                Column.START_TIME_DIFF: [],
                 Column.VIDEO: [],
             },
             schema={
@@ -394,6 +397,7 @@ def test_prepare_data_empty() -> None:
                 Column.END_TIME: pl.Float64,
                 Column.SPLIT: pl.String,
                 Column.START_TIME: pl.Float64,
+                Column.START_TIME_DIFF: pl.Float64,
                 Column.VIDEO: pl.String,
             },
         ),
@@ -462,6 +466,7 @@ def test_prepare_data_split_validation() -> None:
                     "validation",
                 ],
                 Column.START_TIME: [72.80, 44.00, 1.50, 17.57, 79.30, 2.97, 4.54],
+                Column.START_TIME_DIFF: [0.0, 0.0, 0.0, 16.07, 61.73, 0.0, 1.57],
                 Column.VIDEO: [
                     "video_validation_0000266",
                     "video_validation_0000681",
@@ -478,6 +483,7 @@ def test_prepare_data_split_validation() -> None:
                 Column.END_TIME: pl.Float64,
                 Column.SPLIT: pl.String,
                 Column.START_TIME: pl.Float64,
+                Column.START_TIME_DIFF: pl.Float64,
                 Column.VIDEO: pl.String,
             },
         ),
@@ -685,6 +691,12 @@ def test_group_by_sequence(data_prepared: pl.DataFrame) -> None:
                     [1.0, 17.0, 17.0, 79.0],
                     [2.0, 4.0, 20.0],
                 ],
+                Column.START_TIME_DIFF: [
+                    [0.0],
+                    [0.0],
+                    [0.0, 16.0, 0.0, 62.0],
+                    [0.0, 2.0, 16.0],
+                ],
                 Column.VIDEO: [
                     "video_validation_0000266",
                     "video_validation_0000681",
@@ -699,6 +711,7 @@ def test_group_by_sequence(data_prepared: pl.DataFrame) -> None:
                 Column.SEQUENCE_LENGTH: pl.Int64,
                 Column.SPLIT: pl.String,
                 Column.START_TIME: pl.List(pl.Float64),
+                Column.START_TIME_DIFF: pl.List(pl.Float64),
                 Column.VIDEO: pl.String,
             },
         ),
@@ -715,6 +728,7 @@ def test_group_by_sequence_empty() -> None:
                     Column.END_TIME: [],
                     Column.SPLIT: [],
                     Column.START_TIME: [],
+                    Column.START_TIME_DIFF: [],
                     Column.VIDEO: [],
                 },
                 schema={
@@ -723,6 +737,7 @@ def test_group_by_sequence_empty() -> None:
                     Column.END_TIME: pl.Float64,
                     Column.SPLIT: pl.String,
                     Column.START_TIME: pl.Float64,
+                    Column.START_TIME_DIFF: pl.Float64,
                     Column.VIDEO: pl.String,
                 },
             )
@@ -735,6 +750,7 @@ def test_group_by_sequence_empty() -> None:
                 Column.SEQUENCE_LENGTH: [],
                 Column.SPLIT: [],
                 Column.START_TIME: [],
+                Column.START_TIME_DIFF: [],
                 Column.VIDEO: [],
             },
             schema={
@@ -744,6 +760,7 @@ def test_group_by_sequence_empty() -> None:
                 Column.SEQUENCE_LENGTH: pl.Int64,
                 Column.SPLIT: pl.String,
                 Column.START_TIME: pl.List(pl.Float64),
+                Column.START_TIME_DIFF: pl.List(pl.Float64),
                 Column.VIDEO: pl.String,
             },
         ),
@@ -813,6 +830,18 @@ def test_to_array(data_prepared: pl.DataFrame) -> None:
                 ),
                 mask=mask,
             ),
+            Column.START_TIME_DIFF: np.ma.masked_array(
+                data=np.array(
+                    [
+                        [0.0, -1.0, -1.0, -1.0],
+                        [0.0, -1.0, -1.0, -1.0],
+                        [0.0, 16.0, 0.0, 62.0],
+                        [0.0, 2.0, 16.0, -1.0],
+                    ],
+                    dtype=float,
+                ),
+                mask=mask,
+            ),
         },
     )
 
@@ -828,6 +857,7 @@ def test_to_array_empty() -> None:
                     Column.END_TIME: [],
                     Column.SPLIT: [],
                     Column.START_TIME: [],
+                    Column.START_TIME_DIFF: [],
                     Column.VIDEO: [],
                 },
                 schema={
@@ -836,6 +866,7 @@ def test_to_array_empty() -> None:
                     Column.END_TIME: pl.Float64,
                     Column.SPLIT: pl.String,
                     Column.START_TIME: pl.Float64,
+                    Column.START_TIME_DIFF: pl.Float64,
                     Column.VIDEO: pl.String,
                 },
             )
@@ -849,6 +880,9 @@ def test_to_array_empty() -> None:
             Column.SEQUENCE_LENGTH: np.array([], dtype=int),
             Column.SPLIT: np.array([], dtype=str),
             Column.START_TIME: np.ma.masked_array(
+                data=np.zeros(shape=(0, 0), dtype=float), mask=mask
+            ),
+            Column.START_TIME_DIFF: np.ma.masked_array(
                 data=np.zeros(shape=(0, 0), dtype=float), mask=mask
             ),
         },
@@ -885,6 +919,12 @@ def test_to_list(data_prepared: pl.DataFrame) -> None:
                 [1.0, 17.0, 17.0, 79.0],
                 [2.0, 4.0, 20.0],
             ],
+            Column.START_TIME_DIFF: [
+                [0.0],
+                [0.0],
+                [0.0, 16.0, 0.0, 62.0],
+                [0.0, 2.0, 16.0],
+            ],
             Column.VIDEO: [
                 "video_validation_0000266",
                 "video_validation_0000681",
@@ -905,6 +945,7 @@ def test_to_list_empty() -> None:
                     Column.END_TIME: [],
                     Column.SPLIT: [],
                     Column.START_TIME: [],
+                    Column.START_TIME_DIFF: [],
                     Column.VIDEO: [],
                 },
                 schema={
@@ -913,6 +954,7 @@ def test_to_list_empty() -> None:
                     Column.END_TIME: pl.Float64,
                     Column.SPLIT: pl.String,
                     Column.START_TIME: pl.Float64,
+                    Column.START_TIME_DIFF: pl.Float64,
                     Column.VIDEO: pl.String,
                 },
             )
@@ -924,6 +966,7 @@ def test_to_list_empty() -> None:
             Column.SEQUENCE_LENGTH: [],
             Column.SPLIT: [],
             Column.START_TIME: [],
+            Column.START_TIME_DIFF: [],
             Column.VIDEO: [],
         },
     )

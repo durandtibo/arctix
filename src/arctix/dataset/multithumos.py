@@ -130,6 +130,7 @@ class Column:
     SEQUENCE_LENGTH: str = "sequence_length"
     SPLIT: str = "split"
     START_TIME: str = "start_time"
+    START_TIME_DIFF: str = "start_time_diff"
     VIDEO: str = "video"
     VIDEO_ID: str = "video_id"
 
@@ -376,7 +377,7 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
     >>> from arctix.dataset.multithumos import Column, prepare_data
     >>> frame = pl.DataFrame(
     ...     {
-    ...         Column.VIDEO: ["video_validation_1", "video_test_2", "video_validation_3", "video_test_4"],
+    ...         Column.VIDEO: ["video_validation_1", "video_test_2", "video_validation_1", "video_test_2"],
     ...         Column.START_TIME: [72.80, 44.00, 1.50, 17.57],
     ...         Column.END_TIME: [76.40, 50.90, 5.40, 18.33],
     ...         Column.ACTION: ["dribble", "dribble", "dribble", "guard"],
@@ -384,17 +385,17 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
     ... )
     >>> data, metadata = prepare_data(frame)
     >>> data
-    shape: (4, 6)
-    ┌─────────┬───────────┬──────────┬────────────┬────────────┬────────────────────┐
-    │ action  ┆ action_id ┆ end_time ┆ split      ┆ start_time ┆ video              │
-    │ ---     ┆ ---       ┆ ---      ┆ ---        ┆ ---        ┆ ---                │
-    │ str     ┆ i64       ┆ f64      ┆ str        ┆ f64        ┆ str                │
-    ╞═════════╪═══════════╪══════════╪════════════╪════════════╪════════════════════╡
-    │ dribble ┆ 0         ┆ 50.9     ┆ test       ┆ 44.0       ┆ video_test_2       │
-    │ guard   ┆ 1         ┆ 18.33    ┆ test       ┆ 17.57      ┆ video_test_4       │
-    │ dribble ┆ 0         ┆ 76.4     ┆ validation ┆ 72.8       ┆ video_validation_1 │
-    │ dribble ┆ 0         ┆ 5.4      ┆ validation ┆ 1.5        ┆ video_validation_3 │
-    └─────────┴───────────┴──────────┴────────────┴────────────┴────────────────────┘
+    shape: (4, 7)
+    ┌─────────┬───────────┬──────────┬────────────┬────────────┬─────────────────┬────────────────────┐
+    │ action  ┆ action_id ┆ end_time ┆ split      ┆ start_time ┆ start_time_diff ┆ video              │
+    │ ---     ┆ ---       ┆ ---      ┆ ---        ┆ ---        ┆ ---             ┆ ---                │
+    │ str     ┆ i64       ┆ f64      ┆ str        ┆ f64        ┆ f64             ┆ str                │
+    ╞═════════╪═══════════╪══════════╪════════════╪════════════╪═════════════════╪════════════════════╡
+    │ guard   ┆ 1         ┆ 18.33    ┆ test       ┆ 17.57      ┆ 0.0             ┆ video_test_2       │
+    │ dribble ┆ 0         ┆ 50.9     ┆ test       ┆ 44.0       ┆ 26.43           ┆ video_test_2       │
+    │ dribble ┆ 0         ┆ 5.4      ┆ validation ┆ 1.5        ┆ 0.0             ┆ video_validation_1 │
+    │ dribble ┆ 0         ┆ 76.4     ┆ validation ┆ 72.8       ┆ 71.3            ┆ video_validation_1 │
+    └─────────┴───────────┴──────────┴────────────┴────────────┴─────────────────┴────────────────────┘
     >>> metadata
     {'vocab_action': Vocabulary(
       counter=Counter({'dribble': 3, 'guard': 1}),
@@ -407,6 +408,11 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
     vocab_action = generate_vocabulary(frame, col=Column.ACTION).sort_by_count()
     transformer = td.Sequential(
         [
+            td.TimeDiff(
+                group_cols=[Column.VIDEO],
+                time_col=Column.START_TIME,
+                time_diff_col=Column.START_TIME_DIFF,
+            ),
             td.Sort(columns=[Column.VIDEO, Column.START_TIME]),
             td.Cast(columns=[Column.START_TIME, Column.END_TIME], dtype=pl.Float64),
             td.StripChars(columns=[Column.ACTION, Column.VIDEO]),
@@ -564,6 +570,7 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
     ...             "video_validation_2",
     ...         ],
     ...         Column.START_TIME: [1.50, 17.57, 79.30, 2.97, 4.54, 20.22, 27.42],
+    ...         Column.START_TIME_DIFF: [0.0, 16.07, 61.73, 0.0, 1.57, 15.68, 7.20],
     ...         Column.END_TIME: [5.40, 18.33, 83.90, 3.60, 5.07, 20.49, 30.23],
     ...         Column.ACTION: [
     ...             "dribble",
@@ -588,20 +595,20 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
     ... )
     >>> groups = group_by_sequence(frame)
     >>> groups
-    shape: (2, 7)
-    ┌──────────────┬─────────────┬──────────────┬─────────────┬────────────┬─────────────┬─────────────┐
-    │ action       ┆ action_id   ┆ end_time     ┆ sequence_le ┆ split      ┆ start_time  ┆ video       │
-    │ ---          ┆ ---         ┆ ---          ┆ ngth        ┆ ---        ┆ ---         ┆ ---         │
-    │ list[str]    ┆ list[i64]   ┆ list[f64]    ┆ ---         ┆ str        ┆ list[f64]   ┆ str         │
-    │              ┆             ┆              ┆ i64         ┆            ┆             ┆             │
-    ╞══════════════╪═════════════╪══════════════╪═════════════╪════════════╪═════════════╪═════════════╡
-    │ ["dribble",  ┆ [1, 0, 1]   ┆ [5.4, 18.33, ┆ 3           ┆ validation ┆ [1.5,       ┆ video_valid │
-    │ "guard",     ┆             ┆ 83.9]        ┆             ┆            ┆ 17.57,      ┆ ation_1     │
-    │ "dribble"…   ┆             ┆              ┆             ┆            ┆ 79.3]       ┆             │
-    │ ["guard",    ┆ [0, 0, … 2] ┆ [3.6, 5.07,  ┆ 4           ┆ validation ┆ [2.97,      ┆ video_valid │
-    │ "guard", …   ┆             ┆ … 30.23]     ┆             ┆            ┆ 4.54, …     ┆ ation_2     │
-    │ "shoot"]     ┆             ┆              ┆             ┆            ┆ 27.42]      ┆             │
-    └──────────────┴─────────────┴──────────────┴─────────────┴────────────┴─────────────┴─────────────┘
+    shape: (2, 8)
+    ┌────────────┬────────────┬────────────┬───────────┬───────────┬───────────┬───────────┬───────────┐
+    │ action     ┆ action_id  ┆ end_time   ┆ sequence_ ┆ split     ┆ start_tim ┆ start_tim ┆ video     │
+    │ ---        ┆ ---        ┆ ---        ┆ length    ┆ ---       ┆ e         ┆ e_diff    ┆ ---       │
+    │ list[str]  ┆ list[i64]  ┆ list[f64]  ┆ ---       ┆ str       ┆ ---       ┆ ---       ┆ str       │
+    │            ┆            ┆            ┆ i64       ┆           ┆ list[f64] ┆ list[f64] ┆           │
+    ╞════════════╪════════════╪════════════╪═══════════╪═══════════╪═══════════╪═══════════╪═══════════╡
+    │ ["dribble" ┆ [1, 0, 1]  ┆ [5.4,      ┆ 3         ┆ validatio ┆ [1.5,     ┆ [0.0,     ┆ video_val │
+    │ , "guard", ┆            ┆ 18.33,     ┆           ┆ n         ┆ 17.57,    ┆ 16.07,    ┆ idation_1 │
+    │ "dribble"… ┆            ┆ 83.9]      ┆           ┆           ┆ 79.3]     ┆ 61.73]    ┆           │
+    │ ["guard",  ┆ [0, 0, …   ┆ [3.6,      ┆ 4         ┆ validatio ┆ [2.97,    ┆ [0.0,     ┆ video_val │
+    │ "guard", … ┆ 2]         ┆ 5.07, …    ┆           ┆ n         ┆ 4.54, …   ┆ 1.57, …   ┆ idation_2 │
+    │ "shoot"]   ┆            ┆ 30.23]     ┆           ┆           ┆ 27.42]    ┆ 7.2]      ┆           │
+    └────────────┴────────────┴────────────┴───────────┴───────────┴───────────┴───────────┴───────────┘
 
     ```
     """
@@ -610,6 +617,7 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
         pl.col(Column.ACTION),
         pl.col(Column.ACTION_ID),
         pl.col(Column.START_TIME),
+        pl.col(Column.START_TIME_DIFF),
         pl.col(Column.END_TIME),
         pl.len().cast(pl.Int64).alias(Column.SEQUENCE_LENGTH),
     )
@@ -649,6 +657,7 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     ...             "video_validation_2",
     ...         ],
     ...         Column.START_TIME: [1.0, 17.0, 79.0, 2.0, 4.0, 20.0, 27.0],
+    ...         Column.START_TIME_DIFF: [0.0, 16.07, 61.73, 0.0, 1.57, 15.68, 7.20],
     ...         Column.END_TIME: [5.0, 18.0, 83.0, 3.0, 5.0, 20.0, 30.0],
     ...         Column.ACTION: [
     ...             "dribble",
@@ -699,6 +708,12 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
             [2.0, 4.0, 20.0, 27.0]],
       mask=[[False, False, False,  True],
             [False, False, False, False]],
+      fill_value=1e+20),
+      'start_time_diff': masked_array(
+      data=[[0.0, 16.07, 61.73, --],
+            [0.0, 1.57, 15.68, 7.2]],
+      mask=[[False, False, False,  True],
+            [False, False, False, False]],
       fill_value=1e+20)}
 
     ```
@@ -745,6 +760,15 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
             ),
             mask=mask,
         ),
+        Column.START_TIME_DIFF: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.START_TIME_DIFF).to_list(),
+                dtype=np.float64,
+                max_len=mask.shape[1],
+                padded_value=-1.0,
+            ),
+            mask=mask,
+        ),
     }
 
 
@@ -775,6 +799,7 @@ def to_list(frame: pl.DataFrame) -> dict[str, list]:
     ...             "video_validation_2",
     ...         ],
     ...         Column.START_TIME: [1.0, 17.0, 79.0, 2.0, 4.0, 20.0, 27.0],
+    ...         Column.START_TIME_DIFF: [0.0, 16.07, 61.73, 0.0, 1.57, 15.68, 7.20],
     ...         Column.END_TIME: [5.0, 18.0, 83.0, 3.0, 5.0, 20.0, 30.0],
     ...         Column.ACTION: [
     ...             "dribble",
@@ -802,8 +827,10 @@ def to_list(frame: pl.DataFrame) -> dict[str, list]:
     {'action': [['dribble', 'guard', 'dribble'], ['guard', 'guard', 'guard', 'shoot']],
      'action_id': [[1, 0, 1], [0, 0, 0, 2]],
      'end_time': [[5.0, 18.0, 83.0], [3.0, 5.0, 20.0, 30.0]],
-     'sequence_length': [3, 4], 'split': ['validation', 'validation'],
+     'sequence_length': [3, 4],
+     'split': ['validation', 'validation'],
      'start_time': [[1.0, 17.0, 79.0], [2.0, 4.0, 20.0, 27.0]],
+     'start_time_diff': [[0.0, 16.07, 61.73], [0.0, 1.57, 15.68, 7.2]],
      'video': ['video_validation_1', 'video_validation_2']}
 
     ```
