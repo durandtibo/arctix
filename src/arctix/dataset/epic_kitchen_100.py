@@ -78,6 +78,7 @@ class Column:
     START_FRAME: str = "start_frame"
     START_TIMESTAMP: str = "start_timestamp"
     START_TIME_SECOND: str = "start_time_second"
+    START_TIME_SECOND_DIFF: str = "start_time_second_diff"
     STOP_FRAME: str = "stop_frame"
     STOP_TIMESTAMP: str = "stop_timestamp"
     STOP_TIME_SECOND: str = "stop_time_second"
@@ -409,33 +410,33 @@ def prepare_data(frame: pl.DataFrame, metadata: dict) -> tuple[pl.DataFrame, dic
     >>> data, metadata = prepare_data(frame, metadata={})
     >>> with pl.Config(tbl_cols=-1):
     ...     data
-    shape: (3, 17)
-    ┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐
-    │ all ┆ all ┆ nar ┆ nar ┆ nar ┆ nou ┆ nou ┆ par ┆ sta ┆ sta ┆ sta ┆ sto ┆ sto ┆ sto ┆ ver ┆ ver ┆ vid │
-    │ _no ┆ _no ┆ rat ┆ rat ┆ rat ┆ n   ┆ n_c ┆ tic ┆ rt_ ┆ rt_ ┆ rt_ ┆ p_f ┆ p_t ┆ p_t ┆ b   ┆ b_c ┆ eo_ │
-    │ un_ ┆ uns ┆ ion ┆ ion ┆ ion ┆ --- ┆ las ┆ ipa ┆ fra ┆ tim ┆ tim ┆ ram ┆ ime ┆ ime ┆ --- ┆ las ┆ id  │
-    │ cla ┆ --- ┆ --- ┆ _id ┆ _ti ┆ str ┆ s   ┆ nt_ ┆ me  ┆ e_s ┆ est ┆ e   ┆ _se ┆ sta ┆ str ┆ s   ┆ --- │
-    │ sse ┆ lis ┆ str ┆ --- ┆ mes ┆     ┆ --- ┆ id  ┆ --- ┆ eco ┆ amp ┆ --- ┆ con ┆ mp  ┆     ┆ --- ┆ str │
-    │ s   ┆ t[s ┆     ┆ str ┆ tam ┆     ┆ i64 ┆ --- ┆ i64 ┆ nd  ┆ --- ┆ i64 ┆ d   ┆ --- ┆     ┆ i64 ┆     │
-    │ --- ┆ tr] ┆     ┆     ┆ p   ┆     ┆     ┆ str ┆     ┆ --- ┆ tim ┆     ┆ --- ┆ tim ┆     ┆     ┆     │
-    │ lis ┆     ┆     ┆     ┆ --- ┆     ┆     ┆     ┆     ┆ f64 ┆ e   ┆     ┆ f64 ┆ e   ┆     ┆     ┆     │
-    │ t[i ┆     ┆     ┆     ┆ tim ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     │
-    │ 64] ┆     ┆     ┆     ┆ e   ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     │
-    ╞═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╡
-    │ [3] ┆ ["d ┆ ope ┆ P01 ┆ 00: ┆ doo ┆ 3   ┆ P01 ┆ 8   ┆ 0.1 ┆ 00: ┆ 202 ┆ 3.3 ┆ 00: ┆ ope ┆ 3   ┆ P01 │
-    │     ┆ oor ┆ n   ┆ _01 ┆ 00: ┆ r   ┆     ┆     ┆     ┆ 4   ┆ 00: ┆     ┆ 7   ┆ 00: ┆ n   ┆     ┆ _01 │
-    │     ┆ "]  ┆ doo ┆ _0  ┆ 01. ┆     ┆     ┆     ┆     ┆     ┆ 00. ┆     ┆     ┆ 03. ┆     ┆     ┆     │
-    │     ┆     ┆ r   ┆     ┆ 089 ┆     ┆     ┆     ┆     ┆     ┆ 140 ┆     ┆     ┆ 370 ┆     ┆     ┆     │
-    │ [11 ┆ ["l ┆ tur ┆ P01 ┆ 00: ┆ lig ┆ 114 ┆ P01 ┆ 262 ┆ 4.3 ┆ 00: ┆ 370 ┆ 6.1 ┆ 00: ┆ tur ┆ 6   ┆ P01 │
-    │ 4]  ┆ igh ┆ n   ┆ _01 ┆ 00: ┆ ht  ┆     ┆     ┆     ┆ 7   ┆ 00: ┆     ┆ 7   ┆ 00: ┆ n-o ┆     ┆ _01 │
-    │     ┆ t"] ┆ on  ┆ _1  ┆ 02. ┆     ┆     ┆     ┆     ┆     ┆ 04. ┆     ┆     ┆ 06. ┆ n   ┆     ┆     │
-    │     ┆     ┆ lig ┆     ┆ 629 ┆     ┆     ┆     ┆     ┆     ┆ 370 ┆     ┆     ┆ 170 ┆     ┆     ┆     │
-    │     ┆     ┆ ht  ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     │
-    │ [3] ┆ ["d ┆ clo ┆ P01 ┆ 00: ┆ doo ┆ 3   ┆ P01 ┆ 418 ┆ 6.9 ┆ 00: ┆ 569 ┆ 9.4 ┆ 00: ┆ clo ┆ 4   ┆ P01 │
-    │     ┆ oor ┆ se  ┆ _01 ┆ 00: ┆ r   ┆     ┆     ┆     ┆ 8   ┆ 00: ┆     ┆ 9   ┆ 00: ┆ se  ┆     ┆ _01 │
-    │     ┆ "]  ┆ doo ┆ _2  ┆ 05. ┆     ┆     ┆     ┆     ┆     ┆ 06. ┆     ┆     ┆ 09. ┆     ┆     ┆     │
-    │     ┆     ┆ r   ┆     ┆ 349 ┆     ┆     ┆     ┆     ┆     ┆ 980 ┆     ┆     ┆ 490 ┆     ┆     ┆     │
-    └─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┘
+    shape: (3, 18)
+    ┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐
+    │ all ┆ all ┆ nar ┆ nar ┆ nar ┆ nou ┆ nou ┆ par ┆ sta ┆ sta ┆ sta ┆ sta ┆ sto ┆ sto ┆ sto ┆ ver ┆ ver ┆ vid │
+    │ _no ┆ _no ┆ rat ┆ rat ┆ rat ┆ n   ┆ n_c ┆ tic ┆ rt_ ┆ rt_ ┆ rt_ ┆ rt_ ┆ p_f ┆ p_t ┆ p_t ┆ b   ┆ b_c ┆ eo_ │
+    │ un_ ┆ uns ┆ ion ┆ ion ┆ ion ┆ --- ┆ las ┆ ipa ┆ fra ┆ tim ┆ tim ┆ tim ┆ ram ┆ ime ┆ ime ┆ --- ┆ las ┆ id  │
+    │ cla ┆ --- ┆ --- ┆ _id ┆ _ti ┆ str ┆ s   ┆ nt_ ┆ me  ┆ e_s ┆ e_s ┆ est ┆ e   ┆ _se ┆ sta ┆ str ┆ s   ┆ --- │
+    │ sse ┆ lis ┆ str ┆ --- ┆ mes ┆     ┆ --- ┆ id  ┆ --- ┆ eco ┆ eco ┆ amp ┆ --- ┆ con ┆ mp  ┆     ┆ --- ┆ str │
+    │ s   ┆ t[s ┆     ┆ str ┆ tam ┆     ┆ i64 ┆ --- ┆ i64 ┆ nd  ┆ nd_ ┆ --- ┆ i64 ┆ d   ┆ --- ┆     ┆ i64 ┆     │
+    │ --- ┆ tr] ┆     ┆     ┆ p   ┆     ┆     ┆ str ┆     ┆ --- ┆ dif ┆ tim ┆     ┆ --- ┆ tim ┆     ┆     ┆     │
+    │ lis ┆     ┆     ┆     ┆ --- ┆     ┆     ┆     ┆     ┆ f64 ┆ f   ┆ e   ┆     ┆ f64 ┆ e   ┆     ┆     ┆     │
+    │ t[i ┆     ┆     ┆     ┆ tim ┆     ┆     ┆     ┆     ┆     ┆ --- ┆     ┆     ┆     ┆     ┆     ┆     ┆     │
+    │ 64] ┆     ┆     ┆     ┆ e   ┆     ┆     ┆     ┆     ┆     ┆ f64 ┆     ┆     ┆     ┆     ┆     ┆     ┆     │
+    ╞═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╡
+    │ [3] ┆ ["d ┆ ope ┆ P01 ┆ 00: ┆ doo ┆ 3   ┆ P01 ┆ 8   ┆ 0.1 ┆ 0.0 ┆ 00: ┆ 202 ┆ 3.3 ┆ 00: ┆ ope ┆ 3   ┆ P01 │
+    │     ┆ oor ┆ n   ┆ _01 ┆ 00: ┆ r   ┆     ┆     ┆     ┆ 4   ┆     ┆ 00: ┆     ┆ 7   ┆ 00: ┆ n   ┆     ┆ _01 │
+    │     ┆ "]  ┆ doo ┆ _0  ┆ 01. ┆     ┆     ┆     ┆     ┆     ┆     ┆ 00. ┆     ┆     ┆ 03. ┆     ┆     ┆     │
+    │     ┆     ┆ r   ┆     ┆ 089 ┆     ┆     ┆     ┆     ┆     ┆     ┆ 140 ┆     ┆     ┆ 370 ┆     ┆     ┆     │
+    │ [11 ┆ ["l ┆ tur ┆ P01 ┆ 00: ┆ lig ┆ 114 ┆ P01 ┆ 262 ┆ 4.3 ┆ 4.2 ┆ 00: ┆ 370 ┆ 6.1 ┆ 00: ┆ tur ┆ 6   ┆ P01 │
+    │ 4]  ┆ igh ┆ n   ┆ _01 ┆ 00: ┆ ht  ┆     ┆     ┆     ┆ 7   ┆ 3   ┆ 00: ┆     ┆ 7   ┆ 00: ┆ n-o ┆     ┆ _01 │
+    │     ┆ t"] ┆ on  ┆ _1  ┆ 02. ┆     ┆     ┆     ┆     ┆     ┆     ┆ 04. ┆     ┆     ┆ 06. ┆ n   ┆     ┆     │
+    │     ┆     ┆ lig ┆     ┆ 629 ┆     ┆     ┆     ┆     ┆     ┆     ┆ 370 ┆     ┆     ┆ 170 ┆     ┆     ┆     │
+    │     ┆     ┆ ht  ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     │
+    │ [3] ┆ ["d ┆ clo ┆ P01 ┆ 00: ┆ doo ┆ 3   ┆ P01 ┆ 418 ┆ 6.9 ┆ 2.6 ┆ 00: ┆ 569 ┆ 9.4 ┆ 00: ┆ clo ┆ 4   ┆ P01 │
+    │     ┆ oor ┆ se  ┆ _01 ┆ 00: ┆ r   ┆     ┆     ┆     ┆ 8   ┆ 1   ┆ 00: ┆     ┆ 9   ┆ 00: ┆ se  ┆     ┆ _01 │
+    │     ┆ "]  ┆ doo ┆ _2  ┆ 05. ┆     ┆     ┆     ┆     ┆     ┆     ┆ 06. ┆     ┆     ┆ 09. ┆     ┆     ┆     │
+    │     ┆     ┆ r   ┆     ┆ 349 ┆     ┆     ┆     ┆     ┆     ┆     ┆ 980 ┆     ┆     ┆ 490 ┆     ┆     ┆     │
+    └─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┘
     >>> metadata
     {}
 
@@ -443,9 +444,14 @@ def prepare_data(frame: pl.DataFrame, metadata: dict) -> tuple[pl.DataFrame, dic
     """
     transformer = td.Sequential(
         [
-            td.Sort(columns=[Column.VIDEO_ID, Column.START_FRAME]),
             td.TimeToSecond(in_col=Column.START_TIMESTAMP, out_col=Column.START_TIME_SECOND),
             td.TimeToSecond(in_col=Column.STOP_TIMESTAMP, out_col=Column.STOP_TIME_SECOND),
+            td.TimeDiff(
+                group_cols=[Column.VIDEO_ID],
+                time_col=Column.START_TIME_SECOND,
+                time_diff_col=Column.START_TIME_SECOND_DIFF,
+            ),
+            td.Sort(columns=[Column.VIDEO_ID, Column.START_FRAME]),
             td.Cast(columns=[Column.START_TIME_SECOND, Column.STOP_TIME_SECOND], dtype=pl.Float64),
             td.SortColumns(),
         ]
@@ -478,6 +484,7 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
             pl.col(Column.START_FRAME),
             pl.col(Column.START_TIMESTAMP),
             pl.col(Column.START_TIME_SECOND),
+            pl.col(Column.START_TIME_SECOND_DIFF),
             pl.col(Column.STOP_FRAME),
             pl.col(Column.STOP_TIMESTAMP),
             pl.col(Column.STOP_TIME_SECOND),
@@ -560,6 +567,15 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
         Column.START_TIME_SECOND: np.ma.masked_array(
             data=convert_sequences_to_array(
                 groups.get_column(Column.START_TIME_SECOND).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.float64,
+                padded_value=-1.0,
+            ),
+            mask=mask,
+        ),
+        Column.START_TIME_SECOND_DIFF: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.START_TIME_SECOND_DIFF).to_list(),
                 max_len=mask.shape[1],
                 dtype=np.float64,
                 padded_value=-1.0,

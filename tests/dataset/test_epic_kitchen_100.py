@@ -98,7 +98,7 @@ def check_data_raw(data: pl.DataFrame, split: DatasetSplit) -> None:
 
 def check_data(data: pl.DataFrame, split: DatasetSplit) -> None:
     assert isinstance(data, pl.DataFrame)
-    assert data.shape == (split.num_rows, 17)
+    assert data.shape == (split.num_rows, 18)
     assert data.columns == [
         Column.ALL_NOUN_IDS,
         Column.ALL_NOUNS,
@@ -110,6 +110,7 @@ def check_data(data: pl.DataFrame, split: DatasetSplit) -> None:
         Column.PARTICIPANT_ID,
         Column.START_FRAME,
         Column.START_TIME_SECOND,
+        Column.START_TIME_SECOND_DIFF,
         Column.START_TIMESTAMP,
         Column.STOP_FRAME,
         Column.STOP_TIME_SECOND,
@@ -128,6 +129,7 @@ def check_data(data: pl.DataFrame, split: DatasetSplit) -> None:
         pl.Int64,
         pl.String,
         pl.Int64,
+        pl.Float64,
         pl.Float64,
         pl.Time,
         pl.Int64,
@@ -152,7 +154,7 @@ def check_metadata(metadata: dict) -> None:
 
 def check_arrays(arrays: dict, split: DatasetSplit) -> None:
     assert isinstance(arrays, dict)
-    assert len(arrays) == 13
+    assert len(arrays) == 14
 
     assert isinstance(arrays[Column.NARRATION], np.ma.MaskedArray)
     assert arrays[Column.NARRATION].shape == (split.num_examples, split.seq_len)
@@ -185,6 +187,10 @@ def check_arrays(arrays: dict, split: DatasetSplit) -> None:
     assert isinstance(arrays[Column.START_TIME_SECOND], np.ma.MaskedArray)
     assert arrays[Column.START_TIME_SECOND].shape == (split.num_examples, split.seq_len)
     assert arrays[Column.START_TIME_SECOND].dtype == np.float64
+
+    assert isinstance(arrays[Column.START_TIME_SECOND_DIFF], np.ma.MaskedArray)
+    assert arrays[Column.START_TIME_SECOND_DIFF].shape == (split.num_examples, split.seq_len)
+    assert arrays[Column.START_TIME_SECOND_DIFF].dtype == np.float64
 
     assert isinstance(arrays[Column.STOP_FRAME], np.ma.MaskedArray)
     assert arrays[Column.STOP_FRAME].shape == (split.num_examples, split.seq_len)
