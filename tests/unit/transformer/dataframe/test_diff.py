@@ -83,6 +83,22 @@ def test_diff_dataframe_transformer_transform_shift_2() -> None:
     )
 
 
+def test_diff_dataframe_transformer_transform_empty() -> None:
+    frame = pl.DataFrame(
+        {"col1": [], "col2": []},
+        schema={"col1": pl.Int64, "col2": pl.String},
+    )
+    transformer = Diff(in_col="col1", out_col="diff")
+    out = transformer.transform(frame)
+    assert_frame_equal(
+        out,
+        pl.DataFrame(
+            {"col1": [], "col2": [], "diff": []},
+            schema={"col1": pl.Int64, "col2": pl.String, "diff": pl.Int64},
+        ),
+    )
+
+
 ##################################################
 #     Tests for TimeDiffDataFrameTransformer     #
 ##################################################
@@ -159,5 +175,21 @@ def test_time_diff_dataframe_transformer_transform_float64() -> None:
                 "diff": [0.0, 2.0, 1.0, 0.0, 3.0],
             },
             schema={"col": pl.String, "time": pl.Float64, "diff": pl.Float64},
+        ),
+    )
+
+
+def test_time_diff_dataframe_transformer_transform_empty() -> None:
+    frame = pl.DataFrame(
+        {"col": [], "time": []},
+        schema={"col": pl.String, "time": pl.Int64},
+    )
+    transformer = TimeDiff(group_cols=["col"], time_col="time", time_diff_col="diff")
+    out = transformer.transform(frame)
+    assert_frame_equal(
+        out,
+        pl.DataFrame(
+            {"col": [], "time": [], "diff": []},
+            schema={"col": pl.String, "time": pl.Int64, "diff": pl.Int64},
         ),
     )
