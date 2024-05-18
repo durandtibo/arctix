@@ -186,6 +186,7 @@ def data_prepared() -> pl.DataFrame:
             Column.ACTION_END_SEC: [4.7, 8.2, 10.2, 7.4, 14.2],
             Column.ACTION_START_FRAME: [23, 39, 74, 12, 82],
             Column.ACTION_START_SEC: [2.3, 3.9, 7.4, 1.2, 8.2],
+            Column.ACTION_START_SEC_DIFF: [0.0, 1.6, 3.5, 0.0, 7.0],
             Column.ACTION_INDEX: [0, 1, 2, 0, 1],
             Column.CLIP_ID: ["clip1", "clip1", "clip1", "clip2", "clip2"],
             Column.NOUN: ["noun2", "noun3", "noun1", "noun1", "noun2"],
@@ -200,6 +201,7 @@ def data_prepared() -> pl.DataFrame:
             Column.ACTION_END_SEC: pl.Float64,
             Column.ACTION_START_FRAME: pl.Int64,
             Column.ACTION_START_SEC: pl.Float64,
+            Column.ACTION_START_SEC_DIFF: pl.Float64,
             Column.ACTION_INDEX: pl.Int64,
             Column.CLIP_ID: pl.String,
             Column.NOUN: pl.String,
@@ -334,6 +336,7 @@ def test_group_by_sequence_clip_id(data_prepared: pl.DataFrame) -> None:
                 Column.ACTION_END_SEC: [[4.7, 8.2, 10.2], [7.4, 14.2]],
                 Column.ACTION_START_FRAME: [[23, 39, 74], [12, 82]],
                 Column.ACTION_START_SEC: [[2.3, 3.9, 7.4], [1.2, 8.2]],
+                Column.ACTION_START_SEC_DIFF: [[0.0, 1.6, 3.5], [0.0, 7.0]],
                 Column.CLIP_ID: ["clip1", "clip2"],
                 Column.NOUN: [["noun2", "noun3", "noun1"], ["noun1", "noun2"]],
                 Column.NOUN_ID: [[2, 3, 1], [1, 2]],
@@ -347,6 +350,7 @@ def test_group_by_sequence_clip_id(data_prepared: pl.DataFrame) -> None:
                 Column.ACTION_END_SEC: pl.List(pl.Float64),
                 Column.ACTION_START_FRAME: pl.List(pl.Int64),
                 Column.ACTION_START_SEC: pl.List(pl.Float64),
+                Column.ACTION_START_SEC_DIFF: pl.List(pl.Float64),
                 Column.CLIP_ID: pl.String,
                 Column.NOUN: pl.List(pl.String),
                 Column.NOUN_ID: pl.List(pl.Int64),
@@ -369,6 +373,7 @@ def test_group_by_sequence_video_id(data_prepared: pl.DataFrame) -> None:
                 Column.ACTION_END_SEC: [[4.7, 8.2, 10.2], [7.4, 14.2]],
                 Column.ACTION_START_FRAME: [[23, 39, 74], [12, 82]],
                 Column.ACTION_START_SEC: [[2.3, 3.9, 7.4], [1.2, 8.2]],
+                Column.ACTION_START_SEC_DIFF: [[0.0, 1.6, 3.5], [0.0, 7.0]],
                 Column.NOUN: [["noun2", "noun3", "noun1"], ["noun1", "noun2"]],
                 Column.NOUN_ID: [[2, 3, 1], [1, 2]],
                 Column.SEQUENCE_LENGTH: [3, 2],
@@ -382,6 +387,7 @@ def test_group_by_sequence_video_id(data_prepared: pl.DataFrame) -> None:
                 Column.ACTION_END_SEC: pl.List(pl.Float64),
                 Column.ACTION_START_FRAME: pl.List(pl.Int64),
                 Column.ACTION_START_SEC: pl.List(pl.Float64),
+                Column.ACTION_START_SEC_DIFF: pl.List(pl.Float64),
                 Column.NOUN: pl.List(pl.String),
                 Column.NOUN_ID: pl.List(pl.Int64),
                 Column.SEQUENCE_LENGTH: pl.Int64,
@@ -415,6 +421,9 @@ def test_to_array_clip_id(data_prepared: pl.DataFrame) -> None:
             ),
             Column.ACTION_START_SEC: np.ma.masked_array(
                 data=np.array([[2.3, 3.9, 7.4], [1.2, 8.2, -1.0]], dtype=np.float64), mask=mask
+            ),
+            Column.ACTION_START_SEC_DIFF: np.ma.masked_array(
+                data=np.array([[0.0, 1.6, 3.5], [0.0, 7.0, -1.0]], dtype=np.float64), mask=mask
             ),
             Column.CLIP_ID: np.array(["clip1", "clip2"]),
             Column.NOUN: np.ma.masked_array(
@@ -454,6 +463,9 @@ def test_to_array_video_id(data_prepared: pl.DataFrame) -> None:
             Column.ACTION_START_SEC: np.ma.masked_array(
                 data=np.array([[2.3, 3.9, 7.4], [1.2, 8.2, -1.0]], dtype=np.float64), mask=mask
             ),
+            Column.ACTION_START_SEC_DIFF: np.ma.masked_array(
+                data=np.array([[0.0, 1.6, 3.5], [0.0, 7.0, -1.0]], dtype=np.float64), mask=mask
+            ),
             Column.NOUN: np.ma.masked_array(
                 data=np.array([["noun2", "noun3", "noun1"], ["noun1", "noun2", "N/A"]]),
                 mask=mask,
@@ -488,6 +500,7 @@ def test_to_list_clip_id(data_prepared: pl.DataFrame) -> None:
             Column.ACTION_END_SEC: [[4.7, 8.2, 10.2], [7.4, 14.2]],
             Column.ACTION_START_FRAME: [[23, 39, 74], [12, 82]],
             Column.ACTION_START_SEC: [[2.3, 3.9, 7.4], [1.2, 8.2]],
+            Column.ACTION_START_SEC_DIFF: [[0.0, 1.6, 3.5], [0.0, 7.0]],
             Column.CLIP_ID: ["clip1", "clip2"],
             Column.NOUN: [["noun2", "noun3", "noun1"], ["noun1", "noun2"]],
             Column.NOUN_ID: [[2, 3, 1], [1, 2]],
@@ -507,6 +520,7 @@ def test_to_list_video_id(data_prepared: pl.DataFrame) -> None:
             Column.ACTION_END_SEC: [[4.7, 8.2, 10.2], [7.4, 14.2]],
             Column.ACTION_START_FRAME: [[23, 39, 74], [12, 82]],
             Column.ACTION_START_SEC: [[2.3, 3.9, 7.4], [1.2, 8.2]],
+            Column.ACTION_START_SEC_DIFF: [[0.0, 1.6, 3.5], [0.0, 7.0]],
             Column.NOUN: [["noun2", "noun3", "noun1"], ["noun1", "noun2"]],
             Column.NOUN_ID: [[2, 3, 1], [1, 2]],
             Column.SEQUENCE_LENGTH: [3, 2],
