@@ -113,6 +113,7 @@ class Column:
     PERSON: str = "person"
     PERSON_ID: str = "person_id"
     START_TIME: str = "start_time"
+    START_TIME_DIFF: str = "start_time_diff"
     SEQUENCE_LENGTH: str = "sequence_length"
 
 
@@ -382,27 +383,28 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
     >>> data, metadata = prepare_data(frame)
     >>> with pl.Config(tbl_cols=-1):
     ...     data
-    shape: (10, 8)
-    ┌─────────────┬───────────┬─────────────┬─────────────┬──────────┬────────┬───────────┬────────────┐
-    │ action      ┆ action_id ┆ cooking_act ┆ cooking_act ┆ end_time ┆ person ┆ person_id ┆ start_time │
-    │ ---         ┆ ---       ┆ ivity       ┆ ivity_id    ┆ ---      ┆ ---    ┆ ---       ┆ ---        │
-    │ str         ┆ i64       ┆ ---         ┆ ---         ┆ f64      ┆ str    ┆ i64       ┆ f64        │
-    │             ┆           ┆ str         ┆ i64         ┆          ┆        ┆           ┆            │
-    ╞═════════════╪═══════════╪═════════════╪═════════════╪══════════╪════════╪═══════════╪════════════╡
-    │ SIL         ┆ 0         ┆ cereals     ┆ 0           ┆ 30.0     ┆ P03    ┆ 0         ┆ 1.0        │
-    │ take_bowl   ┆ 2         ┆ cereals     ┆ 0           ┆ 150.0    ┆ P03    ┆ 0         ┆ 31.0       │
-    │ pour_cereal ┆ 5         ┆ cereals     ┆ 0           ┆ 428.0    ┆ P03    ┆ 0         ┆ 151.0      │
-    │ s           ┆           ┆             ┆             ┆          ┆        ┆           ┆            │
-    │ pour_milk   ┆ 1         ┆ cereals     ┆ 0           ┆ 575.0    ┆ P03    ┆ 0         ┆ 429.0      │
-    │ stir_cereal ┆ 3         ┆ cereals     ┆ 0           ┆ 705.0    ┆ P03    ┆ 0         ┆ 576.0      │
-    │ s           ┆           ┆             ┆             ┆          ┆        ┆           ┆            │
-    │ SIL         ┆ 0         ┆ cereals     ┆ 0           ┆ 836.0    ┆ P03    ┆ 0         ┆ 706.0      │
-    │ SIL         ┆ 0         ┆ milk        ┆ 1           ┆ 47.0     ┆ P54    ┆ 1         ┆ 1.0        │
-    │ pour_milk   ┆ 1         ┆ milk        ┆ 1           ┆ 215.0    ┆ P54    ┆ 1         ┆ 48.0       │
-    │ spoon_powde ┆ 4         ┆ milk        ┆ 1           ┆ 565.0    ┆ P54    ┆ 1         ┆ 216.0      │
-    │ r           ┆           ┆             ┆             ┆          ┆        ┆           ┆            │
-    │ SIL         ┆ 0         ┆ milk        ┆ 1           ┆ 747.0    ┆ P54    ┆ 1         ┆ 566.0      │
-    └─────────────┴───────────┴─────────────┴─────────────┴──────────┴────────┴───────────┴────────────┘
+    shape: (10, 9)
+    ┌───────────┬───────────┬──────────┬──────────┬──────────┬────────┬──────────┬──────────┬──────────┐
+    │ action    ┆ action_id ┆ cooking_ ┆ cooking_ ┆ end_time ┆ person ┆ person_i ┆ start_ti ┆ start_ti │
+    │ ---       ┆ ---       ┆ activity ┆ activity ┆ ---      ┆ ---    ┆ d        ┆ me       ┆ me_diff  │
+    │ str       ┆ i64       ┆ ---      ┆ _id      ┆ f64      ┆ str    ┆ ---      ┆ ---      ┆ ---      │
+    │           ┆           ┆ str      ┆ ---      ┆          ┆        ┆ i64      ┆ f64      ┆ f64      │
+    │           ┆           ┆          ┆ i64      ┆          ┆        ┆          ┆          ┆          │
+    ╞═══════════╪═══════════╪══════════╪══════════╪══════════╪════════╪══════════╪══════════╪══════════╡
+    │ SIL       ┆ 0         ┆ cereals  ┆ 0        ┆ 30.0     ┆ P03    ┆ 0        ┆ 1.0      ┆ 0.0      │
+    │ take_bowl ┆ 2         ┆ cereals  ┆ 0        ┆ 150.0    ┆ P03    ┆ 0        ┆ 31.0     ┆ 30.0     │
+    │ pour_cere ┆ 5         ┆ cereals  ┆ 0        ┆ 428.0    ┆ P03    ┆ 0        ┆ 151.0    ┆ 120.0    │
+    │ als       ┆           ┆          ┆          ┆          ┆        ┆          ┆          ┆          │
+    │ pour_milk ┆ 1         ┆ cereals  ┆ 0        ┆ 575.0    ┆ P03    ┆ 0        ┆ 429.0    ┆ 278.0    │
+    │ stir_cere ┆ 3         ┆ cereals  ┆ 0        ┆ 705.0    ┆ P03    ┆ 0        ┆ 576.0    ┆ 147.0    │
+    │ als       ┆           ┆          ┆          ┆          ┆        ┆          ┆          ┆          │
+    │ SIL       ┆ 0         ┆ cereals  ┆ 0        ┆ 836.0    ┆ P03    ┆ 0        ┆ 706.0    ┆ 130.0    │
+    │ SIL       ┆ 0         ┆ milk     ┆ 1        ┆ 47.0     ┆ P54    ┆ 1        ┆ 1.0      ┆ 0.0      │
+    │ pour_milk ┆ 1         ┆ milk     ┆ 1        ┆ 215.0    ┆ P54    ┆ 1        ┆ 48.0     ┆ 47.0     │
+    │ spoon_pow ┆ 4         ┆ milk     ┆ 1        ┆ 565.0    ┆ P54    ┆ 1        ┆ 216.0    ┆ 168.0    │
+    │ der       ┆           ┆          ┆          ┆          ┆        ┆          ┆          ┆          │
+    │ SIL       ┆ 0         ┆ milk     ┆ 1        ┆ 747.0    ┆ P54    ┆ 1        ┆ 566.0    ┆ 350.0    │
+    └───────────┴───────────┴──────────┴──────────┴──────────┴────────┴──────────┴──────────┴──────────┘
     >>> metadata
     {'vocab_action': Vocabulary(
       counter=Counter({'SIL': 4, 'pour_milk': 2, 'take_bowl': 1, 'stir_cereals': 1, 'spoon_powder': 1, 'pour_cereals': 1}),
@@ -427,6 +429,11 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
     )
     transformer = td.Sequential(
         [
+            td.TimeDiff(
+                group_cols=[Column.COOKING_ACTIVITY, Column.PERSON],
+                time_col=Column.START_TIME,
+                time_diff_col=Column.START_TIME_DIFF,
+            ),
             td.Sort(columns=[Column.COOKING_ACTIVITY, Column.PERSON, Column.START_TIME]),
             td.Cast(columns=[Column.START_TIME, Column.END_TIME], dtype=pl.Float64),
             td.StripChars(columns=[Column.ACTION, Column.PERSON, Column.COOKING_ACTIVITY]),
@@ -500,28 +507,30 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
     ...         Column.PERSON: ["P03", "P03", "P03", "P03", "P03", "P03", "P54", "P54", "P54", "P54"],
     ...         Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
     ...         Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
+    ...         Column.START_TIME_DIFF: [0.0, 30.0, 120.0, 278.0, 147.0, 130.0, 0.0, 47.0, 168.0, 350.0],
     ...     }
     ... )
     >>> groups = group_by_sequence(frame)
     >>> with pl.Config(tbl_cols=-1):
     ...     groups
-    shape: (2, 9)
-    ┌───────────┬───────────┬──────────┬──────────┬──────────┬────────┬──────────┬──────────┬──────────┐
-    │ action    ┆ action_id ┆ cooking_ ┆ cooking_ ┆ end_time ┆ person ┆ person_i ┆ sequence ┆ start_ti │
-    │ ---       ┆ ---       ┆ activity ┆ activity ┆ ---      ┆ ---    ┆ d        ┆ _length  ┆ me       │
-    │ list[str] ┆ list[i64] ┆ ---      ┆ _id      ┆ list[f64 ┆ str    ┆ ---      ┆ ---      ┆ ---      │
-    │           ┆           ┆ str      ┆ ---      ┆ ]        ┆        ┆ i64      ┆ i64      ┆ list[f64 │
-    │           ┆           ┆          ┆ i64      ┆          ┆        ┆          ┆          ┆ ]        │
-    ╞═══════════╪═══════════╪══════════╪══════════╪══════════╪════════╪══════════╪══════════╪══════════╡
-    │ ["SIL",   ┆ [0, 2, …  ┆ cereals  ┆ 0        ┆ [30.0,   ┆ P03    ┆ 0        ┆ 6        ┆ [1.0,    │
-    │ "take_bow ┆ 0]        ┆          ┆          ┆ 150.0, … ┆        ┆          ┆          ┆ 31.0, …  │
-    │ l", …     ┆           ┆          ┆          ┆ 836.0]   ┆        ┆          ┆          ┆ 706.0]   │
-    │ "SIL"]    ┆           ┆          ┆          ┆          ┆        ┆          ┆          ┆          │
-    │ ["SIL",   ┆ [0, 1, …  ┆ milk     ┆ 1        ┆ [47.0,   ┆ P54    ┆ 1        ┆ 4        ┆ [1.0,    │
-    │ "pour_mil ┆ 0]        ┆          ┆          ┆ 215.0, … ┆        ┆          ┆          ┆ 48.0, …  │
-    │ k", …     ┆           ┆          ┆          ┆ 747.0]   ┆        ┆          ┆          ┆ 566.0]   │
-    │ "SIL"]    ┆           ┆          ┆          ┆          ┆        ┆          ┆          ┆          │
-    └───────────┴───────────┴──────────┴──────────┴──────────┴────────┴──────────┴──────────┴──────────┘
+    shape: (2, 10)
+    ┌─────────┬─────────┬─────────┬─────────┬─────────┬────────┬─────────┬─────────┬─────────┬─────────┐
+    │ action  ┆ action_ ┆ cooking ┆ cooking ┆ end_tim ┆ person ┆ person_ ┆ sequenc ┆ start_t ┆ start_t │
+    │ ---     ┆ id      ┆ _activi ┆ _activi ┆ e       ┆ ---    ┆ id      ┆ e_lengt ┆ ime     ┆ ime_dif │
+    │ list[st ┆ ---     ┆ ty      ┆ ty_id   ┆ ---     ┆ str    ┆ ---     ┆ h       ┆ ---     ┆ f       │
+    │ r]      ┆ list[i6 ┆ ---     ┆ ---     ┆ list[f6 ┆        ┆ i64     ┆ ---     ┆ list[f6 ┆ ---     │
+    │         ┆ 4]      ┆ str     ┆ i64     ┆ 4]      ┆        ┆         ┆ i64     ┆ 4]      ┆ list[f6 │
+    │         ┆         ┆         ┆         ┆         ┆        ┆         ┆         ┆         ┆ 4]      │
+    ╞═════════╪═════════╪═════════╪═════════╪═════════╪════════╪═════════╪═════════╪═════════╪═════════╡
+    │ ["SIL", ┆ [0, 2,  ┆ cereals ┆ 0       ┆ [30.0,  ┆ P03    ┆ 0       ┆ 6       ┆ [1.0,   ┆ [0.0,   │
+    │ "take_b ┆ … 0]    ┆         ┆         ┆ 150.0,  ┆        ┆         ┆         ┆ 31.0, … ┆ 30.0, … │
+    │ owl", … ┆         ┆         ┆         ┆ …       ┆        ┆         ┆         ┆ 706.0]  ┆ 130.0]  │
+    │ "SIL"]  ┆         ┆         ┆         ┆ 836.0]  ┆        ┆         ┆         ┆         ┆         │
+    │ ["SIL", ┆ [0, 1,  ┆ milk    ┆ 1       ┆ [47.0,  ┆ P54    ┆ 1       ┆ 4       ┆ [1.0,   ┆ [0.0,   │
+    │ "pour_m ┆ … 0]    ┆         ┆         ┆ 215.0,  ┆        ┆         ┆         ┆ 48.0, … ┆ 47.0, … │
+    │ ilk", … ┆         ┆         ┆         ┆ …       ┆        ┆         ┆         ┆ 566.0]  ┆ 350.0]  │
+    │ "SIL"]  ┆         ┆         ┆         ┆ 747.0]  ┆        ┆         ┆         ┆         ┆         │
+    └─────────┴─────────┴─────────┴─────────┴─────────┴────────┴─────────┴─────────┴─────────┴─────────┘
 
     ```
     """
@@ -531,6 +540,7 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
         pl.col(Column.ACTION),
         pl.col(Column.ACTION_ID),
         pl.col(Column.START_TIME),
+        pl.col(Column.START_TIME_DIFF),
         pl.col(Column.END_TIME),
         pl.len().cast(pl.Int64).alias(Column.SEQUENCE_LENGTH),
     )
@@ -590,6 +600,7 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     ...         Column.PERSON: ["P03", "P03", "P03", "P03", "P03", "P03", "P54", "P54", "P54", "P54"],
     ...         Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
     ...         Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
+    ...         Column.START_TIME_DIFF: [0.0, 30.0, 120.0, 278.0, 147.0, 130.0, 0.0, 47.0, 168.0, 350.0],
     ...     }
     ... )
     >>> arrays = to_array(frame)
@@ -601,20 +612,25 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
       mask=[[False, False, False, False, False, False],
             [False, False, False, False,  True,  True]],
       fill_value='N/A',
-      dtype='<U12'), 'action_id': masked_array(
+      dtype='<U12'),
+      'action_id': masked_array(
       data=[[0, 2, 5, 1, 3, 0],
             [0, 1, 4, 0, --, --]],
       mask=[[False, False, False, False, False, False],
             [False, False, False, False,  True,  True]],
       fill_value=999999),
       'cooking_activity': array(['cereals', 'milk'], dtype='<U7'),
-      'cooking_activity_id': array([0, 1]),
-      'person': array(['P03', 'P54'], dtype='<U3'),
+      'cooking_activity_id': array([0, 1]), 'person': array(['P03', 'P54'], dtype='<U3'),
       'person_id': array([0, 1]),
       'sequence_length': array([6, 4]),
       'start_time': masked_array(
       data=[[1.0, 31.0, 151.0, 429.0, 576.0, 706.0],
             [1.0, 48.0, 216.0, 566.0, --, --]],
+      mask=[[False, False, False, False, False, False],
+            [False, False, False, False,  True,  True]],
+      fill_value=1e+20), 'start_time_diff': masked_array(
+      data=[[0.0, 30.0, 120.0, 278.0, 147.0, 130.0],
+            [0.0, 47.0, 168.0, 350.0, --, --]],
       mask=[[False, False, False, False, False, False],
             [False, False, False, False,  True,  True]],
       fill_value=1e+20), 'end_time': masked_array(
@@ -623,6 +639,7 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
       mask=[[False, False, False, False, False, False],
             [False, False, False, False,  True,  True]],
       fill_value=1e+20)}
+
 
     ```
     """
@@ -658,6 +675,15 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
         Column.START_TIME: np.ma.masked_array(
             data=convert_sequences_to_array(
                 groups.get_column(Column.START_TIME).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.float64,
+                padded_value=-1.0,
+            ),
+            mask=mask,
+        ),
+        Column.START_TIME_DIFF: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.START_TIME_DIFF).to_list(),
                 max_len=mask.shape[1],
                 dtype=np.float64,
                 padded_value=-1.0,
@@ -723,6 +749,7 @@ def to_list(frame: pl.DataFrame) -> dict[str, list]:
     ...         Column.PERSON: ["P03", "P03", "P03", "P03", "P03", "P03", "P54", "P54", "P54", "P54"],
     ...         Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
     ...         Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
+    ...         Column.START_TIME_DIFF: [0.0, 30.0, 120.0, 278.0, 147.0, 130.0, 0.0, 47.0, 168.0, 350.0],
     ...     }
     ... )
     >>> data_list = to_list(frame)
@@ -735,7 +762,8 @@ def to_list(frame: pl.DataFrame) -> dict[str, list]:
      'person': ['P03', 'P54'],
      'person_id': [0, 1],
      'sequence_length': [6, 4],
-     'start_time': [[1.0, 31.0, 151.0, 429.0, 576.0, 706.0], [1.0, 48.0, 216.0, 566.0]]}
+     'start_time': [[1.0, 31.0, 151.0, 429.0, 576.0, 706.0], [1.0, 48.0, 216.0, 566.0]],
+     'start_time_diff': [[0.0, 30.0, 120.0, 278.0, 147.0, 130.0], [0.0, 47.0, 168.0, 350.0]]}
 
     ```
     """

@@ -51,7 +51,7 @@ def check_data_raw_coarse(data: pl.DataFrame) -> None:
 
 def check_data_coarse(data: pl.DataFrame) -> None:
     assert isinstance(data, pl.DataFrame)
-    assert data.shape == (3585, 8)
+    assert data.shape == (3585, 9)
     assert data.columns == [
         Column.ACTION,
         Column.ACTION_ID,
@@ -61,6 +61,7 @@ def check_data_coarse(data: pl.DataFrame) -> None:
         Column.PERSON,
         Column.PERSON_ID,
         Column.START_TIME,
+        Column.START_TIME_DIFF,
     ]
     assert data.dtypes == [
         pl.String,
@@ -70,6 +71,7 @@ def check_data_coarse(data: pl.DataFrame) -> None:
         pl.Float64,
         pl.String,
         pl.Int64,
+        pl.Float64,
         pl.Float64,
     ]
 
@@ -87,7 +89,7 @@ def check_metadata_coarse(metadata: dict) -> None:
 
 def check_arrays_coarse(arrays: dict) -> None:
     assert isinstance(arrays, dict)
-    assert len(arrays) == 9
+    assert len(arrays) == 10
 
     assert isinstance(arrays[Column.ACTION], np.ma.MaskedArray)
     assert arrays[Column.ACTION].shape == (503, 25)
@@ -121,6 +123,10 @@ def check_arrays_coarse(arrays: dict) -> None:
     assert arrays[Column.START_TIME].shape == (503, 25)
     assert arrays[Column.START_TIME].dtype == np.float64
 
+    assert isinstance(arrays[Column.START_TIME_DIFF], np.ma.MaskedArray)
+    assert arrays[Column.START_TIME_DIFF].shape == (503, 25)
+    assert arrays[Column.START_TIME_DIFF].dtype == np.float64
+
     assert isinstance(arrays[Column.END_TIME], np.ma.MaskedArray)
     assert arrays[Column.END_TIME].shape == (503, 25)
     assert arrays[Column.END_TIME].dtype == np.float64
@@ -153,7 +159,7 @@ def check_data_raw_fine(data: pl.DataFrame) -> None:
 
 def check_data_fine(data: pl.DataFrame) -> None:
     assert isinstance(data, pl.DataFrame)
-    assert data.shape == (10_715, 8)
+    assert data.shape == (10_715, 9)
     assert data.columns == [
         Column.ACTION,
         Column.ACTION_ID,
@@ -163,6 +169,7 @@ def check_data_fine(data: pl.DataFrame) -> None:
         Column.PERSON,
         Column.PERSON_ID,
         Column.START_TIME,
+        Column.START_TIME_DIFF,
     ]
     assert data.dtypes == [
         pl.String,
@@ -172,6 +179,7 @@ def check_data_fine(data: pl.DataFrame) -> None:
         pl.Float64,
         pl.String,
         pl.Int64,
+        pl.Float64,
         pl.Float64,
     ]
 
@@ -189,7 +197,7 @@ def check_metadata_fine(metadata: dict) -> None:
 
 def check_arrays_fine(arrays: dict) -> None:
     assert isinstance(arrays, dict)
-    assert len(arrays) == 9
+    assert len(arrays) == 10
 
     assert isinstance(arrays[Column.ACTION], np.ma.MaskedArray)
     assert arrays[Column.ACTION].shape == (257, 165)
@@ -222,6 +230,10 @@ def check_arrays_fine(arrays: dict) -> None:
     assert isinstance(arrays[Column.START_TIME], np.ma.MaskedArray)
     assert arrays[Column.START_TIME].shape == (257, 165)
     assert arrays[Column.START_TIME].dtype == np.float64
+
+    assert isinstance(arrays[Column.START_TIME_DIFF], np.ma.MaskedArray)
+    assert arrays[Column.START_TIME_DIFF].shape == (257, 165)
+    assert arrays[Column.START_TIME_DIFF].dtype == np.float64
 
     assert isinstance(arrays[Column.END_TIME], np.ma.MaskedArray)
     assert arrays[Column.END_TIME].shape == (257, 165)
