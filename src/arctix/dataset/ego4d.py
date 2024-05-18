@@ -45,6 +45,7 @@ class Column:
     ACTION_INDEX: str = "action_idx"
     ACTION_START_FRAME: str = "action_clip_start_frame"
     ACTION_START_SEC: str = "action_clip_start_sec"
+    ACTION_START_SEC_DIFF: str = "action_clip_start_sec_diff"
     CLIP_ID: str = "clip_uid"
     NOUN: str = "noun"
     NOUN_ID: str = "noun_label"
@@ -277,13 +278,16 @@ def load_taxonomy_vocab(path: Path, name: str, expected_size: int | None = None)
     return vocab
 
 
-def prepare_data(frame: pl.DataFrame, metadata: dict) -> tuple[pl.DataFrame, dict]:
+def prepare_data(
+    frame: pl.DataFrame, metadata: dict, group_col: str = Column.CLIP_ID
+) -> tuple[pl.DataFrame, dict]:
     r"""Prepare the data.
 
     Args:
         frame: The raw DataFrame.
         metadata: The metadata wich contains the vocabularies to
             convert verbs and nouns to index.
+        group_col: The column used to generate the sequences.
 
     Returns:
         A tuple containing the prepared data and the metadata.
@@ -313,28 +317,30 @@ def prepare_data(frame: pl.DataFrame, metadata: dict) -> tuple[pl.DataFrame, dic
     >>> data, metadata = prepare_data(frame, metadata={})
     >>> with pl.Config(tbl_cols=-1):
     ...     data
-    shape: (5, 12)
-    ┌────────┬────────┬────────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┐
-    │ action ┆ action ┆ action ┆ actio ┆ actio ┆ clip_ ┆ noun  ┆ noun_ ┆ split ┆ verb  ┆ verb_ ┆ video │
-    │ _clip_ ┆ _clip_ ┆ _clip_ ┆ n_cli ┆ n_idx ┆ uid   ┆ ---   ┆ label ┆ ---   ┆ ---   ┆ label ┆ _uid  │
-    │ end_fr ┆ end_se ┆ start_ ┆ p_sta ┆ ---   ┆ ---   ┆ str   ┆ ---   ┆ str   ┆ str   ┆ ---   ┆ ---   │
-    │ ame    ┆ c      ┆ frame  ┆ rt_se ┆ i64   ┆ str   ┆       ┆ i64   ┆       ┆       ┆ i64   ┆ str   │
-    │ ---    ┆ ---    ┆ ---    ┆ c     ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
-    │ i64    ┆ f64    ┆ i64    ┆ ---   ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
-    │        ┆        ┆        ┆ f64   ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
-    ╞════════╪════════╪════════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╡
-    │ 47     ┆ 4.7    ┆ 23     ┆ 2.3   ┆ 0     ┆ clip1 ┆ noun2 ┆ 2     ┆ train ┆ verb4 ┆ 4     ┆ video │
-    │        ┆        ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ 1     │
-    │ 82     ┆ 8.2    ┆ 39     ┆ 3.9   ┆ 1     ┆ clip1 ┆ noun3 ┆ 3     ┆ train ┆ verb2 ┆ 2     ┆ video │
-    │        ┆        ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ 1     │
-    │ 102    ┆ 10.2   ┆ 74     ┆ 7.4   ┆ 2     ┆ clip1 ┆ noun1 ┆ 1     ┆ train ┆ verb1 ┆ 1     ┆ video │
-    │        ┆        ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ 1     │
-    │ 74     ┆ 7.4    ┆ 12     ┆ 1.2   ┆ 0     ┆ clip2 ┆ noun1 ┆ 1     ┆ train ┆ verb1 ┆ 1     ┆ video │
-    │        ┆        ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ 2     │
-    │ 142    ┆ 14.2   ┆ 82     ┆ 8.2   ┆ 1     ┆ clip2 ┆ noun2 ┆ 2     ┆ train ┆ verb2 ┆ 2     ┆ video │
-    │        ┆        ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ 2     │
-    └────────┴────────┴────────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘
-
+    shape: (5, 13)
+    ┌─────┬─────┬─────┬────────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┐
+    │ act ┆ act ┆ act ┆ action ┆ actio ┆ actio ┆ clip_ ┆ noun  ┆ noun_ ┆ split ┆ verb  ┆ verb_ ┆ video │
+    │ ion ┆ ion ┆ ion ┆ _clip_ ┆ n_cli ┆ n_idx ┆ uid   ┆ ---   ┆ label ┆ ---   ┆ ---   ┆ label ┆ _uid  │
+    │ _cl ┆ _cl ┆ _cl ┆ start_ ┆ p_sta ┆ ---   ┆ ---   ┆ str   ┆ ---   ┆ str   ┆ str   ┆ ---   ┆ ---   │
+    │ ip_ ┆ ip_ ┆ ip_ ┆ sec    ┆ rt_se ┆ i64   ┆ str   ┆       ┆ i64   ┆       ┆       ┆ i64   ┆ str   │
+    │ end ┆ end ┆ sta ┆ ---    ┆ c_dif ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+    │ _fr ┆ _se ┆ rt_ ┆ f64    ┆ f     ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+    │ ame ┆ c   ┆ fra ┆        ┆ ---   ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+    │ --- ┆ --- ┆ me  ┆        ┆ f64   ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+    │ i64 ┆ f64 ┆ --- ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+    │     ┆     ┆ i64 ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+    ╞═════╪═════╪═════╪════════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╡
+    │ 47  ┆ 4.7 ┆ 23  ┆ 2.3    ┆ 0.0   ┆ 0     ┆ clip1 ┆ noun2 ┆ 2     ┆ train ┆ verb4 ┆ 4     ┆ video │
+    │     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ 1     │
+    │ 82  ┆ 8.2 ┆ 39  ┆ 3.9    ┆ 1.6   ┆ 1     ┆ clip1 ┆ noun3 ┆ 3     ┆ train ┆ verb2 ┆ 2     ┆ video │
+    │     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ 1     │
+    │ 102 ┆ 10. ┆ 74  ┆ 7.4    ┆ 3.5   ┆ 2     ┆ clip1 ┆ noun1 ┆ 1     ┆ train ┆ verb1 ┆ 1     ┆ video │
+    │     ┆ 2   ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ 1     │
+    │ 74  ┆ 7.4 ┆ 12  ┆ 1.2    ┆ 0.0   ┆ 0     ┆ clip2 ┆ noun1 ┆ 1     ┆ train ┆ verb1 ┆ 1     ┆ video │
+    │     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ 2     │
+    │ 142 ┆ 14. ┆ 82  ┆ 8.2    ┆ 7.0   ┆ 1     ┆ clip2 ┆ noun2 ┆ 2     ┆ train ┆ verb2 ┆ 2     ┆ video │
+    │     ┆ 2   ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ 2     │
+    └─────┴─────┴─────┴────────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘
     >>> metadata
     {}
 
@@ -353,7 +359,12 @@ def prepare_data(frame: pl.DataFrame, metadata: dict) -> tuple[pl.DataFrame, dic
                 dtype=pl.Int64,
             ),
             td.Cast(columns=[Column.ACTION_START_SEC, Column.ACTION_END_SEC], dtype=pl.Float64),
-            td.Sort(columns=[Column.VIDEO_ID, Column.CLIP_ID, Column.ACTION_INDEX]),
+            td.TimeDiff(
+                group_cols=[group_col],
+                time_col=Column.ACTION_START_SEC,
+                time_diff_col=Column.ACTION_START_SEC_DIFF,
+            ),
+            td.Sort(columns=[group_col, Column.ACTION_INDEX]),
             td.SortColumns(),
         ]
     )
@@ -383,6 +394,7 @@ def group_by_sequence(frame: pl.DataFrame, group_col: str = Column.CLIP_ID) -> p
     ...         Column.ACTION_END_SEC: [4.7, 8.2, 10.2, 7.4, 14.2],
     ...         Column.ACTION_START_FRAME: [23, 39, 74, 12, 82],
     ...         Column.ACTION_START_SEC: [2.3, 3.9, 7.4, 1.2, 8.2],
+    ...         Column.ACTION_START_SEC_DIFF: [0.0, 1.6, 3.5, 0.0, 7.0],
     ...         Column.ACTION_INDEX: [0, 1, 2, 0, 1],
     ...         Column.CLIP_ID: ["clip1", "clip1", "clip1", "clip2", "clip2"],
     ...         Column.NOUN: ["noun2", "noun3", "noun1", "noun1", "noun2"],
@@ -396,26 +408,29 @@ def group_by_sequence(frame: pl.DataFrame, group_col: str = Column.CLIP_ID) -> p
     >>> data = group_by_sequence(frame)
     >>> with pl.Config(tbl_cols=-1):
     ...     data
-    shape: (2, 11)
-    ┌─────────┬────────┬────────┬────────┬────────┬────────┬────────┬────────┬───────┬────────┬────────┐
-    │ action_ ┆ action ┆ action ┆ action ┆ clip_u ┆ noun   ┆ noun_l ┆ sequen ┆ split ┆ verb   ┆ verb_l │
-    │ clip_en ┆ _clip_ ┆ _clip_ ┆ _clip_ ┆ id     ┆ ---    ┆ abel   ┆ ce_len ┆ ---   ┆ ---    ┆ abel   │
-    │ d_frame ┆ end_se ┆ start_ ┆ start_ ┆ ---    ┆ list[s ┆ ---    ┆ gth    ┆ str   ┆ list[s ┆ ---    │
-    │ ---     ┆ c      ┆ frame  ┆ sec    ┆ str    ┆ tr]    ┆ list[i ┆ ---    ┆       ┆ tr]    ┆ list[i │
-    │ list[i6 ┆ ---    ┆ ---    ┆ ---    ┆        ┆        ┆ 64]    ┆ i64    ┆       ┆        ┆ 64]    │
-    │ 4]      ┆ list[f ┆ list[i ┆ list[f ┆        ┆        ┆        ┆        ┆       ┆        ┆        │
-    │         ┆ 64]    ┆ 64]    ┆ 64]    ┆        ┆        ┆        ┆        ┆       ┆        ┆        │
-    ╞═════════╪════════╪════════╪════════╪════════╪════════╪════════╪════════╪═══════╪════════╪════════╡
-    │ [47,    ┆ [4.7,  ┆ [23,   ┆ [2.3,  ┆ clip1  ┆ ["noun ┆ [2, 3, ┆ 3      ┆ train ┆ ["verb ┆ [4, 2, │
-    │ 82,     ┆ 8.2,   ┆ 39,    ┆ 3.9,   ┆        ┆ 2",    ┆ 1]     ┆        ┆       ┆ 4",    ┆ 1]     │
-    │ 102]    ┆ 10.2]  ┆ 74]    ┆ 7.4]   ┆        ┆ "noun3 ┆        ┆        ┆       ┆ "verb2 ┆        │
-    │         ┆        ┆        ┆        ┆        ┆ ", "no ┆        ┆        ┆       ┆ ", "ve ┆        │
-    │         ┆        ┆        ┆        ┆        ┆ un1"]  ┆        ┆        ┆       ┆ rb1"]  ┆        │
-    │ [74,    ┆ [7.4,  ┆ [12,   ┆ [1.2,  ┆ clip2  ┆ ["noun ┆ [1, 2] ┆ 2      ┆ train ┆ ["verb ┆ [1, 2] │
-    │ 142]    ┆ 14.2]  ┆ 82]    ┆ 8.2]   ┆        ┆ 1",    ┆        ┆        ┆       ┆ 1",    ┆        │
-    │         ┆        ┆        ┆        ┆        ┆ "noun2 ┆        ┆        ┆       ┆ "verb2 ┆        │
-    │         ┆        ┆        ┆        ┆        ┆ "]     ┆        ┆        ┆       ┆ "]     ┆        │
-    └─────────┴────────┴────────┴────────┴────────┴────────┴────────┴────────┴───────┴────────┴────────┘
+    shape: (2, 12)
+    ┌────────┬────────┬────────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┐
+    │ action ┆ action ┆ action ┆ actio ┆ actio ┆ clip_ ┆ noun  ┆ noun_ ┆ seque ┆ split ┆ verb  ┆ verb_ │
+    │ _clip_ ┆ _clip_ ┆ _clip_ ┆ n_cli ┆ n_cli ┆ uid   ┆ ---   ┆ label ┆ nce_l ┆ ---   ┆ ---   ┆ label │
+    │ end_fr ┆ end_se ┆ start_ ┆ p_sta ┆ p_sta ┆ ---   ┆ list[ ┆ ---   ┆ ength ┆ str   ┆ list[ ┆ ---   │
+    │ ame    ┆ c      ┆ frame  ┆ rt_se ┆ rt_se ┆ str   ┆ str]  ┆ list[ ┆ ---   ┆       ┆ str]  ┆ list[ │
+    │ ---    ┆ ---    ┆ ---    ┆ c     ┆ c_dif ┆       ┆       ┆ i64]  ┆ i64   ┆       ┆       ┆ i64]  │
+    │ list[i ┆ list[f ┆ list[i ┆ ---   ┆ f     ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+    │ 64]    ┆ 64]    ┆ 64]    ┆ list[ ┆ ---   ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+    │        ┆        ┆        ┆ f64]  ┆ list[ ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+    │        ┆        ┆        ┆       ┆ f64]  ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+    ╞════════╪════════╪════════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╡
+    │ [47,   ┆ [4.7,  ┆ [23,   ┆ [2.3, ┆ [0.0, ┆ clip1 ┆ ["nou ┆ [2,   ┆ 3     ┆ train ┆ ["ver ┆ [4,   │
+    │ 82,    ┆ 8.2,   ┆ 39,    ┆ 3.9,  ┆ 1.6,  ┆       ┆ n2",  ┆ 3, 1] ┆       ┆       ┆ b4",  ┆ 2, 1] │
+    │ 102]   ┆ 10.2]  ┆ 74]    ┆ 7.4]  ┆ 3.5]  ┆       ┆ "noun ┆       ┆       ┆       ┆ "verb ┆       │
+    │        ┆        ┆        ┆       ┆       ┆       ┆ 3",   ┆       ┆       ┆       ┆ 2",   ┆       │
+    │        ┆        ┆        ┆       ┆       ┆       ┆ "noun ┆       ┆       ┆       ┆ "verb ┆       │
+    │        ┆        ┆        ┆       ┆       ┆       ┆ 1"]   ┆       ┆       ┆       ┆ 1"]   ┆       │
+    │ [74,   ┆ [7.4,  ┆ [12,   ┆ [1.2, ┆ [0.0, ┆ clip2 ┆ ["nou ┆ [1,   ┆ 2     ┆ train ┆ ["ver ┆ [1,   │
+    │ 142]   ┆ 14.2]  ┆ 82]    ┆ 8.2]  ┆ 7.0]  ┆       ┆ n1",  ┆ 2]    ┆       ┆       ┆ b1",  ┆ 2]    │
+    │        ┆        ┆        ┆       ┆       ┆       ┆ "noun ┆       ┆       ┆       ┆ "verb ┆       │
+    │        ┆        ┆        ┆       ┆       ┆       ┆ 2"]   ┆       ┆       ┆       ┆ 2"]   ┆       │
+    └────────┴────────┴────────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘
 
     ```
     """
@@ -427,6 +442,7 @@ def group_by_sequence(frame: pl.DataFrame, group_col: str = Column.CLIP_ID) -> p
             pl.col(Column.ACTION_END_SEC),
             pl.col(Column.ACTION_START_FRAME),
             pl.col(Column.ACTION_START_SEC),
+            pl.col(Column.ACTION_START_SEC_DIFF),
             pl.col(Column.NOUN),
             pl.col(Column.NOUN_ID),
             pl.col(Column.VERB),
@@ -466,6 +482,7 @@ def to_array(frame: pl.DataFrame, group_col: str = Column.CLIP_ID) -> dict[str, 
     ...         Column.ACTION_END_SEC: [4.7, 8.2, 10.2, 7.4, 14.2],
     ...         Column.ACTION_START_FRAME: [23, 39, 74, 12, 82],
     ...         Column.ACTION_START_SEC: [2.3, 3.9, 7.4, 1.2, 8.2],
+    ...         Column.ACTION_START_SEC_DIFF: [0.0, 1.6, 3.5, 0.0, 7.0],
     ...         Column.ACTION_INDEX: [0, 1, 2, 0, 1],
     ...         Column.CLIP_ID: ["clip1", "clip1", "clip1", "clip2", "clip2"],
     ...         Column.NOUN: ["noun2", "noun3", "noun1", "noun1", "noun2"],
@@ -484,44 +501,59 @@ def to_array(frame: pl.DataFrame, group_col: str = Column.CLIP_ID) -> dict[str, 
       mask=[[False, False, False],
             [False, False,  True]],
       fill_value='N/A',
-      dtype='<U5'), 'noun_label': masked_array(
+      dtype='<U5'),
+      'noun_label': masked_array(
       data=[[2, 3, 1],
             [1, 2, --]],
       mask=[[False, False, False],
             [False, False,  True]],
-      fill_value=999999), 'split': array(['train', 'train'], dtype='<U5'),
-      'sequence_length': array([3, 2]), 'action_clip_start_frame': masked_array(
+      fill_value=999999),
+      'split': array(['train', 'train'], dtype='<U5'),
+      'sequence_length': array([3, 2]),
+      'action_clip_start_frame': masked_array(
       data=[[23, 39, 74],
             [12, 82, --]],
       mask=[[False, False, False],
             [False, False,  True]],
-      fill_value=999999), 'action_clip_start_sec': masked_array(
+      fill_value=999999),
+      'action_clip_start_sec': masked_array(
       data=[[2.3, 3.9, 7.4],
             [1.2, 8.2, --]],
       mask=[[False, False, False],
             [False, False,  True]],
-      fill_value=1e+20), 'action_clip_end_frame': masked_array(
+      fill_value=1e+20),
+      'action_clip_start_sec_diff': masked_array(
+      data=[[0.0, 1.6, 3.5],
+            [0.0, 7.0, --]],
+      mask=[[False, False, False],
+            [False, False,  True]],
+      fill_value=1e+20),
+      'action_clip_end_frame': masked_array(
       data=[[47, 82, 102],
             [74, 142, --]],
       mask=[[False, False, False],
             [False, False,  True]],
-      fill_value=999999), 'action_clip_end_sec': masked_array(
+      fill_value=999999),
+      'action_clip_end_sec': masked_array(
       data=[[4.7, 8.2, 10.2],
             [7.4, 14.2, --]],
       mask=[[False, False, False],
             [False, False,  True]],
-      fill_value=1e+20), 'verb': masked_array(
+      fill_value=1e+20),
+      'verb': masked_array(
       data=[['verb4', 'verb2', 'verb1'],
             ['verb1', 'verb2', --]],
       mask=[[False, False, False],
             [False, False,  True]],
       fill_value='N/A',
-      dtype='<U5'), 'verb_label': masked_array(
+      dtype='<U5'),
+      'verb_label': masked_array(
       data=[[4, 2, 1],
             [1, 2, --]],
       mask=[[False, False, False],
             [False, False,  True]],
-      fill_value=999999), 'clip_uid': array(['clip1', 'clip2'], dtype='<U5')}
+      fill_value=999999),
+      'clip_uid': array(['clip1', 'clip2'], dtype='<U5')}
 
     ```
     """
@@ -563,6 +595,15 @@ def to_array(frame: pl.DataFrame, group_col: str = Column.CLIP_ID) -> dict[str, 
         Column.ACTION_START_SEC: np.ma.masked_array(
             data=convert_sequences_to_array(
                 groups.get_column(Column.ACTION_START_SEC).to_list(),
+                max_len=mask.shape[1],
+                dtype=np.float64,
+                padded_value=-1.0,
+            ),
+            mask=mask,
+        ),
+        Column.ACTION_START_SEC_DIFF: np.ma.masked_array(
+            data=convert_sequences_to_array(
+                groups.get_column(Column.ACTION_START_SEC_DIFF).to_list(),
                 max_len=mask.shape[1],
                 dtype=np.float64,
                 padded_value=-1.0,
@@ -631,6 +672,7 @@ def to_list(frame: pl.DataFrame, group_col: str = Column.CLIP_ID) -> dict[str, l
     ...         Column.ACTION_END_SEC: [4.7, 8.2, 10.2, 7.4, 14.2],
     ...         Column.ACTION_START_FRAME: [23, 39, 74, 12, 82],
     ...         Column.ACTION_START_SEC: [2.3, 3.9, 7.4, 1.2, 8.2],
+    ...         Column.ACTION_START_SEC_DIFF: [0.0, 1.6, 3.5, 0.0, 7.0],
     ...         Column.ACTION_INDEX: [0, 1, 2, 0, 1],
     ...         Column.CLIP_ID: ["clip1", "clip1", "clip1", "clip2", "clip2"],
     ...         Column.NOUN: ["noun2", "noun3", "noun1", "noun1", "noun2"],
@@ -647,6 +689,7 @@ def to_list(frame: pl.DataFrame, group_col: str = Column.CLIP_ID) -> dict[str, l
      'action_clip_end_sec': [[4.7, 8.2, 10.2], [7.4, 14.2]],
      'action_clip_start_frame': [[23, 39, 74], [12, 82]],
      'action_clip_start_sec': [[2.3, 3.9, 7.4], [1.2, 8.2]],
+     'action_clip_start_sec_diff': [[0.0, 1.6, 3.5], [0.0, 7.0]],
      'clip_uid': ['clip1', 'clip2'],
      'noun': [['noun2', 'noun3', 'noun1'], ['noun1', 'noun2']],
      'noun_label': [[2, 3, 1], [1, 2]],
