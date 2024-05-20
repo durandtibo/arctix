@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "arctix"
-version = "0.0.6"
+version = "0.0.7a0"
 description = ""
 readme = "README.md"
 authors = ["Thibaut Durand <durand.tibo+gh@gmail.com>"]
@@ -10,7 +10,7 @@ keywords = ["asynchronous time-series", "dataset", "preprocessing"]
 license = "BSD-3-Clause"
 
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: BSD License",
