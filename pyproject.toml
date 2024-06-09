@@ -48,7 +48,7 @@ all = ["gdown", "matplotlib", "requests", "tqdm"]
 optional = true
 
 [tool.poetry.group.exp.dependencies]
-jupyterlab = "^4.0"
+jupyterlab = "^4.2"
 seaborn = "^0.13"
 
 [tool.poetry.group.docs]
