@@ -986,13 +986,13 @@ socks = ["socksio (==1.*)"]
 
 [[package]]
 name = "iden"
-version = "0.0.3"
+version = "0.0.4"
 description = "simple library to manage a dataset of shards to train machine learning models"
 optional = false
-python-versions = ">=3.9,<3.13"
+python-versions = "<3.13,>=3.9"
 files = [
-    {file = "iden-0.0.3-py3-none-any.whl", hash = "sha256:a674274f2621bedd6f2550e7bf9a476d3294258f5e8bf0730a4b4508a20ce059"},
-    {file = "iden-0.0.3.tar.gz", hash = "sha256:eaeb5bf37ec975771386fae17e224e50386fce279f031a54b888610381b7adc3"},
+    {file = "iden-0.0.4-py3-none-any.whl", hash = "sha256:ae4f8e7166a475a8c3592234e091c7e197e60a0b40957046f84da42e5165b92a"},
+    {file = "iden-0.0.4.tar.gz", hash = "sha256:d95907e30ccb41593ca4b33b88cc213b9e9340c90ef39dad5d4ec066cd7b4630"},
 ]
 
 [package.dependencies]
@@ -1000,7 +1000,7 @@ coola = ">=0.3,<1.0"
 objectory = ">=0.1,<1.0"
 
 [package.extras]
-all = ["numpy (>=1.22,<2.0)", "pyyaml (>=6.0,<7.0)", "safetensors (>=0.4,<1.0)", "torch (>=1.11,<3.0)"]
+all = ["numpy (>=1.22,<2.0)", "pyyaml (>=6.0,<7.0)", "safetensors (>=0.4,<1.0)", "torch (>=1.11,<2.3)", "torch (>=1.11,<3.0)"]
 
 [[package]]
 name = "identify"
