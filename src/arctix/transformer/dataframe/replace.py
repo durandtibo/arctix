@@ -102,6 +102,10 @@ class ReplaceDataFrameTransformer(BaseDataFrameTransformer):
         )
 
     def transform(self, frame: pl.DataFrame) -> pl.DataFrame:
+        series = pl.col(self._orig_column)
+        kwargs = self._kwargs.copy()
+        if "default" not in kwargs:
+            kwargs["default"] = series
         return frame.with_columns(
-            pl.col(self._orig_column).replace(*self._args, **self._kwargs).alias(self._final_column)
+            series.replace_strict(*self._args, **kwargs).alias(self._final_column)
         )
