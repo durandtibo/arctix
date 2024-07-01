@@ -16,6 +16,8 @@ __all__ = [
     "JsonDecodeDataFrameTransformer",
     "Replace",
     "ReplaceDataFrameTransformer",
+    "ReplaceStrict",
+    "ReplaceStrictDataFrameTransformer",
     "Sequential",
     "SequentialDataFrameTransformer",
     "Sort",
@@ -59,6 +61,10 @@ from arctix.transformer.dataframe.json import (
 )
 from arctix.transformer.dataframe.replace import ReplaceDataFrameTransformer
 from arctix.transformer.dataframe.replace import ReplaceDataFrameTransformer as Replace
+from arctix.transformer.dataframe.replace import ReplaceStrictDataFrameTransformer
+from arctix.transformer.dataframe.replace import (
+    ReplaceStrictDataFrameTransformer as ReplaceStrict,
+)
 from arctix.transformer.dataframe.sequential import SequentialDataFrameTransformer
 from arctix.transformer.dataframe.sequential import (
     SequentialDataFrameTransformer as Sequential,
