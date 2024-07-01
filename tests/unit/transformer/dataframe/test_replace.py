@@ -43,7 +43,7 @@ def test_replace_dataframe_transformer_transform_mapping_default() -> None:
 
 
 def test_replace_dataframe_transformer_transform_same_column() -> None:
-    transformer = Replace(orig_column="col", final_column="col", old={"a": 1, "b": 2, "c": 3})
+    transformer = Replace(orig_column="col", final_column="col", old={"a": "1", "b": "2", "c": "3"})
     frame = pl.DataFrame({"col": ["a", "b", "c", "d", "e"]})
     out = transformer.transform(frame)
     assert_frame_equal(out, pl.DataFrame({"col": ["1", "2", "3", "d", "e"]}))

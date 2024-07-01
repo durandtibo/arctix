@@ -106,7 +106,7 @@ will filter the data to keep only the rows related to the first training dataset
 
 ```pycon
 
->>> data, metadata = prepare_data(data_raw, split='validation')  # doctest: +SKIP
+>>> data, metadata = prepare_data(data_raw, split="validation")  # doctest: +SKIP
 
 ```
 

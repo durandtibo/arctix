@@ -99,7 +99,7 @@ class TimeDiffDataFrameTransformer(BaseDataFrameTransformer):
 
     >>> import polars as pl
     >>> from arctix.transformer.dataframe import TimeDiff
-    >>> transformer = TimeDiff(group_cols=["col"], time_col='time', time_diff_col="diff")
+    >>> transformer = TimeDiff(group_cols=["col"], time_col="time", time_diff_col="diff")
     >>> transformer
     TimeDiffDataFrameTransformer(group_cols=['col'], time_col=time, time_diff_col=diff, shift=1)
     >>> frame = pl.DataFrame({"col": ["a", "b", "a", "a", "b"], "time": [1, 2, 3, 4, 5]})
