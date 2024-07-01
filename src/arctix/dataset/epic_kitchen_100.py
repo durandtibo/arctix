@@ -234,7 +234,9 @@ def load_event_data(path: Path) -> pl.DataFrame:
 
     >>> from pathlib import Path
     >>> from arctix.dataset.epic_kitchen_100 import load_event_data
-    >>> data, metadata = load_event_data(Path("/path/to/data/epic_kitchen_100/EPIC_100_train.csv"))  # doctest: +SKIP
+    >>> data, metadata = load_event_data(
+    ...     Path("/path/to/data/epic_kitchen_100/EPIC_100_train.csv")
+    ... )  # doctest: +SKIP
 
     ```
     """
@@ -410,6 +412,7 @@ def prepare_data(frame: pl.DataFrame, metadata: dict) -> tuple[pl.DataFrame, dic
     >>> data, metadata = prepare_data(frame, metadata={})
     >>> with pl.Config(tbl_cols=-1):
     ...     data
+    ...
     shape: (3, 18)
     ┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐
     │ all ┆ all ┆ nar ┆ nar ┆ nar ┆ nou ┆ nou ┆ par ┆ sta ┆ sta ┆ sta ┆ sta ┆ sto ┆ sto ┆ sto ┆ ver ┆ ver ┆ vid │

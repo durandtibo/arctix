@@ -248,7 +248,11 @@ def load_annotation_file(path: Path) -> dict[str, list]:
 
     >>> from pathlib import Path
     >>> from arctix.dataset.breakfast import load_annotation_file
-    >>> data = load_annotation_file(Path("/path/to/data/breakfast/segmentation_coarse/cereals/P03_cam01_P03_cereals.txt"))  # doctest: +SKIP
+    >>> data = load_annotation_file(
+    ...     Path(
+    ...         "/path/to/data/breakfast/segmentation_coarse/cereals/P03_cam01_P03_cereals.txt"
+    ...     )
+    ... )  # doctest: +SKIP
 
     ```
     """
@@ -377,12 +381,24 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
     ...             "P54",
     ...             "P54",
     ...         ],
-    ...         Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
+    ...         Column.START_TIME: [
+    ...             1.0,
+    ...             31.0,
+    ...             151.0,
+    ...             429.0,
+    ...             576.0,
+    ...             706.0,
+    ...             1.0,
+    ...             48.0,
+    ...             216.0,
+    ...             566.0,
+    ...         ],
     ...     },
     ... )
     >>> data, metadata = prepare_data(frame)
     >>> with pl.Config(tbl_cols=-1):
     ...     data
+    ...
     shape: (10, 9)
     ┌───────────┬───────────┬──────────┬──────────┬──────────┬────────┬──────────┬──────────┬──────────┐
     │ action    ┆ action_id ┆ cooking_ ┆ cooking_ ┆ end_time ┆ person ┆ person_i ┆ start_ti ┆ start_ti │
@@ -449,6 +465,10 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
                 token_column=Column.COOKING_ACTIVITY,
                 index_column=Column.COOKING_ACTIVITY_ID,
             ),
+            td.Cast(
+                columns=[Column.ACTION_ID, Column.PERSON_ID, Column.COOKING_ACTIVITY_ID],
+                dtype=pl.Int64,
+            ),
             td.SortColumns(),
         ]
     )
@@ -503,16 +523,61 @@ def group_by_sequence(frame: pl.DataFrame) -> pl.DataFrame:
     ...             "milk",
     ...         ],
     ...         Column.COOKING_ACTIVITY_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-    ...         Column.END_TIME: [30.0, 150.0, 428.0, 575.0, 705.0, 836.0, 47.0, 215.0, 565.0, 747.0],
-    ...         Column.PERSON: ["P03", "P03", "P03", "P03", "P03", "P03", "P54", "P54", "P54", "P54"],
+    ...         Column.END_TIME: [
+    ...             30.0,
+    ...             150.0,
+    ...             428.0,
+    ...             575.0,
+    ...             705.0,
+    ...             836.0,
+    ...             47.0,
+    ...             215.0,
+    ...             565.0,
+    ...             747.0,
+    ...         ],
+    ...         Column.PERSON: [
+    ...             "P03",
+    ...             "P03",
+    ...             "P03",
+    ...             "P03",
+    ...             "P03",
+    ...             "P03",
+    ...             "P54",
+    ...             "P54",
+    ...             "P54",
+    ...             "P54",
+    ...         ],
     ...         Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-    ...         Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
-    ...         Column.START_TIME_DIFF: [0.0, 30.0, 120.0, 278.0, 147.0, 130.0, 0.0, 47.0, 168.0, 350.0],
+    ...         Column.START_TIME: [
+    ...             1.0,
+    ...             31.0,
+    ...             151.0,
+    ...             429.0,
+    ...             576.0,
+    ...             706.0,
+    ...             1.0,
+    ...             48.0,
+    ...             216.0,
+    ...             566.0,
+    ...         ],
+    ...         Column.START_TIME_DIFF: [
+    ...             0.0,
+    ...             30.0,
+    ...             120.0,
+    ...             278.0,
+    ...             147.0,
+    ...             130.0,
+    ...             0.0,
+    ...             47.0,
+    ...             168.0,
+    ...             350.0,
+    ...         ],
     ...     }
     ... )
     >>> groups = group_by_sequence(frame)
     >>> with pl.Config(tbl_cols=-1):
     ...     groups
+    ...
     shape: (2, 10)
     ┌─────────┬─────────┬─────────┬─────────┬─────────┬────────┬─────────┬─────────┬─────────┬─────────┐
     │ action  ┆ action_ ┆ cooking ┆ cooking ┆ end_tim ┆ person ┆ person_ ┆ sequenc ┆ start_t ┆ start_t │
@@ -596,11 +661,55 @@ def to_array(frame: pl.DataFrame) -> dict[str, np.ndarray]:
     ...             "milk",
     ...         ],
     ...         Column.COOKING_ACTIVITY_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-    ...         Column.END_TIME: [30.0, 150.0, 428.0, 575.0, 705.0, 836.0, 47.0, 215.0, 565.0, 747.0],
-    ...         Column.PERSON: ["P03", "P03", "P03", "P03", "P03", "P03", "P54", "P54", "P54", "P54"],
+    ...         Column.END_TIME: [
+    ...             30.0,
+    ...             150.0,
+    ...             428.0,
+    ...             575.0,
+    ...             705.0,
+    ...             836.0,
+    ...             47.0,
+    ...             215.0,
+    ...             565.0,
+    ...             747.0,
+    ...         ],
+    ...         Column.PERSON: [
+    ...             "P03",
+    ...             "P03",
+    ...             "P03",
+    ...             "P03",
+    ...             "P03",
+    ...             "P03",
+    ...             "P54",
+    ...             "P54",
+    ...             "P54",
+    ...             "P54",
+    ...         ],
     ...         Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-    ...         Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
-    ...         Column.START_TIME_DIFF: [0.0, 30.0, 120.0, 278.0, 147.0, 130.0, 0.0, 47.0, 168.0, 350.0],
+    ...         Column.START_TIME: [
+    ...             1.0,
+    ...             31.0,
+    ...             151.0,
+    ...             429.0,
+    ...             576.0,
+    ...             706.0,
+    ...             1.0,
+    ...             48.0,
+    ...             216.0,
+    ...             566.0,
+    ...         ],
+    ...         Column.START_TIME_DIFF: [
+    ...             0.0,
+    ...             30.0,
+    ...             120.0,
+    ...             278.0,
+    ...             147.0,
+    ...             130.0,
+    ...             0.0,
+    ...             47.0,
+    ...             168.0,
+    ...             350.0,
+    ...         ],
     ...     }
     ... )
     >>> arrays = to_array(frame)
@@ -745,11 +854,55 @@ def to_list(frame: pl.DataFrame) -> dict[str, list]:
     ...             "milk",
     ...         ],
     ...         Column.COOKING_ACTIVITY_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-    ...         Column.END_TIME: [30.0, 150.0, 428.0, 575.0, 705.0, 836.0, 47.0, 215.0, 565.0, 747.0],
-    ...         Column.PERSON: ["P03", "P03", "P03", "P03", "P03", "P03", "P54", "P54", "P54", "P54"],
+    ...         Column.END_TIME: [
+    ...             30.0,
+    ...             150.0,
+    ...             428.0,
+    ...             575.0,
+    ...             705.0,
+    ...             836.0,
+    ...             47.0,
+    ...             215.0,
+    ...             565.0,
+    ...             747.0,
+    ...         ],
+    ...         Column.PERSON: [
+    ...             "P03",
+    ...             "P03",
+    ...             "P03",
+    ...             "P03",
+    ...             "P03",
+    ...             "P03",
+    ...             "P54",
+    ...             "P54",
+    ...             "P54",
+    ...             "P54",
+    ...         ],
     ...         Column.PERSON_ID: [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-    ...         Column.START_TIME: [1.0, 31.0, 151.0, 429.0, 576.0, 706.0, 1.0, 48.0, 216.0, 566.0],
-    ...         Column.START_TIME_DIFF: [0.0, 30.0, 120.0, 278.0, 147.0, 130.0, 0.0, 47.0, 168.0, 350.0],
+    ...         Column.START_TIME: [
+    ...             1.0,
+    ...             31.0,
+    ...             151.0,
+    ...             429.0,
+    ...             576.0,
+    ...             706.0,
+    ...             1.0,
+    ...             48.0,
+    ...             216.0,
+    ...             566.0,
+    ...         ],
+    ...         Column.START_TIME_DIFF: [
+    ...             0.0,
+    ...             30.0,
+    ...             120.0,
+    ...             278.0,
+    ...             147.0,
+    ...             130.0,
+    ...             0.0,
+    ...             47.0,
+    ...             168.0,
+    ...             350.0,
+    ...         ],
     ...     }
     ... )
     >>> data_list = to_list(frame)

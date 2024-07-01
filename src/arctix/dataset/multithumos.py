@@ -377,7 +377,12 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
     >>> from arctix.dataset.multithumos import Column, prepare_data
     >>> frame = pl.DataFrame(
     ...     {
-    ...         Column.VIDEO: ["video_validation_1", "video_test_2", "video_validation_1", "video_test_2"],
+    ...         Column.VIDEO: [
+    ...             "video_validation_1",
+    ...             "video_test_2",
+    ...             "video_validation_1",
+    ...             "video_test_2",
+    ...         ],
     ...         Column.START_TIME: [72.80, 44.00, 1.50, 17.57],
     ...         Column.END_TIME: [76.40, 50.90, 5.40, 18.33],
     ...         Column.ACTION: ["dribble", "dribble", "dribble", "guard"],
@@ -419,6 +424,7 @@ def prepare_data(frame: pl.DataFrame, split: str = "all") -> tuple[pl.DataFrame,
             td.TokenToIndex(
                 vocab=vocab_action, token_column=Column.ACTION, index_column=Column.ACTION_ID
             ),
+            td.Cast(columns=[Column.ACTION_ID], dtype=pl.Int64),
             td.Function(generate_split_column),
             td.Function(partial(filter_by_split, split=split)),
             td.SortColumns(),
@@ -445,7 +451,12 @@ def generate_split_column(frame: pl.DataFrame) -> pl.DataFrame:
     >>> from arctix.dataset.multithumos import Column, generate_split_column
     >>> frame = pl.DataFrame(
     ...     {
-    ...         Column.VIDEO: ["video_validation_1", "video_test_2", "video_validation_3", "video_test_4"],
+    ...         Column.VIDEO: [
+    ...             "video_validation_1",
+    ...             "video_test_2",
+    ...             "video_validation_3",
+    ...             "video_test_4",
+    ...         ],
     ...         Column.ACTION_ID: [0, 2, 5, 1],
     ...     }
     ... )
@@ -522,7 +533,7 @@ def filter_by_split(frame: pl.DataFrame, split: str = "all") -> pl.DataFrame:
     ...         ],
     ...     },
     ... )
-    >>> data = filter_by_split(frame, split='test')
+    >>> data = filter_by_split(frame, split="test")
     >>> data
     shape: (3, 6)
     ┌──────────────┬────────────┬──────────┬─────────┬───────────┬───────┐

@@ -5,10 +5,9 @@ from __future__ import annotations
 
 __all__ = ["JsonDecodeDataFrameTransformer"]
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 import polars as pl
-from polars import PolarsDataType
 
 from arctix.transformer.dataframe.base import BaseDataFrameTransformer
 from arctix.utils.imports import is_tqdm_available
@@ -22,6 +21,9 @@ if is_tqdm_available():
     from tqdm import tqdm
 else:  # pragma: no cover
     from arctix.utils.noop import tqdm
+
+
+PolarsDataType = Union[pl.DataType, type[pl.DataType]]
 
 
 class JsonDecodeDataFrameTransformer(BaseDataFrameTransformer):

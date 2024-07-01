@@ -86,8 +86,8 @@ def download_url_to_file(
     >>> from pathlib import Path
     >>> from arctix.utils.download import download_url_to_file
     >>> download_url_to_file(
-    ...     'https://s3.amazonaws.com/pytorch/models/resnet18-5c106cde.pth',
-    ...     Path('/tmp/temporary_file'),
+    ...     "https://s3.amazonaws.com/pytorch/models/resnet18-5c106cde.pth",
+    ...     Path("/tmp/temporary_file"),
     ... )  # doctest: +SKIP
 
     ```

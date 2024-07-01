@@ -84,8 +84,8 @@ class IndexToTokenDataFrameTransformer(ReplaceDataFrameTransformer):
         super().__init__(
             orig_column=index_column,
             final_column=token_column,
-            old=list(range(len(vocab))),
-            new=vocab.get_index_to_token(),
+            old=pl.Series(list(range(len(vocab)))),
+            new=pl.Series(vocab.get_index_to_token()),
             **kwargs,
         )
 
@@ -112,9 +112,7 @@ class TokenToIndexDataFrameTransformer(ReplaceDataFrameTransformer):
     >>> vocab = Vocabulary(Counter({"b": 3, "a": 1, "c": 2, "d": 4}))
     >>> vocab.get_token_to_index()
     {'b': 0, 'a': 1, 'c': 2, 'd': 3}
-    >>> transformer = TokenToIndex(
-    ...     vocab=vocab, token_column="col", index_column="index"
-    ... )
+    >>> transformer = TokenToIndex(vocab=vocab, token_column="col", index_column="index")
     >>> transformer
     TokenToIndexDataFrameTransformer(orig_column=col, final_column=index)
     >>> frame = pl.DataFrame({"col": ["a", "b", "c", "d", "a"]})

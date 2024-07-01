@@ -182,7 +182,11 @@ def setup_dataframe_transformer(
     >>> import polars as pl
     >>> from arctix.transformer.dataframe import setup_dataframe_transformer
     >>> transformer = setup_dataframe_transformer(
-    ...     {"_target_": "arctix.transformer.dataframe.Cast", "columns": ["col1", "col3"], "dtype": pl.Int64}
+    ...     {
+    ...         "_target_": "arctix.transformer.dataframe.Cast",
+    ...         "columns": ["col1", "col3"],
+    ...         "dtype": pl.Int64,
+    ...     }
     ... )
     >>> transformer
     CastDataFrameTransformer(columns=('col1', 'col3'), dtype=Int64)

@@ -139,9 +139,7 @@ def load_event_data(path: Path, split: str) -> pl.DataFrame:
 
     >>> from pathlib import Path
     >>> from arctix.dataset.ego4d import load_event_data
-    >>> data = load_event_data(
-    ...     Path("/path/to/data/ego4d/"), split="train"
-    ... )  # doctest: +SKIP
+    >>> data = load_event_data(Path("/path/to/data/ego4d/"), split="train")  # doctest: +SKIP
 
     ```
     """
@@ -259,9 +257,7 @@ def load_taxonomy_vocab(path: Path, name: str, expected_size: int | None = None)
 
     >>> from pathlib import Path
     >>> from arctix.dataset.ego4d import load_taxonomy_vocab
-    >>> data = load_taxonomy_vocab(
-    ...     Path("/path/to/data/ego4d/"), name="nouns"
-    ... )  # doctest: +SKIP
+    >>> data = load_taxonomy_vocab(Path("/path/to/data/ego4d/"), name="nouns")  # doctest: +SKIP
 
     ```
     """
@@ -317,6 +313,7 @@ def prepare_data(
     >>> data, metadata = prepare_data(frame, metadata={})
     >>> with pl.Config(tbl_cols=-1):
     ...     data
+    ...
     shape: (5, 13)
     ┌─────┬─────┬─────┬────────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┐
     │ act ┆ act ┆ act ┆ action ┆ actio ┆ actio ┆ clip_ ┆ noun  ┆ noun_ ┆ split ┆ verb  ┆ verb_ ┆ video │
@@ -408,6 +405,7 @@ def group_by_sequence(frame: pl.DataFrame, group_col: str = Column.CLIP_ID) -> p
     >>> data = group_by_sequence(frame)
     >>> with pl.Config(tbl_cols=-1):
     ...     data
+    ...
     shape: (2, 12)
     ┌────────┬────────┬────────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┐
     │ action ┆ action ┆ action ┆ actio ┆ actio ┆ clip_ ┆ noun  ┆ noun_ ┆ seque ┆ split ┆ verb  ┆ verb_ │
