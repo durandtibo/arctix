@@ -2,7 +2,7 @@ r"""Contain some utility functions to manipulate mappings."""
 
 from __future__ import annotations
 
-__all__ = ["convert_to_dict_of_flat_lists", "sort_by_key"]
+__all__ = ["convert_to_dict_of_flat_lists", "sort_by_key", "sort_by_value"]
 
 from typing import TYPE_CHECKING
 
@@ -70,3 +70,28 @@ def sort_by_key(data: Mapping, reverse: bool = False) -> dict:
     ```
     """
     return dict(sorted(data.items(), reverse=reverse))
+
+
+def sort_by_value(data: Mapping, reverse: bool = False) -> dict:
+    r"""Sort the mapping by values.
+
+    Args:
+        data: The mapping to sort.
+        reverse: If ``True``, the values are sorted in reverse order.
+
+    Returns:
+        A data where the values are sorted.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from arctix.utils.mapping import sort_by_value
+    >>> sort_by_value({"b": 3, "c": 1, "a": 2, "d": 2})
+    {'c': 1, 'a': 2, 'd': 2, 'b': 3}
+    >>> sort_by_value({"b": 3, "c": 1, "a": 2, "d": 2}, reverse=True)
+    {'b': 3, 'a': 2, 'd': 2, 'c': 1}
+
+    ```
+    """
+    return dict(sorted(data.items(), key=lambda kv: kv[1], reverse=reverse))

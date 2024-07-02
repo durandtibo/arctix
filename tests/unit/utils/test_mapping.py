@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from coola import objects_are_equal
 
-from arctix.utils.mapping import convert_to_dict_of_flat_lists, sort_by_key
+from arctix.utils.mapping import (
+    convert_to_dict_of_flat_lists,
+    sort_by_key,
+    sort_by_value,
+)
 
 ###################################################
 #     Tests for convert_to_dict_of_flat_lists     #
@@ -44,3 +48,25 @@ def test_sort_by_key_reverse() -> None:
 
 def test_sort_by_key_empty() -> None:
     assert objects_are_equal(sort_by_key({}), {})
+
+
+###################################
+#     Tests for sort_by_value     #
+###################################
+
+
+def test_sort_by_value() -> None:
+    assert objects_are_equal(
+        sort_by_value({"b": 3, "c": 1, "a": 2, "d": 2}), {"c": 1, "a": 2, "d": 2, "b": 3}
+    )
+
+
+def test_sort_by_value_reverse() -> None:
+    assert objects_are_equal(
+        sort_by_value({"b": 3, "c": 1, "a": 2, "d": 2}, reverse=True),
+        {"b": 3, "a": 2, "d": 2, "c": 1},
+    )
+
+
+def test_sort_by_value_empty() -> None:
+    assert objects_are_equal(sort_by_value({}), {})
