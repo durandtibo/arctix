@@ -8,13 +8,13 @@ from typing import TYPE_CHECKING, Any
 
 import polars as pl
 
-from arctix.transformer.dataframe.replace import ReplaceDataFrameTransformer
+from arctix.transformer.dataframe.replace import ReplaceStrictDataFrameTransformer
 
 if TYPE_CHECKING:
     from arctix.utils.vocab import Vocabulary
 
 
-class IndexToTokenDataFrameTransformer(ReplaceDataFrameTransformer):
+class IndexToTokenDataFrameTransformer(ReplaceStrictDataFrameTransformer):
     r"""Replace.
 
     Args:
@@ -90,7 +90,7 @@ class IndexToTokenDataFrameTransformer(ReplaceDataFrameTransformer):
         )
 
 
-class TokenToIndexDataFrameTransformer(ReplaceDataFrameTransformer):
+class TokenToIndexDataFrameTransformer(ReplaceStrictDataFrameTransformer):
     r"""Replace the values in a column by the values in a mapping.
 
     Args:
