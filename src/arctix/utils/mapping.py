@@ -2,15 +2,14 @@ r"""Contain some utility functions to manipulate mappings."""
 
 from __future__ import annotations
 
-__all__ = ["convert_to_dict_of_flat_lists"]
-
+__all__ = ["convert_to_dict_of_flat_lists", "sort_by_key"]
 
 from typing import TYPE_CHECKING
 
 from coola.nested import convert_to_dict_of_lists
 
 if TYPE_CHECKING:
-    from collections.abc import Hashable
+    from collections.abc import Hashable, Mapping
 
 
 def convert_to_dict_of_flat_lists(
@@ -46,3 +45,28 @@ def convert_to_dict_of_flat_lists(
     """
     mapping = convert_to_dict_of_lists(seq_of_mappings)
     return {key: [v for value in values for v in value] for key, values in mapping.items()}
+
+
+def sort_by_key(data: Mapping, reverse: bool = False) -> dict:
+    r"""Sort the mapping by keys.
+
+    Args:
+        data: The mapping to sort.
+        reverse: If ``True``, the keys are sorted in reverse order.
+
+    Returns:
+        A data where the keys are sorted.
+
+    Example usage:
+
+    ```pycon
+
+    >>> from arctix.utils.mapping import sort_by_key
+    >>> sort_by_key({"b": 3, "c": 1, "a": 2})
+    {'a': 2, 'b': 3, 'c': 1}
+    >>> sort_by_key({"b": 3, "c": 1, "a": 2}, reverse=True)
+    {'c': 1, 'b': 3, 'a': 2}
+
+    ```
+    """
+    return dict(sorted(data.items(), reverse=reverse))
