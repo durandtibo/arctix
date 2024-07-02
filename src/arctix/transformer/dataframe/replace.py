@@ -123,7 +123,7 @@ class ReplaceStrictDataFrameTransformer(BaseDataFrameTransformer):
     >>> import polars as pl
     >>> from arctix.transformer.dataframe import ReplaceStrict
     >>> transformer = ReplaceStrict(
-    ...     orig_column="old", final_column="new", old={"a": 1, "b": 2, "c": 3}
+    ...     orig_column="old", final_column="new", old={"a": 1, "b": 2, "c": 3, "d": 4, "e": 5}
     ... )
     >>> transformer
     ReplaceStrictDataFrameTransformer(orig_column=old, final_column=new)
@@ -147,13 +147,13 @@ class ReplaceStrictDataFrameTransformer(BaseDataFrameTransformer):
     ┌─────┬─────┐
     │ old ┆ new │
     │ --- ┆ --- │
-    │ str ┆ str │
+    │ str ┆ i64 │
     ╞═════╪═════╡
     │ a   ┆ 1   │
     │ b   ┆ 2   │
     │ c   ┆ 3   │
-    │ d   ┆ d   │
-    │ e   ┆ e   │
+    │ d   ┆ 4   │
+    │ e   ┆ 5   │
     └─────┴─────┘
     >>> transformer = ReplaceStrict(
     ...     orig_column="old",
