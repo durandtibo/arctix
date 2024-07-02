@@ -242,7 +242,7 @@ def load_event_data(path: Path) -> pl.DataFrame:
     """
     frame = pl.read_csv(
         path,
-        dtypes={
+        schema_overrides={
             Column.ALL_NOUNS: pl.String,
             Column.ALL_NOUN_IDS: pl.String,
             Column.NARRATION: pl.String,
@@ -300,7 +300,9 @@ def load_noun_vocab(path: Path) -> Vocabulary:
     """
     path = path.joinpath("EPIC_100_noun_classes.csv")
     logger.info(f"loading noun vocabulary from {path}...")
-    frame = pl.read_csv(path, columns=["id", "key"], dtypes={"id": pl.Int64, "key": pl.String})
+    frame = pl.read_csv(
+        path, columns=["id", "key"], schema_overrides={"id": pl.Int64, "key": pl.String}
+    )
     vocab = Vocabulary.from_token_to_index(
         {token: i for i, token in zip(frame["id"], frame["key"])}
     )
@@ -333,7 +335,9 @@ def load_verb_vocab(path: Path) -> Vocabulary:
     """
     path = path.joinpath("EPIC_100_verb_classes.csv")
     logger.info(f"loading verb vocabulary from {path}...")
-    frame = pl.read_csv(path, columns=["id", "key"], dtypes={"id": pl.Int64, "key": pl.String})
+    frame = pl.read_csv(
+        path, columns=["id", "key"], schema_overrides={"id": pl.Int64, "key": pl.String}
+    )
     vocab = Vocabulary.from_token_to_index(
         {token: i for i, token in zip(frame["id"], frame["key"])}
     )
