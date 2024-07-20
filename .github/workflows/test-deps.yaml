@@ -95,7 +95,7 @@ jobs:
       - name: Run integration tests
         run: |
           poetry run make integration-test
-          
+
 
   grizz:
     runs-on: ${{ matrix.os }}
