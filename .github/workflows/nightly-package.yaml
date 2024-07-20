@@ -163,7 +163,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest ]
         python-version: [ '3.12', '3.11', '3.10', '3.9' ]
-        coola-version: [ 0.7.2, 0.6.2 ]
+        coola-version: [ 0.7.3 ]
 
     steps:
       - name: Checkout
@@ -177,6 +177,35 @@ jobs:
       - name: Install package
         run: |
           pip install arctix coola==${{ matrix.coola-version }}
+
+      - name: Run some checks
+        run: |
+          python tests/package_checks.py
+          
+
+  grizz:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      max-parallel: 8
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ]
+        python-version: [ '3.12', '3.11', '3.10', '3.9' ]
+        grizz-version: [ 0.0.5 ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package
+        run: |
+          pip install arctix grizz==${{ matrix.grizz-version }}
 
       - name: Run some checks
         run: |
@@ -260,7 +289,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest ]
         python-version: [ '3.12', '3.11', '3.10', '3.9' ]
-        polars-version: [ 1.0.0 ]
+        polars-version: [ 1.2.1, 1.0.0 ]
 
     steps:
       - name: Checkout

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "arctix"
-version = "0.0.7"
+version = "0.0.8a0"
 description = ""
 readme = "README.md"
 authors = ["Thibaut Durand <durand.tibo+gh@gmail.com>"]
@@ -29,7 +29,8 @@ packages = [
 [tool.poetry.dependencies]
 # Core dependencies
 batcharray = ">=0.0.2,<1.0"
-coola = ">=0.6,<1.0"
+coola = ">=0.7,<1.0"
+grizz = ">=0.0.5,<1.0"
 iden = ">=0.0.3,<1.0"
 numpy = ">=1.22,<3.0"
 polars = ">=1.0,<2.0"

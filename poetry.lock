@@ -929,6 +929,26 @@ files = [
 colorama = ">=0.4"
 
 [[package]]
+name = "grizz"
+version = "0.0.5"
+description = "A light library to preprocess data with polars"
+optional = false
+python-versions = "<3.13,>=3.9"
+files = [
+    {file = "grizz-0.0.5-py3-none-any.whl", hash = "sha256:9c79901b2d52f4fe8f2fc90603ffe14fdb3a10a7608ef568d8519beabdb6c6c8"},
+    {file = "grizz-0.0.5.tar.gz", hash = "sha256:50956dc67d3c453a0bcb8f3eeaae9d980df0eae81fdefb0dba16ff0ea5c90cb0"},
+]
+
+[package.dependencies]
+coola = ">=0.7,<1.0"
+iden = ">=0.0.4,<1.0"
+objectory = ">=0.1,<0.2"
+polars = ">=1.0,<2.0"
+
+[package.extras]
+all = ["clickhouse-connect (>=0.7,<1.0)", "pyarrow (>=10.0,<18.0)", "tqdm (>=4.65,<5.0)"]
+
+[[package]]
 name = "h11"
 version = "0.14.0"
 description = "A pure-Python, bring-your-own-I/O implementation of HTTP/1.1"
@@ -3669,4 +3689,4 @@ all = ["gdown", "matplotlib", "requests", "tqdm"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.13"
-content-hash = "b32f87184c20b3c197094e285afa74342d8b7cc8d17aaa6d548a19d14a1862a3"
+content-hash = "9b3126c449b407e029cc8fb380a2e805ed9cc107e9a4988abd9037309e6adcf7"
