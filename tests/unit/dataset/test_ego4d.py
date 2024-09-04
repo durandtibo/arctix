@@ -134,17 +134,17 @@ def create_taxonomy_file(path: Path) -> None:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def vocab_noun() -> Vocabulary:
     return Vocabulary(Counter({f"noun{i:03}": 1 for i in range(NUM_NOUNS)}))
 
 
-@pytest.fixture()
+@pytest.fixture
 def vocab_verb() -> Vocabulary:
     return Vocabulary(Counter({f"verb{i:03}": 1 for i in range(NUM_VERBS)}))
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_raw() -> pl.DataFrame:
     return pl.DataFrame(
         {
@@ -178,7 +178,7 @@ def data_raw() -> pl.DataFrame:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_prepared() -> pl.DataFrame:
     return pl.DataFrame(
         {

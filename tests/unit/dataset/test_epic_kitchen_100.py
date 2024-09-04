@@ -115,7 +115,7 @@ def empty_verb_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
     return path
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_raw() -> pl.DataFrame:
     return pl.DataFrame(
         {
@@ -167,7 +167,7 @@ def data_raw() -> pl.DataFrame:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_prepared() -> pl.DataFrame:
     return pl.DataFrame(
         {
@@ -225,7 +225,7 @@ def data_prepared() -> pl.DataFrame:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_prepared2() -> pl.DataFrame:
     return pl.DataFrame(
         {
@@ -685,12 +685,12 @@ def data_prepared2() -> pl.DataFrame:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def noun_vocab() -> Vocabulary:
     return Vocabulary(Counter({f"{i}n{i}": 1 for i in range(NUM_NOUNS)}))
 
 
-@pytest.fixture()
+@pytest.fixture
 def verb_vocab() -> Vocabulary:
     return Vocabulary(Counter({f"{i}v{i}": 1 for i in range(NUM_VERBS)}))
 
