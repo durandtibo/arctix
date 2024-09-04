@@ -72,7 +72,7 @@ def data_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
     return path
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_raw() -> pl.DataFrame:
     return pl.DataFrame(
         {
@@ -136,7 +136,7 @@ def data_raw() -> pl.DataFrame:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_prepared() -> pl.DataFrame:
     return pl.DataFrame(
         {
@@ -208,7 +208,7 @@ def data_prepared() -> pl.DataFrame:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def data_prepared_empty() -> pl.DataFrame:
     return pl.DataFrame(
         {

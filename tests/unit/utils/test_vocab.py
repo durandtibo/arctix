@@ -10,7 +10,7 @@ from coola.equality.testers import EqualityTester
 from arctix.utils.vocab import Vocabulary, VocabularyEqualityComparator
 
 
-@pytest.fixture()
+@pytest.fixture
 def config() -> EqualityConfig:
     return EqualityConfig(tester=EqualityTester())
 
