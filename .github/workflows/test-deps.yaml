@@ -33,9 +33,12 @@ jobs:
           poetry run make config-poetry
           poetry run make install
 
-      - name: Install PyTorch
-        run: |
-          poetry run pip install batcharray==${{ matrix.batcharray-version }}
+      - name: Install valid package version
+        uses: durandtibo/pip-install-package-action@v0.2.2
+        with:
+          package-name: 'batcharray'
+          package-version: ${{ matrix.batcharray-version }}
+          python-version: ${{ matrix.python-version }}
 
       - name: Show installed packages
         run: |
@@ -79,9 +82,12 @@ jobs:
           poetry run make config-poetry
           poetry run make install
 
-      - name: Install PyTorch
-        run: |
-          poetry run pip install coola==${{ matrix.coola-version }}
+      - name: Install valid package version
+        uses: durandtibo/pip-install-package-action@v0.2.2
+        with:
+          package-name: 'coola'
+          package-version: ${{ matrix.coola-version }}
+          python-version: ${{ matrix.python-version }}
 
       - name: Show installed packages
         run: |
@@ -125,9 +131,12 @@ jobs:
           poetry run make config-poetry
           poetry run make install
 
-      - name: Install PyTorch
-        run: |
-          poetry run pip install grizz==${{ matrix.grizz-version }}
+      - name: Install valid package version
+        uses: durandtibo/pip-install-package-action@v0.2.2
+        with:
+          package-name: 'grizz'
+          package-version: ${{ matrix.grizz-version }}
+          python-version: ${{ matrix.python-version }}
 
       - name: Show installed packages
         run: |
@@ -171,9 +180,12 @@ jobs:
           poetry run make config-poetry
           poetry run make install
 
-      - name: Install PyTorch
-        run: |
-          poetry run pip install iden==${{ matrix.iden-version }}
+      - name: Install valid package version
+        uses: durandtibo/pip-install-package-action@v0.2.2
+        with:
+          package-name: 'iden'
+          package-version: ${{ matrix.iden-version }}
+          python-version: ${{ matrix.python-version }}
 
       - name: Show installed packages
         run: |
@@ -198,20 +210,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest ]
         python-version: [ '3.12', '3.11', '3.10', '3.9' ]
-        numpy-version: [ 2.1.0, 2.0.2, 1.26.4, 1.25.2, 1.24.3, 1.23.5, 1.22.4 ]
-        exclude:
-          # python 3.9
-          - numpy-version: 2.1.0
-            python-version: '3.9'
-          # python 3.12
-          - numpy-version: 1.22.4
-            python-version: '3.12'
-          - numpy-version: 1.23.5
-            python-version: '3.12'
-          - numpy-version: 1.24.3
-            python-version: '3.12'
-          - numpy-version: 1.25.2
-            python-version: '3.12'
+        numpy-version: [ 2.1.1, 2.0.2, 1.26.4, 1.25.2, 1.24.3, 1.23.5, 1.22.4 ]
 
     steps:
       - name: Checkout
@@ -230,9 +229,12 @@ jobs:
           poetry run make config-poetry
           poetry run make install
 
-      - name: Install NumPy
-        run: |
-          poetry run pip install numpy==${{ matrix.numpy-version }}
+      - name: Install valid package version
+        uses: durandtibo/pip-install-package-action@v0.2.2
+        with:
+          package-name: 'numpy'
+          package-version: ${{ matrix.numpy-version }}
+          python-version: ${{ matrix.python-version }}
 
       - name: Show installed packages
         run: |
@@ -253,7 +255,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest ]
         python-version: [ '3.12', '3.11', '3.10', '3.9' ]
-        polars-version: [ 1.6.0, 1.5.0, 1.4.1, 1.3.0, 1.2.1, 1.1.0, 1.0.0 ]
+        polars-version: [ 1.8.2, 1.7.1, 1.6.0, 1.5.0, 1.4.1, 1.3.0, 1.2.1, 1.1.0, 1.0.0 ]
 
     steps:
       - name: Checkout
@@ -272,9 +274,12 @@ jobs:
           poetry run make config-poetry
           poetry run make install
 
-      - name: Install PyTorch
-        run: |
-          poetry run pip install polars==${{ matrix.polars-version }}
+      - name: Install valid package version
+        uses: durandtibo/pip-install-package-action@v0.2.2
+        with:
+          package-name: 'polars'
+          package-version: ${{ matrix.polars-version }}
+          python-version: ${{ matrix.python-version }}
 
       - name: Show installed packages
         run: |
@@ -323,9 +328,12 @@ jobs:
           poetry run make config-poetry
           poetry run make install
 
-      - name: Install PyTorch
-        run: |
-          poetry run pip install gdown==${{ matrix.gdown-version }}
+      - name: Install valid package version
+        uses: durandtibo/pip-install-package-action@v0.2.2
+        with:
+          package-name: 'gdown'
+          package-version: ${{ matrix.gdown-version }}
+          python-version: ${{ matrix.python-version }}
 
       - name: Show installed packages
         run: |
@@ -350,7 +358,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest ]
         python-version: [ '3.12', '3.11', '3.10', '3.9' ]
-        requests-version: [ 2.31.0, 2.20.0 ]
+        requests-version: [ 2.32.3, 2.31.0, 2.20.0 ]
         exclude:
           # python 3.12
           - requests-version: 2.20.0
@@ -373,9 +381,12 @@ jobs:
           poetry run make config-poetry
           poetry run make install
 
-      - name: Install PyTorch
-        run: |
-          poetry run pip install requests==${{ matrix.requests-version }}
+      - name: Install valid package version
+        uses: durandtibo/pip-install-package-action@v0.2.2
+        with:
+          package-name: 'requests'
+          package-version: ${{ matrix.requests-version }}
+          python-version: ${{ matrix.python-version }}
 
       - name: Show installed packages
         run: |
@@ -400,7 +411,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest ]
         python-version: [ '3.12', '3.11', '3.10', '3.9' ]
-        tqdm-version: [ 4.66.4, 4.65.2 ]
+        tqdm-version: [ 4.66.5, 4.65.2 ]
 
     steps:
       - name: Checkout
@@ -419,9 +430,12 @@ jobs:
           poetry run make config-poetry
           poetry run make install
 
-      - name: Install PyTorch
-        run: |
-          poetry run pip install tqdm==${{ matrix.tqdm-version }}
+      - name: Install valid package version
+        uses: durandtibo/pip-install-package-action@v0.2.2
+        with:
+          package-name: 'tqdm'
+          package-version: ${{ matrix.tqdm-version }}
+          python-version: ${{ matrix.python-version }}
 
       - name: Show installed packages
         run: |
