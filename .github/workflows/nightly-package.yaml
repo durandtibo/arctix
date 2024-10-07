@@ -391,10 +391,6 @@ jobs:
         os: [ ubuntu-latest ]
         python-version: [ '3.12', '3.11', '3.10', '3.9' ]
         requests-version: [ 2.32.3, 2.31.0, 2.20.0 ]
-        exclude:
-          # python 3.12
-          - requests-version: 2.20.0
-            python-version: '3.12'
 
     steps:
       - name: Checkout
