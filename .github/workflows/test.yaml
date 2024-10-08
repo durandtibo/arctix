@@ -28,7 +28,7 @@ jobs:
 
       - name: Set environment variable
         run: |
-          echo $(poetry env info --path)/bin >> $GITHUB_PATH
+          echo $(poetry run poetry env info --path)/bin >> $GITHUB_PATH
 
       - name: Install packages
         run: |
@@ -73,7 +73,7 @@ jobs:
 
       - name: Set environment variable
         run: |
-          echo $(poetry env info --path)/bin >> $GITHUB_PATH
+          echo $(poetry run poetry env info --path)/bin >> $GITHUB_PATH
 
       - name: Install packages
         run: |
