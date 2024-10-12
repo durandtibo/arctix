@@ -3862,4 +3862,4 @@ all = ["gdown", "matplotlib", "requests", "tqdm"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.13"
-content-hash = "9635c2913f2dc306d244e56a61948ba020085d99639df235f72cde579925ea4e"
+content-hash = "3cbfd38323782046276fdbb22df01ed4260ca1e213e08a12b53951ab351ecf8d"
