@@ -3,6 +3,7 @@ name: pre-commit auto-update
 on:
   schedule:
     - cron: "0 8 * * 2" # run every Tuesday at 8:00 AM UTC
+  workflow_call:
   workflow_dispatch:  # to trigger manually
 
 jobs:
