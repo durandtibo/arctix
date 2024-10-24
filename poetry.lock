@@ -602,17 +602,17 @@ test-no-images = ["pytest", "pytest-cov", "pytest-rerunfailures", "pytest-xdist"
 
 [[package]]
 name = "coola"
-version = "0.8.3"
+version = "0.8.4"
 description = "Library to check equality between two complex/nested objects"
 optional = false
-python-versions = "<3.13,>=3.9"
+python-versions = "<3.14,>=3.9"
 files = [
-    {file = "coola-0.8.3-py3-none-any.whl", hash = "sha256:7b901a82a47535732a5fb7d889facd89fd31f15caf2167c6be858a481e3dd754"},
-    {file = "coola-0.8.3.tar.gz", hash = "sha256:209b83549868a1071f1b0d843a21eca4c2384196aa84646e4e9a85ddb1b7ea86"},
+    {file = "coola-0.8.4-py3-none-any.whl", hash = "sha256:ba002fe3fa3011faafd2f161d0c1c9a82cecfcfd592f3d3f30528c60f573ec40"},
+    {file = "coola-0.8.4.tar.gz", hash = "sha256:eeda4513583e4d3fd6fcb977a4fef5718cf0fab56c63bb2916de4afda63b0b8a"},
 ]
 
 [package.extras]
-all = ["jax (>=0.4.1,<1.0)", "jaxlib (>=0.4.1,<1.0)", "numpy (>=1.21,<3.0)", "packaging (>=21.0,<25.0)", "pandas (>=1.3,<3.0)", "polars (>=0.18.3,<2.0)", "pyarrow (>=10.0,<18.0)", "torch (>=1.11,<2.3)", "torch (>=1.11,<3.0)", "xarray (>=2023.1)"]
+all = ["jax (>=0.4.17,<1.0)", "jax (>=0.4.34,<1.0)", "jax (>=0.4.6,<0.4.31)", "jax (>=0.4.6,<1.0)", "jaxlib (>=0.4.17,<1.0)", "jaxlib (>=0.4.34,<1.0)", "jaxlib (>=0.4.6,<0.4.31)", "jaxlib (>=0.4.6,<1.0)", "numpy (>=1.21,<3.0)", "packaging (>=21.0,<25.0)", "pandas (>=1.3,<3.0)", "polars (>=0.18.3,<2.0)", "pyarrow (>=10.0,<18.0)", "torch (>=1.11,<2.3)", "torch (>=1.11,<3.0)", "xarray (>=2023.1)"]
 
 [[package]]
 name = "coverage"
@@ -1956,13 +1956,13 @@ pyyaml = ">=5.1"
 
 [[package]]
 name = "mkdocs-material"
-version = "9.5.40"
+version = "9.5.42"
 description = "Documentation that simply works"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "mkdocs_material-9.5.40-py3-none-any.whl", hash = "sha256:8e7a16ada34e79a7b6459ff2602584222f522c738b6a023d1bea853d5049da6f"},
-    {file = "mkdocs_material-9.5.40.tar.gz", hash = "sha256:b69d70e667ec51fc41f65e006a3184dd00d95b2439d982cb1586e4c018943156"},
+    {file = "mkdocs_material-9.5.42-py3-none-any.whl", hash = "sha256:452a7c5d21284b373f36b981a2cbebfff59263feebeede1bc28652e9c5bbe316"},
+    {file = "mkdocs_material-9.5.42.tar.gz", hash = "sha256:92779b5e9b5934540c574c11647131d217dc540dce72b05feeda088c8eb1b8f2"},
 ]
 
 [package.dependencies]
@@ -2542,17 +2542,17 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "polars"
-version = "1.9.0"
+version = "1.10.0"
 description = "Blazingly fast DataFrame library"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "polars-1.9.0-cp38-abi3-macosx_10_12_x86_64.whl", hash = "sha256:a471d2ce96f6fa5dd0ef16bcdb227f3dbe3af8acb776ca52f9e64ef40c7489a0"},
-    {file = "polars-1.9.0-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:94b12d731cd200d2c50b13fc070d6353f708e632bca6529c5a72aa6a69e5285d"},
-    {file = "polars-1.9.0-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f85f132732aa63c6f3b502b0fdfc3ba9f0b78cc6330059b5a2d6f9fd78508acb"},
-    {file = "polars-1.9.0-cp38-abi3-manylinux_2_24_aarch64.whl", hash = "sha256:f753c8941a3b3249d59262d68a856714a96a7d4e16977aefbb196be0c192e151"},
-    {file = "polars-1.9.0-cp38-abi3-win_amd64.whl", hash = "sha256:95de07066cd797dd940fa2783708a7bef93c827a57be0f4dfad3575a6144212b"},
-    {file = "polars-1.9.0.tar.gz", hash = "sha256:8e1206ef876f61c1d50a81e102611ea92ee34631cb135b46ad314bfefd3cb122"},
+    {file = "polars-1.10.0-cp39-abi3-macosx_10_12_x86_64.whl", hash = "sha256:6334aee8897a56291ab3f31b436eff3a284abef39bd333258f6071c77e45b72f"},
+    {file = "polars-1.10.0-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:1ce12aed5440a531e449d7deb9e9b80851e919502853d6d0a884124ea0a0377e"},
+    {file = "polars-1.10.0-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:540051fe456f779b1510c173c3a614135193cf1b94812e11663f65c80dc4626d"},
+    {file = "polars-1.10.0-cp39-abi3-manylinux_2_24_aarch64.whl", hash = "sha256:d00a5978137c8471c47ea162acfaf6769a21b72ab5515891f5f7aa038c3c5574"},
+    {file = "polars-1.10.0-cp39-abi3-win_amd64.whl", hash = "sha256:182e03bd3486490c980a59cbae0be53c0688f6f6f6a2bccc28e07cc1b7f8a4b5"},
+    {file = "polars-1.10.0.tar.gz", hash = "sha256:855b0fffbe4fbb1c89b4f9b4b6cc724b337f946a9ba50829eb22b8a36483b3c3"},
 ]
 
 [package.extras]
