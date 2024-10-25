@@ -193,7 +193,8 @@ def download_data(path: Path, force_download: bool = False) -> None:
         if not path.joinpath(name).is_dir() or force_download:
             tar_file = path.joinpath(f"{name}.tar.gz")
             download_drive_file(url, tar_file, quiet=False, fuzzy=True)
-            tarfile.open(tar_file).extractall(path)  # noqa: S202
+            with tarfile.open(tar_file) as file:
+                file.extractall(path)  # noqa: S202
             tar_file.unlink(missing_ok=True)
 
 
