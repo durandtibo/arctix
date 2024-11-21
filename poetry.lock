@@ -617,17 +617,17 @@ test-no-images = ["pytest", "pytest-cov", "pytest-rerunfailures", "pytest-xdist"
 
 [[package]]
 name = "coola"
-version = "0.8.4"
+version = "0.8.5"
 description = "Library to check equality between two complex/nested objects"
 optional = false
 python-versions = "<3.14,>=3.9"
 files = [
-    {file = "coola-0.8.4-py3-none-any.whl", hash = "sha256:ba002fe3fa3011faafd2f161d0c1c9a82cecfcfd592f3d3f30528c60f573ec40"},
-    {file = "coola-0.8.4.tar.gz", hash = "sha256:eeda4513583e4d3fd6fcb977a4fef5718cf0fab56c63bb2916de4afda63b0b8a"},
+    {file = "coola-0.8.5-py3-none-any.whl", hash = "sha256:d4f218fbb052f5352977e7a6d7ba805de1d41e388ad5236c617dfa0d4144ca99"},
+    {file = "coola-0.8.5.tar.gz", hash = "sha256:63dfb9fa1f8fc2c6ed7de817d660352c16db7bd84dda1d4f9e98aa535c3199d6"},
 ]
 
 [package.extras]
-all = ["jax (>=0.4.17,<1.0)", "jax (>=0.4.34,<1.0)", "jax (>=0.4.6,<0.4.31)", "jax (>=0.4.6,<1.0)", "jaxlib (>=0.4.17,<1.0)", "jaxlib (>=0.4.34,<1.0)", "jaxlib (>=0.4.6,<0.4.31)", "jaxlib (>=0.4.6,<1.0)", "numpy (>=1.21,<3.0)", "packaging (>=21.0,<25.0)", "pandas (>=1.3,<3.0)", "polars (>=0.18.3,<2.0)", "pyarrow (>=10.0,<18.0)", "torch (>=1.11,<2.3)", "torch (>=1.11,<3.0)", "xarray (>=2023.1)"]
+all = ["jax (>=0.4.17,<1.0)", "jax (>=0.4.34,<1.0)", "jax (>=0.4.6,<0.4.31)", "jax (>=0.4.6,<1.0)", "jaxlib (>=0.4.17,<1.0)", "jaxlib (>=0.4.34,<1.0)", "jaxlib (>=0.4.6,<0.4.31)", "jaxlib (>=0.4.6,<1.0)", "numpy (>=1.21,<3.0)", "packaging (>=21.0,<25.0)", "pandas (>=1.3,<3.0)", "polars (>=0.18.3,<2.0)", "pyarrow (>=10.0,<19.0)", "torch (>=1.11,<2.3)", "torch (>=1.11,<3.0)", "xarray (>=2023.1)"]
 
 [[package]]
 name = "coverage"
@@ -1503,13 +1503,13 @@ test = ["jupyter-server (>=2.0.0)", "pytest (>=7.0)", "pytest-jupyter[server] (>
 
 [[package]]
 name = "jupyterlab"
-version = "4.3.0"
+version = "4.3.1"
 description = "JupyterLab computational environment"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "jupyterlab-4.3.0-py3-none-any.whl", hash = "sha256:f67e1095ad61ae04349024f0b40345062ab108a0c6998d9810fec6a3c1a70cd5"},
-    {file = "jupyterlab-4.3.0.tar.gz", hash = "sha256:7c6835cbf8df0af0ec8a39332e85ff11693fb9a468205343b4fc0bfbc74817e5"},
+    {file = "jupyterlab-4.3.1-py3-none-any.whl", hash = "sha256:2d9a1c305bc748e277819a17a5d5e22452e533e835f4237b2f30f3b0e491e01f"},
+    {file = "jupyterlab-4.3.1.tar.gz", hash = "sha256:a4a338327556443521731d82f2a6ccf926df478914ca029616621704d47c3c65"},
 ]
 
 [package.dependencies]
