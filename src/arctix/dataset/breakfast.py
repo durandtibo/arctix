@@ -8,11 +8,11 @@ from __future__ import annotations
 
 __all__ = [
     "COOKING_ACTIVITIES",
-    "Column",
     "DATASET_SPLITS",
-    "MetadataKeys",
     "NUM_COOKING_ACTIVITIES",
     "URLS",
+    "Column",
+    "MetadataKeys",
     "download_data",
     "fetch_data",
     "filter_by_split",
