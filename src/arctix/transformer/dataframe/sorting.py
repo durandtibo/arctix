@@ -2,7 +2,7 @@ r"""Contain ``polars.DataFrame`` transformers to sort the DataFrame."""
 
 from __future__ import annotations
 
-__all__ = ["SortDataFrameTransformer", "SortColumnsDataFrameTransformer"]
+__all__ = ["SortColumnsDataFrameTransformer", "SortDataFrameTransformer"]
 
 from typing import TYPE_CHECKING, Any
 
