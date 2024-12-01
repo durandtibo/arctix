@@ -7,12 +7,12 @@ directory `/path/to/data/ego4d/`.
 from __future__ import annotations
 
 __all__ = [
-    "Column",
-    "MetadataKeys",
     "NUM_NOUNS",
     "NUM_VERBS",
-    "load_event_data",
+    "Column",
+    "MetadataKeys",
     "load_data",
+    "load_event_data",
     "load_noun_vocab",
     "load_taxonomy_vocab",
     "load_verb_vocab",

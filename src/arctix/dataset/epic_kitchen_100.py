@@ -9,10 +9,10 @@ from __future__ import annotations
 __all__ = [
     "ANNOTATION_FILENAMES",
     "ANNOTATION_URL",
-    "Column",
-    "MetadataKeys",
     "NUM_NOUNS",
     "NUM_VERBS",
+    "Column",
+    "MetadataKeys",
     "download_data",
     "fetch_data",
     "group_by_sequence",
