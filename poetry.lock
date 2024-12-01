@@ -1001,23 +1001,23 @@ colorama = ">=0.4"
 
 [[package]]
 name = "grizz"
-version = "0.1.0"
+version = "0.1.1"
 description = "A light library to preprocess data with polars"
 optional = false
 python-versions = "<3.14,>=3.9"
 files = [
-    {file = "grizz-0.1.0-py3-none-any.whl", hash = "sha256:954ee1b25ae175754f5d869ba2689fb3d7909b8505044af6ba836569504e6ed3"},
-    {file = "grizz-0.1.0.tar.gz", hash = "sha256:16f092a3abc9d1179ca5f9221d55ea55bdc343ed67fc200847a22f88b56a5af7"},
+    {file = "grizz-0.1.1-py3-none-any.whl", hash = "sha256:b99789f7f02dfc6bec4d1633c66cc2c77b164993538f04122825216a1712293d"},
+    {file = "grizz-0.1.1.tar.gz", hash = "sha256:63fc80e1b526d7830a9eb8e152bf8dad315ad10d799bca5443de063f9eea9e69"},
 ]
 
 [package.dependencies]
-coola = ">=0.8.4,<1.0"
+coola = ">=0.8.5,<1.0"
 iden = ">=0.1,<1.0"
 objectory = ">=0.2,<1.0"
 polars = ">=1.0,<2.0"
 
 [package.extras]
-all = ["clickhouse-connect (>=0.7,<1.0)", "pyarrow (>=10.0,<18.0)", "tqdm (>=4.65,<5.0)"]
+all = ["clickhouse-connect (>=0.7,<1.0)", "pyarrow (>=10.0,<19.0)", "tqdm (>=4.65,<5.0)"]
 
 [[package]]
 name = "h11"
