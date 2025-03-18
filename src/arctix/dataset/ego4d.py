@@ -267,7 +267,7 @@ def load_taxonomy_vocab(path: Path, name: str, expected_size: int | None = None)
     path = path.joinpath("ego4d_data/v2/annotations/fho_lta_taxonomy.json")
     logger.info(f"loading taxonomy data from {path}...")
     data = load_json(path)
-    vocab = Vocabulary(Counter({token: 1 for token in data[name]}))
+    vocab = Vocabulary(Counter(dict.fromkeys(data[name], 1)))
     if expected_size is not None and (count := len(vocab)) != expected_size:
         msg = f"Expected {expected_size} {name} but received {count:,}"
         raise RuntimeError(msg)
