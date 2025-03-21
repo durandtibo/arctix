@@ -22,7 +22,7 @@ def config() -> EqualityConfig:
 
 @pytest.mark.parametrize("size", [1, 2, 3])
 def test_vocabulary_len(size: int) -> None:
-    assert len(Vocabulary(Counter({i: 10 for i in range(size)}))) == size
+    assert len(Vocabulary(Counter(dict.fromkeys(range(size), 10)))) == size
 
 
 def test_vocabulary_repr() -> None:
