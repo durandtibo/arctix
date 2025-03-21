@@ -453,7 +453,7 @@ class Vocabulary(Generic[T]):
         ```
         """
         mapping = dict(sorted(token_to_index.items(), key=lambda item: item[1]))
-        vocab = Vocabulary(Counter({token: 1 for token in mapping}))
+        vocab = Vocabulary(Counter(dict.fromkeys(mapping, 1)))
         if not objects_are_equal(vocab.get_token_to_index(), token_to_index):
             msg = (
                 "token_to_index and the vocabulary token to index mapping do not match:\n"
