@@ -4,6 +4,9 @@ on:
     - cron: '50 8 * * *' # run at 8:50 AM UTC
   workflow_dispatch:  # to trigger manually
 
+permissions:
+  contents: read
+
 jobs:
   cyclic-imports:
     uses: ./.github/workflows/cyclic-imports.yaml
