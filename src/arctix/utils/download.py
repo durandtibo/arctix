@@ -7,8 +7,8 @@ __all__ = ["download_drive_file", "download_url_to_file"]
 from pathlib import Path
 from typing import Any
 
+from coola.utils.path import sanitize_path
 from iden.io.utils import generate_unique_tmp_path
-from iden.utils.path import sanitize_path
 
 from arctix.utils.imports import (
     check_gdown,
