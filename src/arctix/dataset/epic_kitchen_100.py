@@ -33,7 +33,7 @@ from tempfile import TemporaryDirectory
 
 import numpy as np
 import polars as pl
-from iden.utils.path import sanitize_path
+from coola.utils.path import sanitize_path
 
 from arctix.transformer import dataframe as td
 from arctix.utils.download import download_url_to_file
