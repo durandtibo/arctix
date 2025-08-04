@@ -40,7 +40,7 @@ jobs:
           make install
 
       - name: Install valid package version
-        uses: durandtibo/pip-install-package-action@v0.3.2
+        uses: durandtibo/pip-install-package-action@v0.3.3
         with:
           package-name: 'batcharray'
           package-version: ${{ matrix.batcharray-version }}
@@ -92,7 +92,7 @@ jobs:
           make install
 
       - name: Install valid package version
-        uses: durandtibo/pip-install-package-action@v0.3.2
+        uses: durandtibo/pip-install-package-action@v0.3.3
         with:
           package-name: 'coola'
           package-version: ${{ matrix.coola-version }}
@@ -144,7 +144,7 @@ jobs:
           make install
 
       - name: Install valid package version
-        uses: durandtibo/pip-install-package-action@v0.3.2
+        uses: durandtibo/pip-install-package-action@v0.3.3
         with:
           package-name: 'grizz'
           package-version: ${{ matrix.grizz-version }}
@@ -196,7 +196,7 @@ jobs:
           make install
 
       - name: Install valid package version
-        uses: durandtibo/pip-install-package-action@v0.3.2
+        uses: durandtibo/pip-install-package-action@v0.3.3
         with:
           package-name: 'iden'
           package-version: ${{ matrix.iden-version }}
@@ -257,7 +257,7 @@ jobs:
           make install
 
       - name: Install valid package version
-        uses: durandtibo/pip-install-package-action@v0.3.2
+        uses: durandtibo/pip-install-package-action@v0.3.3
         with:
           package-name: 'numpy'
           package-version: ${{ matrix.numpy-version }}
@@ -308,7 +308,7 @@ jobs:
           make install
 
       - name: Install valid package version
-        uses: durandtibo/pip-install-package-action@v0.3.2
+        uses: durandtibo/pip-install-package-action@v0.3.3
         with:
           package-name: 'polars'
           package-version: ${{ matrix.polars-version }}
@@ -365,7 +365,7 @@ jobs:
           make install
 
       - name: Install valid package version
-        uses: durandtibo/pip-install-package-action@v0.3.2
+        uses: durandtibo/pip-install-package-action@v0.3.3
         with:
           package-name: 'gdown'
           package-version: ${{ matrix.gdown-version }}
@@ -417,7 +417,7 @@ jobs:
           make install
 
       - name: Install valid package version
-        uses: durandtibo/pip-install-package-action@v0.3.2
+        uses: durandtibo/pip-install-package-action@v0.3.3
         with:
           package-name: 'requests'
           package-version: ${{ matrix.requests-version }}
@@ -469,7 +469,7 @@ jobs:
           make install
 
       - name: Install valid package version
-        uses: durandtibo/pip-install-package-action@v0.3.2
+        uses: durandtibo/pip-install-package-action@v0.3.3
         with:
           package-name: 'tqdm'
           package-version: ${{ matrix.tqdm-version }}
