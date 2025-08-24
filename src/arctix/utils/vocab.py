@@ -463,7 +463,7 @@ class Vocabulary(Generic[T]):
         return vocab
 
 
-class VocabularyEqualityComparator(BaseEqualityComparator[Vocabulary]):
+class VocabularyEqualityComparator(BaseEqualityComparator[Vocabulary]):  # noqa: PLW1641
     r"""Implement an equality comparator for ``Vocabulary`` objects."""
 
     def __init__(self) -> None:
