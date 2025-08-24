@@ -10,22 +10,15 @@
     <a href="https://github.com/durandtibo/arctix/actions">
         <img alt="Nightly Package Tests" src="https://github.com/durandtibo/arctix/workflows/Nightly%20Package%20Tests/badge.svg">
     </a>
+    <a href="https://codecov.io/gh/durandtibo/arctix">
+        <img alt="Codecov" src="https://codecov.io/gh/durandtibo/arctix/branch/main/graph/badge.svg">
+    </a>
     <br/>
     <a href="https://durandtibo.github.io/arctix/">
         <img alt="Documentation" src="https://github.com/durandtibo/arctix/workflows/Documentation%20(stable)/badge.svg">
     </a>
     <a href="https://durandtibo.github.io/arctix/">
         <img alt="Documentation" src="https://github.com/durandtibo/arctix/workflows/Documentation%20(unstable)/badge.svg">
-    </a>
-    <br/>
-    <a href="https://codecov.io/gh/durandtibo/arctix">
-        <img alt="Codecov" src="https://codecov.io/gh/durandtibo/arctix/branch/main/graph/badge.svg">
-    </a>
-    <a href="https://codeclimate.com/github/durandtibo/arctix/maintainability">
-        <img src="https://api.codeclimate.com/v1/badges/61b8574ea18ecf106dce/maintainability" />
-    </a>
-    <a href="https://codeclimate.com/github/durandtibo/arctix/test_coverage">
-        <img src="https://api.codeclimate.com/v1/badges/61b8574ea18ecf106dce/test_coverage" />
     </a>
     <br/>
     <a href="https://github.com/psf/black">
