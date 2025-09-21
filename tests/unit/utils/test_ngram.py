@@ -103,7 +103,7 @@ def test_find_seq_ngrams_n_incorrect() -> None:
 
 @matplotlib_available
 def test_plot_ngrams() -> None:
-    fig, ax = plt.subplots(figsize=(6, 6))
+    _fig, ax = plt.subplots(figsize=(6, 6))
     plot_ngrams(
         ngrams=[("a", "b"), ("b", "c"), ("c", "d"), ("d", "e"), ("e", "f"), ("f", "g"), ("g", "h")],
         ax=ax,
@@ -112,7 +112,7 @@ def test_plot_ngrams() -> None:
 
 @matplotlib_available
 def test_plot_ngrams_empty() -> None:
-    fig, ax = plt.subplots(figsize=(6, 6))
+    _fig, ax = plt.subplots(figsize=(6, 6))
     plot_ngrams(ngrams=[], ax=ax)
 
 
