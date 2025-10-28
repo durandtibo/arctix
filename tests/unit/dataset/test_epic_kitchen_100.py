@@ -867,7 +867,7 @@ def test_load_noun_vocab(data_dir: Path, noun_vocab: Vocabulary) -> None:
 
 
 def test_load_noun_vocab_incorrect(empty_noun_file: Path) -> None:
-    with pytest.raises(RuntimeError, match="Expected 300 nouns but received 0"):
+    with pytest.raises(RuntimeError, match=r"Expected 300 nouns but received 0"):
         load_noun_vocab(empty_noun_file.parent)
 
 
@@ -881,7 +881,7 @@ def test_load_verb_vocab(data_dir: Path, verb_vocab: Vocabulary) -> None:
 
 
 def test_load_verb_vocab_incorrect(empty_verb_file: Path) -> None:
-    with pytest.raises(RuntimeError, match="Expected 97 verbs but received 0"):
+    with pytest.raises(RuntimeError, match=r"Expected 97 verbs but received 0"):
         load_verb_vocab(empty_verb_file.parent)
 
 

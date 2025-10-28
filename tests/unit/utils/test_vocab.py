@@ -195,7 +195,8 @@ def test_vocabulary_from_token_to_index() -> None:
 
 def test_vocabulary_from_token_to_index_incorrect() -> None:
     with pytest.raises(
-        RuntimeError, match="token_to_index and the vocabulary token to index mapping do not match:"
+        RuntimeError,
+        match=r"token_to_index and the vocabulary token to index mapping do not match:",
     ):
         Vocabulary.from_token_to_index({"grizz": 4, "polar": 0, "bear": 1, "grizzly": 3})
 
