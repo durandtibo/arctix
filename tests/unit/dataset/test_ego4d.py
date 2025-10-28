@@ -291,12 +291,12 @@ def test_load_taxonomy_vocab_expected_size(data_dir: Path) -> None:
 
 
 def test_load_taxonomy_vocab_expected_size_incorrect(data_dir: Path) -> None:
-    with pytest.raises(RuntimeError, match="Expected 1 nouns but received"):
+    with pytest.raises(RuntimeError, match=r"Expected 1 nouns but received"):
         load_taxonomy_vocab(data_dir, name="nouns", expected_size=1)
 
 
 def test_load_taxonomy_vocab_incorrect_name(data_dir: Path) -> None:
-    with pytest.raises(RuntimeError, match="Incorrect taxonomy name:"):
+    with pytest.raises(RuntimeError, match=r"Incorrect taxonomy name:"):
         load_taxonomy_vocab(data_dir, name="incorrect")
 
 

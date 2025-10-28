@@ -292,7 +292,7 @@ def test_load_data(data_dir: Path, data_raw: pl.DataFrame) -> None:
 
 
 def test_load_annotation_file_incorrect_extension() -> None:
-    with pytest.raises(ValueError, match="Incorrect file extension."):
+    with pytest.raises(ValueError, match=r"Incorrect file extension."):
         load_annotation_file(Mock(spec=Path))
 
 
