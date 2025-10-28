@@ -37,7 +37,7 @@ def test_check_gdown_with_package() -> None:
 def test_check_gdown_without_package() -> None:
     with (
         patch("arctix.utils.imports.is_gdown_available", lambda: False),
-        pytest.raises(RuntimeError, match="`gdown` package is required but not installed."),
+        pytest.raises(RuntimeError, match=r"`gdown` package is required but not installed."),
     ):
         check_gdown()
 
@@ -91,7 +91,7 @@ def test_check_matplotlib_with_package() -> None:
 def test_check_matplotlib_without_package() -> None:
     with (
         patch("arctix.utils.imports.is_matplotlib_available", lambda: False),
-        pytest.raises(RuntimeError, match="`matplotlib` package is required but not installed."),
+        pytest.raises(RuntimeError, match=r"`matplotlib` package is required but not installed."),
     ):
         check_matplotlib()
 
@@ -145,7 +145,7 @@ def test_check_requests_with_package() -> None:
 def test_check_requests_without_package() -> None:
     with (
         patch("arctix.utils.imports.is_requests_available", lambda: False),
-        pytest.raises(RuntimeError, match="`requests` package is required but not installed."),
+        pytest.raises(RuntimeError, match=r"`requests` package is required but not installed."),
     ):
         check_requests()
 
@@ -199,7 +199,7 @@ def test_check_tqdm_with_package() -> None:
 def test_check_tqdm_without_package() -> None:
     with (
         patch("arctix.utils.imports.is_tqdm_available", lambda: False),
-        pytest.raises(RuntimeError, match="`tqdm` package is required but not installed."),
+        pytest.raises(RuntimeError, match=r"`tqdm` package is required but not installed."),
     ):
         check_tqdm()
 

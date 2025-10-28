@@ -57,7 +57,7 @@ def test_find_ngrams_empty() -> None:
 
 
 def test_find_ngrams_n_incorrect() -> None:
-    with pytest.raises(RuntimeError, match="n must be greater or equal to 1"):
+    with pytest.raises(RuntimeError, match=r"n must be greater or equal to 1"):
         find_ngrams(["a", "b", "c", "d", "e", "f", "g", "h"], n=0)
 
 
@@ -92,7 +92,7 @@ def test_find_seq_ngrams_empty() -> None:
 
 
 def test_find_seq_ngrams_n_incorrect() -> None:
-    with pytest.raises(RuntimeError, match="n must be greater or equal to 1"):
+    with pytest.raises(RuntimeError, match=r"n must be greater or equal to 1"):
         find_seq_ngrams([["a", "b", "c", "d", "e"], ["f", "g", "h"], ["i"]], n=0)
 
 
