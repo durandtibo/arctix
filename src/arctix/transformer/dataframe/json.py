@@ -40,9 +40,9 @@ class JsonDecodeDataFrameTransformer(BaseDataFrameTransformer):
 
     >>> import polars as pl
     >>> from arctix.transformer.dataframe import JsonDecode
-    >>> transformer = JsonDecode(columns=["col1", "col3"])
+    >>> transformer = JsonDecode(columns=["col1"], dtype=pl.List(pl.Int64))
     >>> transformer
-    JsonDecodeDataFrameTransformer(columns=('col1', 'col3'), dtype=None)
+    JsonDecodeDataFrameTransformer(columns=('col1',), dtype=List(Int64))
     >>> frame = pl.DataFrame(
     ...     {
     ...         "col1": ["[1, 2]", "[2]", "[1, 2, 3]", "[4, 5]", "[5, 4]"],
@@ -70,21 +70,19 @@ class JsonDecodeDataFrameTransformer(BaseDataFrameTransformer):
     ┌───────────┬──────┬─────────────────┬──────┐
     │ col1      ┆ col2 ┆ col3            ┆ col4 │
     │ ---       ┆ ---  ┆ ---             ┆ ---  │
-    │ list[i64] ┆ str  ┆ list[str]       ┆ str  │
+    │ list[i64] ┆ str  ┆ str             ┆ str  │
     ╞═══════════╪══════╪═════════════════╪══════╡
-    │ [1, 2]    ┆ 1    ┆ ["1", "2"]      ┆ a    │
-    │ [2]       ┆ 2    ┆ ["2"]           ┆ b    │
-    │ [1, 2, 3] ┆ 3    ┆ ["1", "2", "3"] ┆ c    │
-    │ [4, 5]    ┆ 4    ┆ ["4", "5"]      ┆ d    │
-    │ [5, 4]    ┆ 5    ┆ ["5", "4"]      ┆ e    │
+    │ [1, 2]    ┆ 1    ┆ ['1', '2']      ┆ a    │
+    │ [2]       ┆ 2    ┆ ['2']           ┆ b    │
+    │ [1, 2, 3] ┆ 3    ┆ ['1', '2', '3'] ┆ c    │
+    │ [4, 5]    ┆ 4    ┆ ['4', '5']      ┆ d    │
+    │ [5, 4]    ┆ 5    ┆ ['5', '4']      ┆ e    │
     └───────────┴──────┴─────────────────┴──────┘
 
     ```
     """
 
-    def __init__(
-        self, columns: Sequence[str], dtype: PolarsDataType | PythonDataType | None = None
-    ) -> None:
+    def __init__(self, columns: Sequence[str], dtype: PolarsDataType | PythonDataType) -> None:
         self._columns = tuple(columns)
         self._dtype = dtype
 
