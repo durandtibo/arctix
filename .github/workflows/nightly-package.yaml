@@ -197,7 +197,7 @@ jobs:
           pip install arctix
 
       - name: Install valid package version
-        uses: durandtibo/pip-install-package-action@v0.4.0
+        uses: durandtibo/pip-install-package-action@v0.4.1
         with:
           package-name: 'batcharray'
           package-version: ${{ matrix.batcharray-version }}
@@ -233,7 +233,7 @@ jobs:
           pip install arctix
 
       - name: Install valid package version
-        uses: durandtibo/pip-install-package-action@v0.4.0
+        uses: durandtibo/pip-install-package-action@v0.4.1
         with:
           package-name: 'coola'
           package-version: ${{ matrix.coola-version }}
@@ -269,7 +269,7 @@ jobs:
           pip install arctix
 
       - name: Install valid package version
-        uses: durandtibo/pip-install-package-action@v0.4.0
+        uses: durandtibo/pip-install-package-action@v0.4.1
         with:
           package-name: 'grizz'
           package-version: ${{ matrix.grizz-version }}
@@ -305,7 +305,7 @@ jobs:
           pip install arctix
 
       - name: Install valid package version
-        uses: durandtibo/pip-install-package-action@v0.4.0
+        uses: durandtibo/pip-install-package-action@v0.4.1
         with:
           package-name: 'iden'
           package-version: ${{ matrix.iden-version }}
@@ -349,7 +349,7 @@ jobs:
           pip install arctix
 
       - name: Install valid package version
-        uses: durandtibo/pip-install-package-action@v0.4.0
+        uses: durandtibo/pip-install-package-action@v0.4.1
         with:
           package-name: 'numpy'
           package-version: ${{ matrix.numpy-version }}
@@ -394,7 +394,7 @@ jobs:
           pip install arctix
 
       - name: Install valid package version
-        uses: durandtibo/pip-install-package-action@v0.4.0
+        uses: durandtibo/pip-install-package-action@v0.4.1
         with:
           package-name: 'polars'
           package-version: ${{ matrix.polars-version }}
@@ -434,7 +434,7 @@ jobs:
           pip install arctix
 
       - name: Install valid package version
-        uses: durandtibo/pip-install-package-action@v0.4.0
+        uses: durandtibo/pip-install-package-action@v0.4.1
         with:
           package-name: 'gdown'
           package-version: ${{ matrix.gdown-version }}
@@ -470,7 +470,7 @@ jobs:
           pip install arctix
 
       - name: Install valid package version
-        uses: durandtibo/pip-install-package-action@v0.4.0
+        uses: durandtibo/pip-install-package-action@v0.4.1
         with:
           package-name: 'requests'
           package-version: ${{ matrix.requests-version }}
@@ -506,7 +506,7 @@ jobs:
           pip install arctix
 
       - name: Install valid package version
-        uses: durandtibo/pip-install-package-action@v0.4.0
+        uses: durandtibo/pip-install-package-action@v0.4.1
         with:
           package-name: 'tqdm'
           package-version: ${{ matrix.tqdm-version }}
