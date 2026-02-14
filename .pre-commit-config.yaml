@@ -5,7 +5,7 @@ default_stages: [ pre-commit ]
 
 repos:
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.8.2
+    rev: 0.9.0
     hooks:
       - id: nbstripout
   - repo: https://github.com/asottile/pyupgrade
@@ -51,7 +51,7 @@ repos:
       - id: python-check-blanket-noqa
       - id: python-use-type-annotations
   - repo: https://github.com/psf/black
-    rev: 25.12.0
+    rev: 26.1.0
     hooks:
       - id: black
         language_version: python3.12
@@ -62,7 +62,7 @@ repos:
         additional_dependencies:
           - black>=25.9
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.11
+    rev: v0.15.0
     hooks:
       - id: ruff-check
         types_or: [ python, pyi, jupyter ]
