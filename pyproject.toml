@@ -74,7 +74,7 @@ pygments = "^2.19"
 pytest = "^8.4"
 pytest-cov = "^7.0"
 pytest-timeout = "^2.3"
-ruff = "^0.14"
+ruff = "^0.15"
 xdoctest = "^1.3"
 
 
